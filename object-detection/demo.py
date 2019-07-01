@@ -1,12 +1,13 @@
 """Simple Object Detection Demo"""
 from trueface.object_detection import ObjectRecognizer
 import json
+import os
 
 #init object recognizer
 object_recognition = ObjectRecognizer(ctx='cpu',
                       model_path="./tf-object_detection-mobilenet/model.trueface",
                       params_path="./tf-object_detection-mobilenet/model.params",
-                      license=json.loads(open("token.json").read().decode("UTF-8"),
+                      license=os.environ['TF_TOKEN'],
                       classes="./tf-object_detection-mobilenet/classes.names")
 
 #predict single image
