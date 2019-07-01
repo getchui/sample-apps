@@ -1,8 +1,8 @@
 
-#Object Detection Tutorials
+# Object Detection Tutorials
 
-COCO mAP TFYolov3: 36.0
-COCO mAP TFMobileNet: 28.6
+`COCO mAP TFYolov3: 36.0`
+`COCO mAP TFMobileNet: 28.6`
 
 
 ## Get Started
