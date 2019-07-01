@@ -6,4 +6,13 @@
 
 
 ## Get Started
-Download yolov3 or mobilenet model
+To Download yolov3 or mobilenet model
+
+`sh download_mobilenet.sh`
+`sh download_tfyolov3.sh`
+
+### install Trueface sdk
+
+
+### Run Demo
+run `export TF_TOKEN={your_token}`  to define your token then run `python demo.py`.
