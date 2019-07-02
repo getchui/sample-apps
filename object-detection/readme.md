@@ -37,10 +37,12 @@ object_recognition = ObjectRecognizer(ctx='cpu',
 ```
 
 GPU
-```object_recognition = ObjectRecognizer(ctx='gpu',
+```
+object_recognition = ObjectRecognizer(ctx='gpu',
                       model_path="./tf-object_detection-mobilenet/model.trueface",
                       params_path="./tf-object_detection-mobilenet/model.params",
                       license=os.environ['TF_TOKEN'],
-                      classes="./tf-object_detection-mobilenet/classes.names")```
+                      classes="./tf-object_detection-mobilenet/classes.names")
+```
 
 You can define the index of gpu to by adding a `gpu` param to the initializer.
