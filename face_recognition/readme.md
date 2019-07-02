@@ -51,9 +51,9 @@ python fr_with_blur.py
 
 ### Working with Different Capture Devices
 USB Cameras
-vcap = VideoStream(src=0).start()
+`vcap = VideoStream(src=0).start()`
 
 IP Cameras, RTSP, HLS, MJPEG
 Use the stream url as the source:
-vcap = VideoStream(src="rtsp://192.168.1.11:554/11").start()
+`vcap = VideoStream(src="rtsp://192.168.1.11:554/11").start()`
 
