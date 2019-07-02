@@ -20,23 +20,24 @@ https://github.com/getchui/offline_sdk/releases
 ### Run Demo
 run `export TF_TOKEN={your_token}`  to define your token then run `python demo.py`.
 
-run `export TF_TOKEN={your_token}`  to define your token then run `python demo.py`.
 
 #### CPU vs GPU
 Change the context in the class initializer:
 
 CPU
-`object_recognition = ObjectRecognizer(ctx='cpu',
+```
+object_recognition = ObjectRecognizer(ctx='cpu',
                       model_path="./tf-object_detection-mobilenet/model.trueface",
                       params_path="./tf-object_detection-mobilenet/model.params",
                       license=os.environ['TF_TOKEN'],
-                      classes="./tf-object_detection-mobilenet/classes.names")`
+                      classes="./tf-object_detection-mobilenet/classes.names")
+```
 
 GPU
-`object_recognition = ObjectRecognizer(ctx='gpu',
+```object_recognition = ObjectRecognizer(ctx='gpu',
                       model_path="./tf-object_detection-mobilenet/model.trueface",
                       params_path="./tf-object_detection-mobilenet/model.params",
                       license=os.environ['TF_TOKEN'],
-                      classes="./tf-object_detection-mobilenet/classes.names")`
+                      classes="./tf-object_detection-mobilenet/classes.names")```
 
 You can define the index of gpu to by adding a `gpu` param to the initializer.
