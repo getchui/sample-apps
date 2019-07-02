@@ -50,12 +50,13 @@ object_recognition = ObjectRecognizer(ctx='gpu',
 You can define the index of gpu to by adding a `gpu` param to the initializer.
 
 
-# Demo with mjpeg Streaming
+# Demo with MJPEG Streaming
 ```
 export TF_TOKEN={your_token}
 python demo_with_mjpeg_streaming.py
 ```
-navigate to http://localhost:8086.
+Navigate to http://localhost:8086.
+<br />
 <br />
 You can use the streaming url in a simple img tag, ex:
 
