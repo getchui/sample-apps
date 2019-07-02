@@ -17,6 +17,7 @@ ex:
 `sudo pip install https://github.com/getchui/offline_sdk/releases/download/0.61/trueface-0.0.6.1-cp27-cp27mu-linux_x86_64.whl`
 
 Download models:
+
 Face Detect
 
 `wget https://github.com/getchui/offline_sdk/releases/download/models-latest/fd_model.zip`
