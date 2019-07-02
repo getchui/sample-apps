@@ -18,7 +18,10 @@ Get your platform wheel url from the following page:<br/>
 https://github.com/getchui/offline_sdk/releases
 
 ### Run Demo
-run `export TF_TOKEN={your_token}`  to define your token then run `python demo.py`.
+```
+export TF_TOKEN={your_token}
+python demo.py
+```
 
 
 #### CPU vs GPU
