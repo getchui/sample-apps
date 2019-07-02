@@ -1,17 +1,19 @@
 
-# Object Detection Tutorials
+# Object Detection Demos
 
 `COCO mAP TFYolov3: 36.0`
 `COCO mAP TFMobileNet: 28.6`
 
 
 ## Get Started
-To Download yolov3 or mobilenet model
+To Download yolov3 or mobilenet model:
 
-`sh download_mobilenet.sh`
-`sh download_tfyolov3.sh`
+```
+sh download_mobilenet.sh
+sh download_tfyolov3.sh
+```
 
-### install Trueface sdk
+## install Trueface sdk
 `sudo pip install https://github.com/getchui/offline_sdk/releases/download/0.61/trueface-0.0.6.1-cp27-cp27mu-linux_x86_64.whl`
 
 Get your platform wheel url from the following page:<br/>
@@ -46,3 +48,18 @@ object_recognition = ObjectRecognizer(ctx='gpu',
 ```
 
 You can define the index of gpu to by adding a `gpu` param to the initializer.
+
+
+# Demo with mjpeg Streaming
+```
+export TF_TOKEN={your_token}
+python demo_with_mjpeg_streaming.py
+```
+navigate to http://localhost:8086.
+<br />
+You can use the streaming url in a simple img tag, ex:
+
+`<img src="http://localhost:8086" />`
+
+
+
