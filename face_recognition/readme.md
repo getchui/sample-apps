@@ -30,10 +30,14 @@ TFV3
 ### FR With Blur Demo
 
 ```
-Step 1. Create Collection
+Step 1. Set your Token
+export TF_TOKEN=your_token
+
+
+Step 2. Create Collection
 python create_collection.py
 
-Step 2. Run Demo
+Step 3. Run Demo
 python fr_with_blur.py
 
 ```
