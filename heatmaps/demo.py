@@ -13,12 +13,13 @@ cap = VideoStream(src="rtsp://192.168.1.11:554/11").start()
 motion = MotionDetector(cap.read(), threshold=1, max_value=3, frames=100)
 
 count = 0
-total = 1000
 while True:
     frame = cap.read()
     frame = motion.detect(frame)
     count += 1
-    #motion.fade(ratio=0.75) fades motion, use if not use frames= param
+    #fades motion, use if not use frames= param
+    #motion.fade(ratio=0.75)
+    
     cv2.imshow("image", frame)
     if cv2.waitKey(33) == ord('q'):
         break
