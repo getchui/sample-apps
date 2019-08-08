@@ -5,3 +5,6 @@ tf-object_detection-yolov3
 *.params
 *.zip
 model-tfv2
+.DS_Store
+node_modules
+.env

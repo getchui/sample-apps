@@ -2,14 +2,24 @@ from trueface.recognition import FaceRecognizer
 from trueface.video import VideoStream, QVideoStream
 import cv2
 import time
+import os
 
 
-fr = FaceRecognizer(ctx='gpu',
-                   gpu=0,
-                   fd_model_path='./fd_model',
-                   fr_model_path='./model-tfv2/model.trueface', 
-                   params_path='./model-tfv2/model.params',
-                   license=os.environ['TF_TOKEN'])
+try:
+    fr = FaceRecognizer(ctx='gpu',
+                       gpu=0,
+                       fd_model_path='./fd_model',
+                       fr_model_path='./model-tfv2/model.trueface',
+                       params_path='./model-tfv2/model.params',
+                       license=os.environ['TF_TOKEN'])
+except Exception as e:
+    fr = FaceRecognizer(ctx='cpu',
+                       gpu=0,
+                       fd_model_path='./fd_model',
+                       fr_model_path='./model-tfv2/model.trueface',
+                       params_path='./model-tfv2/model.params',
+                       license=os.environ['TF_TOKEN'])
+
 
 vcap = VideoStream(src=0).start()
 
@@ -22,18 +32,18 @@ while(True):
 
     #find faces
     bounding_boxes, points, chips = fr.find_faces(frame, return_chips=True, return_binary=True)
-    
+
     if bounding_boxes is not None:
         #loop over extracted faces
         for i,chip in enumerate(chips):
             #identify each face chip
-            identity = fr.identify(chip, threshold=0.3, collection='./trump_collection.npz')
+            identity = fr.identify(chip, threshold=0.3, collection='./collection.npz')
             print(identity)
             #if identity, draw name
             if identity['predicted_label']:
-                fr.draw_label(frame, 
-                             (int(bounding_boxes[i][0]), 
-                              int(bounding_boxes[i][1])), 
+                fr.draw_label(frame,
+                             (int(bounding_boxes[i][0]),
+                              int(bounding_boxes[i][1])),
                              identity['predicted_label'], 2, 2)
             #else, blur face
             else:
