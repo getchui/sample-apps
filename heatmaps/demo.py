@@ -4,7 +4,7 @@ import cv2
 
 #please use 0.6.2 if you desire
 
-cap = VideoStream(src="rtsp://192.168.1.11:554/11").start()
+cap = VideoStream(src=0).start()
 
 # apply a binary threshold only keeping pixels above thresh and setting the result to maxValue.  If you want
 # motion to be picked up more, increase the value of maxValue.  To pick up the least amount of motion over time, set maxValue = 1

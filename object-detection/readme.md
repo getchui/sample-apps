@@ -6,7 +6,7 @@
 
 
 ## Get Started
-To Download yolov3 or mobilenet model:
+To Download tf-yolov3 or mobilenet model:
 
 ```
 sh download_mobilenet.sh

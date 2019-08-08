@@ -1,4 +1,6 @@
 tf-object_detection-mobilenet/*
 tf-object_detection-mobilenet
+tf-object_detection-yolov3/*
+tf-object_detection-yolov3
 *.params
 *.zip
