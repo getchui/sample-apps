@@ -1,0 +1,92 @@
+
+<!DOCTYPE HTML>
+<!--
+	Identity by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Alvarado Live Dashboard</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="icon" href="static/favicon.ico" />
+		<link rel="stylesheet" href="static/assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
+		<link rel="stylesheet" href="static/Chart.css"></link>
+		<script src="static/jquery-3.3.1.min.js"></script>
+		<script src="static/superagent.min.js"></script>
+		<script src="static/Chart.js"></script>
+		<script src="static/Chart.bundle.min.js"></script>
+		<script src="static/vue.js"></script>
+
+		<style>
+			canvas{
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select: none;
+			}
+		</style>
+
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<section id="main">
+						<div id="home" >
+						<header>
+							<!-- <h1>Trueface.ai</h1> -->
+							<img src="data:image/png;base64,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" />
+
+							<p>ALVARADO CUSTOM DEPLOYMENT</p>
+							<span style="font-size: 15px">GPU STATS</span>
+							<canvas id="gpuChart" ></canvas>
+							<br />
+							<br />
+							<p style="font-size: 15px">CPU & MEMORY STATS</p>
+							<canvas id="cpuRamChart" ></canvas>
+							<br />
+							<p style="font-size: 15px">Live Camera View</p>
+							<img style="max-width: 100%;width:100%" id="stream" />
+							<div v-if="spinner" class="spinner">
+							  <div class="dot1"></div>
+							  <div class="dot2"></div>
+							</div>
+							<br />
+							<p style="font-size: 15px">High Speed Mode</p>
+							<button v-on:click="highspeed">Put Jetson in High Speed Mode</button>
+							<br />
+							<br />
+
+							<br />
+							<br />
+
+
+						</header>
+						<footer>
+							<a href="https://trueface.ai" class="">Trueface.ai</a>
+						</footer>
+						</div>
+					</section>
+
+			</div>
+			<script src="static/main.js"></script>
+
+			<script>
+				
+
+				
+			</script>
+
+			<script>
+				if ('addEventListener' in window) {
+					window.addEventListener('load', function() { document.body.className = document.body.className.replace(/\bis-preload\b/, ''); });
+					document.body.className += (navigator.userAgent.match(/(MSIE|rv:11\.0)/) ? ' is-ie' : '');
+				}
+			</script>
+
+	</body>
+</html>

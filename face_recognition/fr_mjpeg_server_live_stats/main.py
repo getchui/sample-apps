@@ -64,15 +64,12 @@ while(True):
     try:
         frame = vcap.read()
         timestamp = time.time()
-       # face = fr.find_biggest_face(frame, return_chips=True, return_binary=True)
         bounding_boxes, points, chips = fr.find_faces(frame, return_chips=True, return_binary=True)
         print 'face detect time', time.time() - timestamp
         
-
         if bounding_boxes is not None:
            for i,chip in enumerate(chips):
-                identity = fr.identify(chip, threshold=float(threshold), collection='./alvarado_employees.npz')
-                # identity = fr.identify(chip, threshold=float(threshold), collection='./trueface-collection.npz')
+                identity = fr.identify(chip, threshold=float(threshold), collection='./trueface-collection.npz')
                 print(identity)
                 if identity['predicted_label']:
                     fr.draw_label(frame, 
