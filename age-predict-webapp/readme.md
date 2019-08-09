@@ -4,7 +4,7 @@
 
 Launch docker image for agebox 
 ```
-docker run -p 9000:8080 -e "TOKEN=yourtoken" trueface/agebox:latest
+docker run -p 9000:8080 -e "TOKEN=your_token" trueface/agebox:latest
 ```
 
 Make sure docker opens port 9000.
