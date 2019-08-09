@@ -1,23 +1,26 @@
 import React, { Component } from "react";
 import Webcam from "react-webcam";
 import axios from "axios";
-import Loading from './Loading';
 import Result from './Result';
+import Loading from './Loading';
+
+import "./App.css"
  
 class App extends Component {
   constructor(props){
     super(props)
     this.state = {
-      width: 720,
-      height: 480,
-      age: '',
+      width: 0,
+      height: 0,
+      age: false,
       loading: '',
-      result: '',
+      result: false,
       test: '',
     }
     this.setRef = this.setRef.bind(this)
     this.capture = this.capture.bind(this)
     window.addEventListener("resize", this.update)
+    this.submitPhoto = this.submitPhoto.bind(this)
   }
 
   setRef = webcam => {
@@ -29,29 +32,26 @@ class App extends Component {
       loading: true
     })
 
-    const axiosConfig = {
-      headers: {
-          'Content-Type': 'application/json',
-          "Access-Control-Allow-Origin": "*",
-      }
-    }
-
     const photoData = {
       image: photo
     }
 
-    axios.post('http://localhost:9001', photoData, axiosConfig)
+    // console.log(photoData)
+
+    axios.post('/predict', photoData)
       .then(response => {
-        if (response.success) {
+        console.log(response)
+        if(response.data.success){
           this.setState({
-            age: response.data[0].estimated_age,
-            result: response.success,
-            loading: false
+            result: true,
+            age: response.data.data[0].estimated_age,
+            loading: false,
           })
         } else {
           this.setState({
-            result: response.success,
-            loading: false
+            result: true,
+            age: false,
+            loading: false,
           })
         }
       })
@@ -62,7 +62,8 @@ class App extends Component {
  
   capture = () => {
     const imageSrc = this.webcam.getScreenshot();
-    this.submitPhoto(imageSrc)
+    
+    this.submitPhoto(imageSrc.slice(23))
   }
 
   update = () => {
@@ -86,22 +87,28 @@ class App extends Component {
       height: this.state.height,
       facingMode: "user"
     }
- 
-    return (
-      <div className="webcam">
-        <Webcam
-          audio={false}
-          height={this.state.height}
-          ref={this.setRef}
-          screenshotFormat="image/jpeg"
-          width={this.state.width}
-          videoConstraints={videoConstraints}
-        />
-        <button onClick={this.capture}>Capture photo</button>
-        { this.state.loading && <Loading className="loading" type="spinningBubbles" color="#fff" /> }
-        { this.state.result && <Result /> }
-      </div>
-    );
+
+    if(this.state.loading) {
+      return (
+        <div>
+          <Loading />
+        </div>
+      )
+    } else {
+      return (
+        <div className="webcam">
+          <Webcam
+            audio={false}
+            height={this.state.height}
+            ref={this.setRef}
+            screenshotFormat="image/jpeg"
+            width={this.state.width}
+            videoConstraints={videoConstraints}
+          />
+          <button onClick={this.capture}>Capture photo</button>
+          { this.state.result && <Result age={this.state.age} /> }
+        </div>
+    )}
   }
 }
 
