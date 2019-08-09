@@ -4,7 +4,7 @@
 
 Launch docker image for agebox 
 ```
-docker run -p 9000:8080 -e "TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbW90aW9uIjp0cnVlLCJmciI6dHJ1ZSwicGFja2FnZV9pZCI6bnVsbCwiZXhwaXJ5X2RhdGUiOiIyMDE5LTEwLTE2IiwidGhyZWF0X2RldGVjdGlvbiI6dHJ1ZSwibWFjaGluZXMiOiI1IiwiYWxwciI6dHJ1ZSwibmFtZSI6Ik5lemFyZSBDaGFmbmkiLCJ0a2V5IjoibmV3IiwiZXhwaXJ5X3RpbWVfc3RhbXAiOjE1NzExODQwMDAuMCwiYXR0cmlidXRlcyI6dHJ1ZSwidHlwZSI6Im9ubGluZSIsImVtYWlsIjoibmNoYWZuaUBnbWFpbC5jb20ifQ.UQIpPpxeCdACm12hagzxI2yTcMEJbdfKn3moZOEpCl8" trueface/agebox:latest
+docker run -p 9000:8080 -e "TOKEN=yourtoken" trueface/agebox:latest
 ```
 
 Make sure docker opens port 9000.
