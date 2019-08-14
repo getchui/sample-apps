@@ -1,0 +1,39 @@
+.t() {
+  border: 1px solid red;
+}
+
+.center() {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flexcol() {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.wide-center() {
+	width: 100%;
+	margin: 0 auto;
+}
+
+.btn(@width: 140px, @height: 50px) {
+	width: @width;
+	height: @height;
+	background-color: @main;
+	border: 1px solid @main;
+	border-radius: 50%;
+	font-family: @title-font;
+	font-size: 1.8rem;
+	font-weight: 800;
+	.center;
+  cursor: pointer;
+  
+  &:hover {
+		background-color: darken(@main, 25%);
+		border: 1px solid darken(@main, 25%);
+  }
+}

@@ -3,15 +3,16 @@ import Webcam from "react-webcam";
 import axios from "axios";
 import Result from './Result';
 import Loading from './Loading';
+import SideBar from './Sidebar';
 
-import "./App.css"
+import "./stylesheets/css/index.css";
  
 class App extends Component {
   constructor(props){
     super(props)
     this.state = {
-      width: 0,
-      height: 0,
+      width: 1080,
+      height: 720,
       age: false,
       loading: '',
       result: false,
@@ -35,8 +36,6 @@ class App extends Component {
     const photoData = {
       image: photo
     }
-
-    // console.log(photoData)
 
     axios.post('/predict', photoData)
       .then(response => {
@@ -64,6 +63,10 @@ class App extends Component {
     const imageSrc = this.webcam.getScreenshot();
     
     this.submitPhoto(imageSrc.slice(23))
+
+    setTimeout(() => {
+      document.querySelector('.results').classList.add('fade')
+    }, 5000)
   }
 
   update = () => {
@@ -96,17 +99,21 @@ class App extends Component {
       )
     } else {
       return (
-        <div className="webcam">
-          <Webcam
-            audio={false}
-            height={this.state.height}
-            ref={this.setRef}
-            screenshotFormat="image/jpeg"
-            width={this.state.width}
-            videoConstraints={videoConstraints}
-          />
-          <button onClick={this.capture}>Capture photo</button>
-          { this.state.result && <Result age={this.state.age} /> }
+        <div className='main'>
+          <SideBar />
+          <div className="webcam">
+            <Webcam
+              audio={false}
+              height={this.state.height}
+              ref={this.setRef}
+              screenshotFormat="image/jpeg"
+              width={this.state.width}
+              videoConstraints={videoConstraints}
+            />
+            <button onClick={this.capture}></button>
+            <div>{ this.state.loading && <Loading /> }</div>
+            <div className='results'>{ this.state.result && <Result age={this.state.age} /> }</div>
+          </div>
         </div>
     )}
   }
