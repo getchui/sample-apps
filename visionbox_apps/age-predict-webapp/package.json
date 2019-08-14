@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "client": "cd webapp && npm start",
+    "client": "cd frontend && npm start",
     "server": "cd server && npm start",
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "test": "echo \"Error: no test specified\" && exit 1"

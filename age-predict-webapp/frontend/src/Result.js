@@ -12,8 +12,7 @@ const Result = (props) => {
 
   return (
     <div>
-        <h3>Age Prediction:</h3>
-        <h2>{props.age.toFixed(0)}</h2>
+        <h3>Age {props.age.toFixed(0)}</h3>
     </div>
   )
   

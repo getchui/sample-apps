@@ -1,0 +1,43 @@
+.main {
+  display: flex;
+  
+  .webcam {
+    display: flex;
+    position: relative;
+    width: 100%;
+
+    video {
+      width: 100%;
+    }
+    
+    button {
+      position: absolute;
+      top: 80%;
+      left: 50%;
+      margin-left: -50px;
+      
+      .btn(100px, 100px);
+    }
+
+    .results {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-left: -250px;
+      font-size: 4rem;
+      color: white;
+      text-shadow:
+        -1px -1px 0 #000,  
+         1px -1px 0 #000,
+        -1px 1px 0 #000,
+         1px 1px 0 #000;
+      text-align: center;
+      width: 500px;
+      transition: opacity 2s;
+    }
+
+    .fade {
+      opacity: 0;
+    }
+  }
+}
