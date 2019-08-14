@@ -10,6 +10,12 @@ app.use(bodyParser.json({ limit: '50mb' }))
 app.use(cors())
 app.enable('trust proxy')
 
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*")
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+    next()
+})
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, './build', 'index.html'))
 })
@@ -22,10 +28,20 @@ app.post('/predict', (req, res) => {
         }
     })
         .then(response => {
-            console.log(response.data)
+            // console.log(response.data)
             res.send(response.data)
         })
-        .catch(err => console.error(err))
+        .catch((err) => {
+            if (err.response) {
+                console.log(err.response.data)
+                console.log(err.response.status)
+                console.log(err.response.headers)
+            } else if (err.request) {
+                console.log(err.request)
+            } else {
+                console.log("Error", error.message)
+            }
+        })
 })
 
 app.listen(4000, ()=> 
