@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 
 app.post('/predict', (req, res) => {
 
-    axios.post("http://localhost:9000/predict", { "image": req.body.image }, {
+    axios.post("http://agebox:8080/predict", { "image": req.body.image }, {
         headers: {
             'Content-Type': 'application/json',
         }
