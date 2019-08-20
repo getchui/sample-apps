@@ -54,6 +54,12 @@ class App extends Component {
           })
         }
       })
+      .then(() => {
+        setTimeout(() => {
+        this.setState({
+          result: false
+        })
+      }, 5000)})
       .catch((err) => {
         console.log(err)
       })
@@ -63,10 +69,6 @@ class App extends Component {
     const imageSrc = this.webcam.getScreenshot();
     
     this.submitPhoto(imageSrc.slice(23))
-
-    setTimeout(() => {
-      document.querySelector('.results').classList.add('fade')
-    }, 5000)
   }
 
   update = () => {

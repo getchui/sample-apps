@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Trueface.ai AgeBox Web App",
+  "name": "Use computer vision to detect age",
   "icons": [
     {
       "src": "favicon.ico",

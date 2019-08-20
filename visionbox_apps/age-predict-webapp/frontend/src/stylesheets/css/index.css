@@ -131,7 +131,7 @@ table {
 }
 html {
   font-size: 62.5%;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Roboto', sans-serif;
 }
 html,
 body,
@@ -152,6 +152,7 @@ a {
   width: 100%;
 }
 .main .webcam video {
+  object-fit: fill;
   width: 100%;
 }
 .main .webcam button {
@@ -186,36 +187,33 @@ a {
   text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
   text-align: center;
   width: 500px;
-  transition: opacity 2s;
-}
-.main .webcam .fade {
-  opacity: 0;
 }
 .sidebar {
   display: flex;
   position: relative;
   flex-direction: column;
   align-items: center;
-  background-color: #3a58db;
+  background-color: #4e65e1;
   padding: 10px;
-  width: 150px;
+  width: 96px;
 }
 .sidebar h3 {
-  font-size: 2.5rem;
+  font-size: 16px;
   color: white;
   margin-top: 20px;
 }
 .sidebar a {
-  font-size: 2rem;
+  font-size: 16px;
   color: white;
   position: absolute;
   top: 90%;
 }
 .sidebar a:hover {
-  font-size: 2.1rem;
+  font-size: 15px;
 }
 .sidebar img {
-  width: 100px;
+  padding-top: 10px;
+  width: 92px;
 }
 .spinner {
   position: absolute;
@@ -228,4 +226,5 @@ a {
   bottom: 0;
   left: 0;
   right: 0;
+  opacity: 0.4;
 }

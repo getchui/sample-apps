@@ -4,7 +4,6 @@ services:
     build: .
     ports:
       - "4000:4000"
-    network_mode: host
   agebox:
     image: "trueface/agebox:latest"
     ports:
