@@ -1,0 +1,12 @@
+version: '3'
+services:
+  web:
+    image: "trueface/age-sample:latest"
+    ports:
+      - "4000:4000"
+  agebox:
+    image: "trueface/agebox:latest"
+    ports:
+      - "9000:8080"
+    environment:
+        - TOKEN
