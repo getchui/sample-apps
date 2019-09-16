@@ -1,4 +1,4 @@
-"""Main Face Recognition Processor"""
+"""Demo with MJPEG streaming"""
 from trueface.recognition import FaceRecognizer
 from trueface.video import VideoStream, QVideoStream
 from trueface.server import create_server
