@@ -2,6 +2,7 @@ tf-object_detection-mobilenet/*
 tf-object_detection-mobilenet
 tf-object_detection-yolov3/*
 tf-object_detection-yolov3
+threat-model/
 *.params
 *.zip
 model-tfv2
