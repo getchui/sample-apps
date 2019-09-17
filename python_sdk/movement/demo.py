@@ -34,7 +34,6 @@ def run_demo():
             break
 
         frame = CAP.read()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         result = OBJECT_RECOGNITION.predict(frame)
 
@@ -52,7 +51,7 @@ def run_demo():
                 frame,
                 method=0,
                 track_movements=True)
-            print quality
+            print(quality)
 
             #if tracked
             if matched_oid:
