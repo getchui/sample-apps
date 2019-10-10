@@ -45,14 +45,14 @@ int main() {
     }
 
     // Compare two images of Obama
-    float similarity;
-    errorCode = tfSdk.getSimilarity(templ1, templ2, similarity);
+    float matchProbabilitiy, similarityMeasure;
+    errorCode = tfSdk.getSimilarity(templ1, templ2, matchProbabilitiy, similarityMeasure);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate similarity score\n";
         return -1;
     }
 
-    std::cout << "Similarity between two Obama images: " << similarity << "\n";
+    std::cout << "Similarity between two Obama images: " << matchProbabilitiy << "\n";
 
     // Load image of armstrong
     errorCode = tfSdk.setImage("../../../images/armstrong/armstrong1.jpg");
@@ -70,13 +70,13 @@ int main() {
     }
 
     // Compare the image of Obama to Armstrong
-    errorCode = tfSdk.getSimilarity(templ1, templ3, similarity);
+    errorCode = tfSdk.getSimilarity(templ1, templ3, matchProbabilitiy, similarityMeasure);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate similarity score\n";
         return -1;
     }
 
-    std::cout << "Similarity between Obama and Armstrong: " << similarity << "\n";
+    std::cout << "Similarity between Obama and Armstrong: " << matchProbabilitiy << "\n";
 
     return 0;
 }
