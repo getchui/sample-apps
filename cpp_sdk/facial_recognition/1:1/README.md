@@ -4,7 +4,7 @@ This sample app demonstrates how to generate templates from images loaded from f
 The templates are then compared to generate a similiarity score.
 
 ### Demo
-![alt text](https://i.ibb.co/qkGgTq6/Untitled-presentation.jpg)
+![alt text](https://i.ibb.co/G2skdHJ/Untitled-presentation-1.jpg)
 
 ![alt text](https://i.ibb.co/SPwVK4V/Untitled-presentation-1.jpg)
 
