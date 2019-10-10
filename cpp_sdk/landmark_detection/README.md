@@ -9,7 +9,7 @@ The landmarks and bounding boxes are drawn on the video obtained from the users 
 ![alt text](./demo_gifs/demo2.gif)
 
 ### Prerequisites
-Must have OpenCV installed for this sample app.
+Must have OpenCV installed with the `Video I/O` module built. 
 
 ### Build Instructions
 * Place Trueface include files and `libtf.a` in `../../trueface_sdk/`
