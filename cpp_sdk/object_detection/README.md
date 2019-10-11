@@ -5,6 +5,8 @@ This sample app demonstrates how to detect objects using the SDK. The object lab
 # Demo
 ![alt text](./demo_gifs/demo1.gif)
 
+![alt text](./demo_gifs/demo2.gif)
+
 ### Prerequisites
 Must have OpenCV installed with the `Video I/O` module built. 
 
