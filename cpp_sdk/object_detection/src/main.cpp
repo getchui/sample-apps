@@ -4,11 +4,11 @@
 #include "tf_sdk.h"
 #include "tf_data_types.h"
 
-// Utility function for setting the label on our image
+// Utility function for drawing the label on our image
     void setLabel(cv::Mat& im, const std::string label, const cv::Point & origin) {
-    int font = cv::FONT_HERSHEY_SIMPLEX;
-    double scale = 0.4;
-    int thickness = 1;
+    const int font = cv::FONT_HERSHEY_SIMPLEX;
+    const double scale = 0.4;
+    const int thickness = 1;
     int baseline = 0;
 
     cv::Size text = cv::getTextSize(label, font, scale, thickness, &baseline);
@@ -56,6 +56,7 @@ int main() {
 
         // Display the bounding boxes and labels for the detected objects
         for (const auto& bbox: bboxVec) {
+            // TODO: Can use the bbox.probability to filter results if desired
 
             // Draw a rectangle using the top left and bottom right coordinates of the bounding box
             cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
