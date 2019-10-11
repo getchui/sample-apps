@@ -115,7 +115,7 @@ int main() {
                 auto returnCode = tfSdk.getSimilarity(gallery[i].first, templ, matchProbability, similarityMeasure);
                 if (returnCode != Trueface::ErrorCode::NO_ERROR)
                     continue;
-                std::cout << matchProbability << std::endl;
+
                 if (matchProbability > maxScore) {
                     maxScore = matchProbability;
                     maxIdx = i;

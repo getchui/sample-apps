@@ -8,6 +8,9 @@ Next, all faces are extracted from the camera frame and used to generate templat
 
 ![alt text](./demo_gifs/demo2.gif)
 
+### Prerequisites
+Must have OpenCV installed with the `Video I/O` module built. 
+
 ### Build Instructions
 * Place Trueface include files and `libtf.a` in `../../trueface_sdk/`
 * replace `<LICENSE_CODE>` with your license code in `src/main.cpp`
