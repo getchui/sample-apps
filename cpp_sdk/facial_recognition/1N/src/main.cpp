@@ -37,7 +37,7 @@ int main() {
     }
 
     // Load the image / images we want to enroll
-    auto errorCode = tfSdk.setImage("../../../images/cyrus/cyrus1.jpg");
+    auto errorCode = tfSdk.setImage("../../../images/armstrong/armstrong1.jpg");
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to read image\n";
         return -1;
