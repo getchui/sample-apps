@@ -52,7 +52,7 @@ int main() {
     }
 
     // Add the enrollment template to our gallery
-    std::pair<std::vector<float>, std::string> templPair {enrollmentTempl, "Cyrus"};
+    std::pair<std::vector<float>, std::string> templPair {enrollmentTempl, "Armstrong"};
     gallery.push_back(templPair);
 
     // Can add other template pairs to the gallery here...
