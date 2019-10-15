@@ -5,9 +5,9 @@ Next, all faces are extracted from the camera frame and used to generate templat
 If an identify is not recognized, the face is blurred 
 
 ### Demo
-![alt text]()
+![alt text](./demo_gifs/demo1.gif)
 
-![alt text]()
+![alt text](./demo_gifs/demo2.gif)
 
 ### Prerequisites
 Must have OpenCV installed with the `Video I/O` module built. 
