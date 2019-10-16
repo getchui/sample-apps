@@ -10,7 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="37355b8c-7577-4224-817c-0662b15b52c3" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp_sdk/facial_recognition/1N/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cpp_sdk/facial_recognition/1N/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp_sdk/facial_recognition/blur/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cpp_sdk/facial_recognition/blur/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp_sdk/landmark_detection/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cpp_sdk/landmark_detection/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpp_sdk/object_detection/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cpp_sdk/object_detection/CMakeLists.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -55,6 +59,7 @@
       <option name="presentableId" value="Default" />
       <updated>1571243090763</updated>
       <workItem from="1571243092085" duration="359000" />
+      <workItem from="1571265594488" duration="477000" />
     </task>
     <servers />
   </component>
@@ -66,7 +71,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
