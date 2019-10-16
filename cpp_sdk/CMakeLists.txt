@@ -1,0 +1,3 @@
+add_subdirectory(facial_recognition)
+add_subdirectory(landmark_detection)
+add_subdirectory(object_detection)
