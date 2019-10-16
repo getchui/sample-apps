@@ -2,3 +2,6 @@
 
 ## Getting Started
 * Place Trueface include files and `libtf.a` in `./trueface_sdk/`
+
+## Sample Apps
+* [Landmark Detection](./landmark_detection/)
