@@ -1,5 +1,5 @@
 # Trueface SDK C++ Sample App
-## Facial Recognition - 1:1
+## Facial Recognition - 1:1 Identification
 This sample app demonstrates how to generate templates from images loaded from file.
 The templates are then compared to generate a similiarity score.
 
