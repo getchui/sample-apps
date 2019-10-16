@@ -17,7 +17,12 @@ set(TRUEFACE_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}/../../trueface_sdk")
 include_directories(${TRUEFACE_SDK_DIR})
 link_directories(${TRUEFACE_SDK_DIR})
 
-find_package( OpenCV REQUIRED )
+set(dependencies tf)
+
+if(NOT OpenCV_FOUND)
+    find_package( OpenCV REQUIRED )
+    list(APPEND dependencies ${OpenCV_LIBS})
+endif()
 
 add_executable(cpp_sample_app_fr_1_N src/main.cpp)
-target_link_libraries(cpp_sample_app_fr_1_N tf ${OpenCV_LIBS})
+target_link_libraries(cpp_sample_app_fr_1_N tf ${dependencies})
