@@ -8,7 +8,6 @@ For support, please visit https://trueface.freshdesk.com/
 * [C++ SDK](./cpp_sdk/)
 * [Python SDK](./python_sdk/)
 * [Visionbox](./visionbox_apps/)
-* [Age Prediction Webapp](./age-predict-webapp/)
 
 ## A preview of some of our sample apps
 ### 1:1 Identification
