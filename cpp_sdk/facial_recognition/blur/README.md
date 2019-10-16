@@ -1,6 +1,6 @@
 # Trueface SDK C++ Sample App
-## Facial Recognition - Blur
-This sample app demonstrates the use of 1:N matching with blur. Templates are first generated and enrolled into a gallery with their associated ID.
+## Facial Recognition - 1:N Identification with Blur
+This sample app demonstrates the use of 1:N identification with blur. Templates are first generated and enrolled into a gallery with their associated ID.
 Next, all faces are extracted from the camera frame and used to generate templates. If any of these templates match those in the gallery, the identity is draw on the image.
 If an identify is not recognized, the face is blurred 
 
