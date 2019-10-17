@@ -9,7 +9,7 @@ int main() {
     Trueface::SDK tfSdk;
 
     // TODO: replace <LICENSE_CODE> with your license code.
-    const auto isValid = tfSdk.setLicense("<license>");
+    const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
     if (!isValid) {
         std::cout << "Error: the provided license is invalid\n";
         return -1;
@@ -56,10 +56,20 @@ int main() {
                 continue;
             }
 
-            cv::Point nosePoint(landmarks.landmarks[2].x, landmarks.landmarks[2].y);
-            cv::arrowedLine(frame, nosePoint, cv::Point(cos(roll) * cos(yaw) * 100 + nosePoint.x, sin(-roll) * 100 + nosePoint.y), cv::Scalar(255, 0, 0), 4);
-            cv::arrowedLine(frame, nosePoint, cv::Point(cos(roll + M_PI / 2) * 100 + nosePoint.x, sin(-roll - M_PI/2) * sin(M_PI/2 - pitch) * 100 + nosePoint.y), cv::Scalar(0, 255, 0), 4);
-            cv::arrowedLine(frame, nosePoint, cv::Point(cos(M_PI/2 - yaw) * 100 + nosePoint.x, sin(M_PI - pitch) * 100 + nosePoint.y), cv::Scalar(0, 0, 255), 4);
+            const cv::Point origin(100, 100);
+            const auto x1 = 100 * cos(yaw) * cos(roll);
+            const auto y1 = 100 * (cos(pitch) * sin(roll) + cos(roll) * sin(pitch) * sin(yaw));
+
+            const auto x2 = 100 * (-1 * cos(yaw) * sin(roll));
+            const auto y2 = 100 * (cos(pitch) * cos(roll) - sin(pitch) * sin(yaw) * sin(roll));
+
+            const auto x3 = 100 * sin(yaw);
+            const auto y3 = 100 * (-1 * cos(yaw) * sin(pitch));
+            cv::arrowedLine(frame, origin, cv::Point(x1 + origin.x, y1 + origin.y), cv::Scalar(255, 0, 0), 4);
+            cv::arrowedLine(frame, origin, cv::Point(x2 + origin.x, y2 + origin.y), cv::Scalar(0, 255, 0), 4);
+            cv::arrowedLine(frame, origin, cv::Point(x3 + origin.x, y3 + origin.y), cv::Scalar(0, 0, 255), 4);
+
+            std::cout << yaw << " " << pitch << " " << roll << std::endl;
 
         }
 
