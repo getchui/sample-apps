@@ -57,6 +57,9 @@ int main() {
             }
 
             const cv::Point origin(100, 100);
+
+            // Compute 3D rotation axis
+            // https://stackoverflow.com/a/32133715/4943329
             const auto x1 = 100 * cos(yaw) * cos(roll);
             const auto y1 = 100 * (cos(pitch) * sin(roll) + cos(roll) * sin(pitch) * sin(yaw));
 
@@ -68,8 +71,6 @@ int main() {
             cv::arrowedLine(frame, origin, cv::Point(x1 + origin.x, y1 + origin.y), cv::Scalar(255, 0, 0), 4);
             cv::arrowedLine(frame, origin, cv::Point(x2 + origin.x, y2 + origin.y), cv::Scalar(0, 255, 0), 4);
             cv::arrowedLine(frame, origin, cv::Point(x3 + origin.x, y3 + origin.y), cv::Scalar(0, 0, 255), 4);
-
-            std::cout << yaw << " " << pitch << " " << roll << std::endl;
 
         }
 
