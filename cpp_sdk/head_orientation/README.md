@@ -6,8 +6,6 @@ The yaw, pitch, and roll are first obtained. Next, axis are draw on the video ob
 # Demo
 ![alt text](./demo_gifs/demo1.gif)
 
-![alt text](./demo_gifs/demo2.gif)
-
 ### Prerequisites
 Must have OpenCV installed with the `Video I/O` module built. 
 

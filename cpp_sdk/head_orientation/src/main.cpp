@@ -38,15 +38,13 @@ int main() {
             return -1;
         }
 
-        // Get the landmark locations
-        std::vector<Trueface::FaceBoxAndLandmarks> landmarksVec;
-        tfSdk.detectFaces(landmarksVec);
+        // Get the landmarks for the largest face
+        bool found;
+        Trueface::FaceBoxAndLandmarks landmarks;
+        tfSdk.detectLargestFace(landmarks, found);
 
         // Use the landmark locations to obtain the yaw, pitch, and roll
-        for (const auto& landmarks: landmarksVec) {
-            // Only use the landmarks / bounding box if the score is above 0.90
-            if (landmarks.score < 0.90)
-                continue;
+        if (found) {
 
             // Compute the yaw, pitch, roll
             float yaw, pitch, roll;
@@ -56,9 +54,10 @@ int main() {
                 continue;
             }
 
+            // Center point for the axis we will draw
             const cv::Point origin(100, 100);
 
-            // Compute 3D rotation axis
+            // Compute 3D rotation axis from yaw, pitch, roll
             // https://stackoverflow.com/a/32133715/4943329
             const auto x1 = 100 * cos(yaw) * cos(roll);
             const auto y1 = 100 * (cos(pitch) * sin(roll) + cos(roll) * sin(pitch) * sin(yaw));
@@ -68,10 +67,11 @@ int main() {
 
             const auto x3 = 100 * sin(yaw);
             const auto y3 = 100 * (-1 * cos(yaw) * sin(pitch));
+
+            // Draw the arrows on the screen
             cv::arrowedLine(frame, origin, cv::Point(x1 + origin.x, y1 + origin.y), cv::Scalar(255, 0, 0), 4);
             cv::arrowedLine(frame, origin, cv::Point(x2 + origin.x, y2 + origin.y), cv::Scalar(0, 255, 0), 4);
             cv::arrowedLine(frame, origin, cv::Point(x3 + origin.x, y3 + origin.y), cv::Scalar(0, 0, 255), 4);
-
         }
 
         cv::imshow("frame", frame);
