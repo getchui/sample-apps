@@ -9,3 +9,4 @@
 * [Facial Recognition - 1:1 Identification](./facial_recognition/11/)
 * [Facial Recognition - 1:N Identification](./facial_recognition/1N/)
 * [Facial Recognition - 1:1 Identification with Blur](./facial_recognition/blur/)
+* [Head Orientation](./head_orientation/)
