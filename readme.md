@@ -25,3 +25,7 @@ For support, please visit https://trueface.freshdesk.com/
 
 ### Object Detection
 ![alt text](./cpp_sdk/object_detection/demo_gifs/demo2.gif)
+
+### Head Orientation
+![alt text](./cpp_sdk/head_orientation/demo_gifs/demo1.gif)
+
