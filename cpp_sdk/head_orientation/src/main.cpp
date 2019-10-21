@@ -5,7 +5,24 @@
 #include "tf_sdk.h"
 #include "tf_data_types.h"
 
+// Utility class used for computing the running average
+class RunningAvg {
+public:
+    explicit RunningAvg(size_t maxElem);
+    float addVal(float val);
+private:
+    const size_t m_maxElem;
+    std::vector<float> m_data;
+    size_t m_pos = 0;
+};
+
 int main() {
+    // Set the number of frames we want to average for yaw, pitch, and roll to remove noise
+    const size_t NUM_ELEM = 10;
+    RunningAvg yawAvg(NUM_ELEM);
+    RunningAvg pitchAvg(NUM_ELEM);
+    RunningAvg rollAvg(NUM_ELEM);
+
     Trueface::SDK tfSdk;
 
     // TODO: replace <LICENSE_CODE> with your license code.
@@ -54,6 +71,11 @@ int main() {
                 continue;
             }
 
+            // Get the running average of the values
+            yaw = yawAvg.addVal(yaw);
+            pitch = pitchAvg.addVal(pitch);
+            roll = rollAvg.addVal(roll);
+
             // Center point for the axis we will draw
             const cv::Point origin(100, 100);
 
@@ -82,4 +104,27 @@ int main() {
     }
 
     return 0;
+}
+
+RunningAvg::RunningAvg(size_t maxElem)
+        : m_maxElem (maxElem)
+{}
+
+// Use circular buffer to compute the average
+float RunningAvg::addVal(float val) {
+    if (m_data.size() <= m_maxElem) {
+        m_data.emplace_back(val);
+    } else {
+        m_data[m_pos++] = val;
+    }
+
+    if (m_pos == m_maxElem)
+        m_pos = 0;
+
+    float sum = 0;
+    for (const auto& x: m_data) {
+        sum += x;
+    }
+
+    return sum / m_data.size();
 }
