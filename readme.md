@@ -1,4 +1,4 @@
-![alt text](https://i.ibb.co/X3sySXT/Trueface-dark-blue.png)
+[![alt text](https://i.ibb.co/dJz6kF6/trueface-logo.png)](https://www.trueface.ai/)
 # Trueface Sample Apps and Tutorials
 
 For documentation, please visit https://docs.trueface.ai/
