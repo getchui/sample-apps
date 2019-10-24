@@ -5,12 +5,16 @@ import json
 import cv2
 import sys
 import os
+from datetime import datetime
 
 if len(sys.argv) < 3:
-    print("Usage: {} <path to video> <collection folder>".format(sys.argv[0]))
+    print("Usage: {} <path to video or camera id. 0 for first USB camera> <collection folder>".format(sys.argv[0]))
     sys.exit(1)
 
 videofile = sys.argv[1]
+if videofile.isdigit():
+    videofile = int(videofile)
+
 collection_folder = sys.argv[2]
 collection_file = "{}.npz".format(collection_folder)
 
@@ -41,6 +45,7 @@ while(cap.isOpened()):
         break
     bounding_boxes, points, chips = fr.find_faces(frame, return_chips=True,
                                                   return_binary=True)
+    start_time = datetime.now()
     if bounding_boxes is None:
         out.write(frame)
         continue
@@ -57,6 +62,7 @@ while(cap.isOpened()):
                           font_scale=1.5)
 
         fr.draw_box(frame, bounding_boxes[i])
+    print("frame analysis took: {}".format(datetime.now()-start_time))
     out.write(frame)
     cv2.imshow('Trueface.ai', frame)
 
