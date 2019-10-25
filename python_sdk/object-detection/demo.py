@@ -24,8 +24,6 @@ def draw_on_image(frame, result):
     boxes = result['boxes']
 
     for i, score in enumerate(scores):
-        if score < 0.5:
-            continue
 
         label = "{}".format(classes[i])
         # cast into integers
@@ -35,6 +33,10 @@ def draw_on_image(frame, result):
                       (0, 255, 0), 2)
         cv2.putText(frame, label, (box[0], box[1] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        #cv2.putText(frame, round(score,2), (box[0], box[1] - 20),
+        cv2.putText(frame, str(round(score,2)), (box[0], box[1] + 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+
     return frame
 
 
@@ -55,7 +57,8 @@ def main():
                                           model_path="./tf-object_detection-mobilenet/model.trueface",
                                           params_path="./tf-object_detection-mobilenet/model.params",
                                           license=os.environ['TF_TOKEN'],
-                                          classes="./tf-object_detection-mobilenet/classes.names")
+                                          classes="./tf-object_detection-mobilenet/classes.names",
+                               conf_threshold=0.3)
 
     if args['image']:
         # make sure it's an actual image
