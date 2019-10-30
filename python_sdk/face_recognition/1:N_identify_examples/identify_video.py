@@ -54,7 +54,7 @@ while(cap.isOpened()):
         identity = fr.identify(chip, threshold=0.3,
                                collection=collection_file)
         print(identity)
-        if identity['predicted_label']:
+        if identity and identity['predicted_label']:
             fr.draw_label(frame,
                           (int(bounding_boxes[i][0]),
                            int(bounding_boxes[i][1])),
