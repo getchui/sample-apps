@@ -24,8 +24,8 @@ fr = FaceRecognizer(ctx='cpu',
                     params_path='model-lite/model.params',
                     license=os.environ['TOKEN'])
 
-fr.create_collection(collection_folder,
-                     collection_file, return_features=False)
+fr.create_collection(name=collection_file,
+                     folder=collection_folder,return_features=False)
 
 cap = cv2.VideoCapture(videofile)
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
