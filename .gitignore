@@ -9,3 +9,6 @@ model-tfv2
 .DS_Store
 node_modules
 .env
+.idea
+.idea/
+.idea/workspace.xml

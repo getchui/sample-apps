@@ -1,10 +1,10 @@
 
 # Overview
-Microservices allow you to optimize resources, scale services, and run distributed applications easily.
+Microservices allow you to optimize resources, easily scale services, and run distributed applications.
 
-This example shows you can run face recognition as two services
+This example shows you can run face recognition as two services, a producer running face detect, and a consumer consuming the faces and running identify.
 
-The example utilizes batch_identify, batching predictions through our engine can achieve significantly higher processing speeding compared with single image inference.
+The example utilizes batch_identify, batching predictions through our engine can achieve significantly higher processing speeding compared with single image inference. The example shows processing 100 faces at time in every batch with a 100+ layer model!
 
 
 
