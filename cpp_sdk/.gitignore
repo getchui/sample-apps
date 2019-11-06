@@ -1,2 +1,6 @@
 build/
 cmake-*
+<<<<<<< HEAD
+=======
+.idea/
+>>>>>>> b75685d307a7089912f7a37d2f72f8f59f8d8c2a
