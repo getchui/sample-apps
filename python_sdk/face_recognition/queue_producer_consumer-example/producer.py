@@ -30,7 +30,7 @@ def detect(frame):
     bounding_boxes, points, chips = face_detector.find_faces(frame, return_chips=True, return_binary=True)
     return bounding_boxes, points, chips
 
-p = Pool(2, init_worker)
+p = Pool(1, init_worker)
 
 frames = []
 counter = 0

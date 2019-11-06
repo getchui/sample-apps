@@ -1,4 +1,13 @@
 
+# Overview
+Microservices allow you to optimize resources, easily scale services, and run distributed applications.
+
+This example shows you can run face recognition as two services, a producer running face detect, and a consumer consuming the faces and running identify.
+
+The example utilizes batch_identify, batching predictions through our engine can achieve significantly higher processing speeding compared with single image inference. The example shows processing 100 faces at time in every batch with a 100+ layer model!
+
+
+
 ## Install required pip packages
 `pip install -r requirements.txt`
 
@@ -18,3 +27,20 @@
 ## Download Models
 
 `wget https://github.com/getchui/offline_sdk/releases/download/models-latest/fd_model.zip`
+
+
+## run producer
+`python producer.py`
+
+this allows run face detect in parallel way extracting faces and pushing them to the queue for processing.
+
+
+## run consumer
+`python consumer.py`
+
+this runs the consumer which retrives the faces from the in memory queue and runs identify.
+
+## how to create a collection
+Use the python create collection in the SDK.
+https://docs.trueface.ai/docs/the-sdk
+
