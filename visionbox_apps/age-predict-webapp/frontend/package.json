@@ -11,7 +11,8 @@
     "react-dom": "^16.8.6",
     "react-loading": "^2.0.3",
     "react-scripts": "3.0.1",
-    "react-webcam": "^1.1.1"
+    "react-webcam": "^1.1.1",
+    "typescript": "^3.7.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -33,5 +34,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^1.13.0",
+    "@typescript-eslint/parser": "^1.13.0"
   }
 }
