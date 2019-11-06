@@ -37,7 +37,7 @@ vcap = VideoStream(src=url).start()
 #webhook function
 def webhook(identity):
     """performs webhook"""
-
+    identity['probability'] = fr.cosine_sim_to_prob(identity['confidence'])
     data = {
       "identity":identity,
       "timestamp": strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
