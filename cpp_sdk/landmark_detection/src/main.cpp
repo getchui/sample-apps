@@ -56,7 +56,7 @@ int main() {
             // the facial landmark points: left eye, right eye, nose, left mouth corner, right mouth corner
             for (const auto& landmark: landmarks.landmarks) {
                 cv::Point p(landmark.x, landmark.y);
-                cv::circle(frame, p, 1, cv::Scalar(0, 255, 0), 3, 3);
+                cv::circle(frame, p, 1, cv::Scalar(0, 255, 0), 3, cv::LINE_AA);
             }
         }
 

@@ -13,7 +13,7 @@
 
     cv::Size text = cv::getTextSize(label, font, scale, thickness, &baseline);
     cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), CV_RGB(0,0,0), cv::FILLED);
-    cv::putText(im, label, origin, font, scale, CV_RGB(255,255,255), thickness, 8);
+    cv::putText(im, label, origin, font, scale, CV_RGB(255,255,255), thickness, cv::LINE_AA);
 }
 
 

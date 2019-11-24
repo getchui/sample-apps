@@ -91,9 +91,9 @@ int main() {
             const auto y3 = 100 * (-1 * cos(yaw) * sin(pitch));
 
             // Draw the arrows on the screen
-            cv::arrowedLine(frame, origin, cv::Point(x1 + origin.x, y1 + origin.y), cv::Scalar(255, 0, 0), 4);
-            cv::arrowedLine(frame, origin, cv::Point(x2 + origin.x, y2 + origin.y), cv::Scalar(0, 255, 0), 4);
-            cv::arrowedLine(frame, origin, cv::Point(x3 + origin.x, y3 + origin.y), cv::Scalar(0, 0, 255), 4);
+            cv::arrowedLine(frame, origin, cv::Point(x1 + origin.x, y1 + origin.y), cv::Scalar(255, 0, 0), 4, cv::LINE_AA);
+            cv::arrowedLine(frame, origin, cv::Point(x2 + origin.x, y2 + origin.y), cv::Scalar(0, 255, 0), 4, cv::LINE_AA);
+            cv::arrowedLine(frame, origin, cv::Point(x3 + origin.x, y3 + origin.y), cv::Scalar(0, 0, 255), 4, cv::LINE_AA);
         }
 
         cv::imshow("frame", frame);
