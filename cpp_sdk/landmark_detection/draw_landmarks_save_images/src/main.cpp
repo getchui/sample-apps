@@ -40,6 +40,11 @@ int main() {
         std::vector<Trueface::FaceBoxAndLandmarks> landmarksVec;
         tfSdk.detectFaces(landmarksVec);
 
+        if (landmarksVec.empty()) {
+            std::cout << "Unable to detect face in image: " << imagePath << '\n';
+            continue;
+        }
+
         // Display the landmark locations and bounding box on the image
         for (const auto& landmarks: landmarksVec) {
             // Only use the landmarks / bounding box if the score is above 0.90
@@ -57,14 +62,14 @@ int main() {
                 cv::Point p(landmark.x, landmark.y);
                 cv::circle(image, p, 1, cv::Scalar(0, 255, 0), 3, cv::LINE_AA);
             }
-
-            // Write the image to disk
-            // my/image/path/armstrong.png
-            auto imageName = imagePath.substr(imagePath.find_last_of('/') + 1, imagePath.find_last_of('.') - imagePath.find_last_of('/') - 1);
-            auto imageSuffix = imagePath.substr(imagePath.find_last_of('.'));
-            auto outputName = imageName + "_landmarks" + imageSuffix;
-            cv::imwrite(outputName, image);
         }
+
+        // Write the image to disk
+        // my/image/path/armstrong.png
+        auto imageName = imagePath.substr(imagePath.find_last_of('/') + 1, imagePath.find_last_of('.') - imagePath.find_last_of('/') - 1);
+        auto imageSuffix = imagePath.substr(imagePath.find_last_of('.'));
+        auto outputName = imageName + "_landmarks" + imageSuffix;
+        cv::imwrite(outputName, image);
     }
 
     return 0;
