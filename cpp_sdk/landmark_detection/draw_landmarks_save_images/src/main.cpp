@@ -26,7 +26,10 @@ int main() {
     const std::string imageDirPath = "../../../images";
     const auto imageList = getFilesInDir(imageDirPath);
 
+    int imageNum = 0;
+
     for(const auto& imagePath: imageList) {
+        std::cout << "Loading image: " << ++imageNum << "/" << imageList.size() << '\n';
         auto image = cv::imread(imagePath);
 
         // OpenCV loads images as BGR
