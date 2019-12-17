@@ -50,7 +50,7 @@ int main() {
             // Draw a rectangle using the top left and bottom right coordinates of the bounding box
             cv::Point topLeft(landmarks.topLeft.x, landmarks.topLeft.y);
             cv::Point bottomRight(landmarks.bottomRight.x, landmarks.bottomRight.y);
-            cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0));
+            cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
 
             // Draw the facial landmarks
             // the facial landmark points: left eye, right eye, nose, left mouth corner, right mouth corner
