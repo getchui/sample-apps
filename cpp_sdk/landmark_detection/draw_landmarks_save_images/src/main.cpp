@@ -32,6 +32,11 @@ int main() {
         std::cout << "Loading image: " << ++imageNum << "/" << imageList.size() << '\n';
         auto image = cv::imread(imagePath);
 
+        if (!image.data) {
+            // Unable to read image
+            continue;
+        }
+
         // OpenCV loads images as BGR
         auto errorCode = tfSdk.setImage(image.data, image.cols, image.rows, Trueface::ColorCode::bgr);
         if (errorCode != Trueface::ErrorCode::NO_ERROR) {
