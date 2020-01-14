@@ -10,6 +10,18 @@ namespace fs = std::experimental::filesystem;
 // Return a list of all the files in a directory
 std::vector<std::string> getFilesInDir(const std::string& path);
 
+// Utility function for drawing the label on our image
+void setLabel(cv::Mat& im, const std::string label, const cv::Point & origin) {
+    const int font = cv::FONT_HERSHEY_SIMPLEX;
+    const double scale = 0.6;
+    const int thickness = 1;
+    int baseline = 0;
+
+    cv::Size text = cv::getTextSize(label, font, scale, thickness, &baseline);
+    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), CV_RGB(0,0,0), cv::FILLED);
+    cv::putText(im, label, origin, font, scale, CV_RGB(255,255,255), thickness, cv::LINE_AA);
+}
+
 int main() {
     Trueface::ConfigurationOptions options;
     options.smallestFaceHeight = 30;
@@ -55,9 +67,6 @@ int main() {
 
         // Display the landmark locations and bounding box on the image
         for (const auto& landmarks: landmarksVec) {
-            // Only use the landmarks / bounding box if the score is above 0.90
-            if (landmarks.score < 0.90)
-                continue;
 
             // Draw a rectangle using the top left and bottom right coordinates of the bounding box
             cv::Point topLeft(landmarks.topLeft.x, landmarks.topLeft.y);
@@ -70,6 +79,9 @@ int main() {
                 cv::Point p(landmark.x, landmark.y);
                 cv::circle(image, p, 1, cv::Scalar(0, 255, 0), 3, cv::LINE_AA);
             }
+
+            // Draw the face score onto the face
+            setLabel(image, std::to_string(landmarks.score), cv::Point(landmarks.topLeft.x, landmarks.topLeft.y));
         }
 
         // Write the image to disk
