@@ -25,7 +25,7 @@ int main() {
     const float threshold = 0.6;
 
     // Gallery used to store our templates
-    std::vector<std::pair<std::vector<float>, std::string>> gallery;
+    std::vector<std::pair<Trueface::Faceprint, std::string>> gallery;
 
     Trueface::SDK tfSdk;
 
@@ -44,16 +44,15 @@ int main() {
     }
 
     // Generate the enrollment template
-    std::vector<float> enrollmentTempl;
-    errorCode = tfSdk.getLargestFaceFeatureVector(enrollmentTempl);
+    Trueface::Faceprint enrollmentFaceprint;
+    errorCode = tfSdk.getLargestFaceFeatureVector(enrollmentFaceprint);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
     }
 
     // Add the enrollment template to our gallery
-    std::pair<std::vector<float>, std::string> templPair {enrollmentTempl, "Armstrong"};
-    gallery.push_back(templPair);
+    gallery.emplace_back(enrollmentFaceprint, "Armstrong");
 
     // Can add other template pairs to the gallery here...
 
@@ -86,17 +85,14 @@ int main() {
 
         // For each bounding box, get the aligned chip
         for (auto &bbox: bboxVec) {
-            // If the score is less than 0.85, it is likely a false positive
-            if (bbox.score < 0.85)
-                continue;
 
             const size_t imgSize = 112 * 112 * 3;
             uint8_t *alignedChip = new uint8_t[imgSize];
             tfSdk.extractAlignedFace(bbox, alignedChip);
 
             // Generate a template from the aligned chip
-            std::vector<float> templ;
-            const auto err = tfSdk.getFaceFeatureVector(alignedChip, templ);
+            Trueface::Faceprint faceprint;
+            const auto err = tfSdk.getFaceFeatureVector(alignedChip, faceprint);
             delete[] alignedChip;
 
             if (err != Trueface::ErrorCode::NO_ERROR)
@@ -112,7 +108,7 @@ int main() {
                 float matchProbability;
                 float similarityMeasure;
 
-                auto returnCode = tfSdk.getSimilarity(gallery[i].first, templ, matchProbability, similarityMeasure);
+                auto returnCode = tfSdk.getSimilarity(gallery[i].first, faceprint, matchProbability, similarityMeasure);
                 if (returnCode != Trueface::ErrorCode::NO_ERROR)
                     continue;
 
