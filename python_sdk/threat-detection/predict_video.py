@@ -34,7 +34,7 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
                 cv2.rectangle(frame, (pred['box'][0], pred['box'][1]), (pred['box'][2], pred['box'][3]),
                     (0, 255, 0), 2)
                 cv2.putText(frame, label, (pred['box'][0], pred['box'][1] - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.CV_AA)
 
         cv2.imshow('Trueface.ai', frame)
         if cv2.waitKey(33) == ord('q'):

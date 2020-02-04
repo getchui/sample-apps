@@ -32,10 +32,10 @@ def draw_on_image(frame, result):
                       (box[2], box[3]),
                       (0, 255, 0), 2)
         cv2.putText(frame, label, (box[0], box[1] - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.CV_AA)
         #cv2.putText(frame, round(score,2), (box[0], box[1] - 20),
         cv2.putText(frame, str(round(score,2)), (box[0], box[1] + 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.CV_AA)
 
     return frame
 
