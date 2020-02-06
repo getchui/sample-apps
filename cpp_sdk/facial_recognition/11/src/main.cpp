@@ -22,8 +22,8 @@ int main() {
     }
 
     // Generate a template from the first image
-    std::vector<float> templ1;
-    errorCode = tfSdk.getLargestFaceFeatureVector(templ1);
+    Trueface::Faceprint faceprint1;
+    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint1);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
@@ -37,8 +37,8 @@ int main() {
     }
 
     // Generate a template from the second image
-    std::vector<float> templ2;
-    errorCode = tfSdk.getLargestFaceFeatureVector(templ2);
+    Trueface::Faceprint faceprint2;
+    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint2);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
@@ -46,7 +46,7 @@ int main() {
 
     // Compare two images of Obama
     float matchProbabilitiy, similarityMeasure;
-    errorCode = tfSdk.getSimilarity(templ1, templ2, matchProbabilitiy, similarityMeasure);
+    errorCode = tfSdk.getSimilarity(faceprint1, faceprint2, matchProbabilitiy, similarityMeasure);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate similarity score\n";
         return -1;
@@ -62,15 +62,15 @@ int main() {
     }
 
     // Generate a template from the second third
-    std::vector<float> templ3;
-    errorCode = tfSdk.getLargestFaceFeatureVector(templ3);
+    Trueface::Faceprint faceprint3;
+    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint3);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
     }
 
     // Compare the image of Obama to Armstrong
-    errorCode = tfSdk.getSimilarity(templ1, templ3, matchProbabilitiy, similarityMeasure);
+    errorCode = tfSdk.getSimilarity(faceprint1, faceprint3, matchProbabilitiy, similarityMeasure);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate similarity score\n";
         return -1;

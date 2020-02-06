@@ -21,7 +21,7 @@ For support, please visit https://trueface.freshdesk.com/
 ![alt text](./cpp_sdk/facial_recognition/blur/demo_gifs/demo2.gif)
 
 ### Landmark Detection
-![alt text](./cpp_sdk/landmark_detection/demo_gifs/demo2.gif)
+![alt text](./cpp_sdk/landmark_detection/live_streaming/demo_gifs/demo2.gif)
 
 ### Object Detection
 ![alt text](./cpp_sdk/object_detection/demo_gifs/demo2.gif)

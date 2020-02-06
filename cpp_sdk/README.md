@@ -4,7 +4,8 @@
 * Place Trueface include files and `libtf.a` in `./trueface_sdk/`
 
 ## Sample Apps
-* [Landmark Detection](./landmark_detection/)
+* [Landmark Detection - Live Streaming](./landmark_detection/live_streaming)
+* [Landmark Detection - Draw and Save Landmarks](./landmark_detection/draw_landmarks_save_images)
 * [Object Detection](./object_detection/)
 * [Facial Recognition - 1:1 Identification](./facial_recognition/11/)
 * [Facial Recognition - 1:N Identification](./facial_recognition/1N/)
