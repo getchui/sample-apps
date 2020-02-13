@@ -125,6 +125,7 @@ int main() {
                 cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
                 cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
 
+
                 setLabel(frame, gallery[maxIdx].second, topLeft);
             } else {
 

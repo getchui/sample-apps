@@ -15,6 +15,3 @@ Must have OpenCV installed with the `Video I/O` module built.
 * `mkdir build && cd build`
 * `cmake ..`
 * `make`
-
-### Notes
-This sample was built with SDK version 0.3
