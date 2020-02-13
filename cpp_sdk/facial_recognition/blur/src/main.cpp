@@ -8,7 +8,7 @@
 #include "tf_data_types.h"
 
 // Utility function for drawing the label on our image
-void setLabel(cv::Mat& im, const std::string label, const cv::Point & origin) {
+void setLabel(cv::Mat& im, const std::string& label, const cv::Point & origin) {
     const int font = cv::FONT_HERSHEY_SIMPLEX;
     const double scale = 0.6;
     const int thickness = 1;
@@ -21,13 +21,20 @@ void setLabel(cv::Mat& im, const std::string label, const cv::Point & origin) {
 
 
 int main() {
-    // Threshold used to determine if it is a match
+    // TODO: Select a threshold for your application using the ROC curves
+    // https://performance.trueface.ai/
     const float threshold = 0.6;
 
-    // Gallery used to store our templates
-    std::vector<std::pair<Trueface::Faceprint, std::string>> gallery;
-
     Trueface::SDK tfSdk;
+
+    // Create a collection
+    const std::string collectionpath = "collection.db";
+    auto errorCode = tfSdk.createCollection(collectionpath);
+
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Error: unable to create collection\n";
+        return -1;
+    }
 
     // TODO: replace <LICENSE_CODE> with your license code.
     const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
@@ -37,7 +44,7 @@ int main() {
     }
 
     // Load the image / images we want to enroll
-    auto errorCode = tfSdk.setImage("../../../images/armstrong/armstrong1.jpg");
+    errorCode = tfSdk.setImage("../../../images/armstrong/armstrong1.jpg");
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to read image\n";
         return -1;
@@ -51,8 +58,14 @@ int main() {
         return -1;
     }
 
-    // Add the enrollment template to our gallery
-    gallery.emplace_back(enrollmentFaceprint, "Armstrong");
+    // Add the enrollment template to our collection
+    // Any data that is added to the collection will persist after the application is terminated
+    std::string UUID;
+    errorCode = tfSdk.enrollTemplate(enrollmentFaceprint, "Armstrong", UUID);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Error: Unable to enroll template\n";
+        return -1;
+    }
 
     // Can add other template pairs to the gallery here...
 
@@ -73,7 +86,7 @@ int main() {
         }
 
         // Set the image using the capture frame buffer
-        auto errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, Trueface::ColorCode::bgr);
+        errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, Trueface::ColorCode::bgr);
         if (errorCode != Trueface::ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
@@ -87,7 +100,7 @@ int main() {
         for (auto &bbox: bboxVec) {
 
             const size_t imgSize = 112 * 112 * 3;
-            uint8_t *alignedChip = new uint8_t[imgSize];
+            auto *alignedChip = new uint8_t[imgSize];
             tfSdk.extractAlignedFace(bbox, alignedChip);
 
             // Generate a template from the aligned chip
@@ -98,42 +111,26 @@ int main() {
             if (err != Trueface::ErrorCode::NO_ERROR)
                 continue;
 
-            // Compare the template to those in our gallery
-            float maxScore = 0;
-            int maxIdx = 0;
+            // Run the identify function
+            float similarity;
+            std::string identity;
+            errorCode = tfSdk.identify(faceprint, identity, similarity);
 
-            // Iterate through the gallery to find the template with the highest match probability
-            // If the match probability is greater than our threshold, then we know it's a match
-            for (int i = 0; i < gallery.size(); ++i) {
-                float matchProbability;
-                float similarityMeasure;
-
-                auto returnCode = tfSdk.getSimilarity(gallery[i].first, faceprint, matchProbability, similarityMeasure);
-                if (returnCode != Trueface::ErrorCode::NO_ERROR)
-                    continue;
-
-                if (matchProbability > maxScore) {
-                    maxScore = matchProbability;
-                    maxIdx = i;
-                }
+            if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+                continue;
             }
 
-            if (maxScore > threshold) {
-                // We have a match
-                // Display the bounding box and label
+            // If the similarity is greater than our threshold, then we have a match
+            if (similarity > threshold) {
                 cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
                 cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
                 cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
-
-
-                setLabel(frame, gallery[maxIdx].second, topLeft);
+                setLabel(frame, identity, topLeft);
             } else {
-
                 // If the face has not been enrolled in our database, blur the face
                 cv::Rect blurRect(bbox.topLeft.x, bbox.topLeft.y, bbox.bottomRight.x - bbox.topLeft.x, bbox.bottomRight.y - bbox.topLeft.y);
                 cv::GaussianBlur(frame(blurRect), frame(blurRect), cv::Size(0, 0), 50);
             }
-
         }
 
         cv::imshow("frame", frame);

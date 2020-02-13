@@ -8,7 +8,7 @@
 #include "tf_data_types.h"
 
 // Utility function for drawing the label on our image
-void setLabel(cv::Mat& im, const std::string label, const cv::Point & origin) {
+void setLabel(cv::Mat& im, const std::string& label, const cv::Point & origin) {
     const int font = cv::FONT_HERSHEY_SIMPLEX;
     const double scale = 0.6;
     const int thickness = 1;
@@ -62,7 +62,10 @@ int main() {
     // Any data that is added to the collection will persist after the application is terminated
     std::string UUID;
     errorCode = tfSdk.enrollTemplate(enrollmentFaceprint, "Armstrong", UUID);
-
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Error: Unable to enroll template\n";
+        return -1;
+    }
     // Can add other template pairs to the gallery here...
 
     cv::VideoCapture cap;

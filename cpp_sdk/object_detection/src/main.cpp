@@ -5,7 +5,7 @@
 #include "tf_data_types.h"
 
 // Utility function for drawing the label on our image
-    void setLabel(cv::Mat& im, const std::string label, const cv::Point & origin) {
+    void setLabel(cv::Mat& im, const std::string& label, const cv::Point & origin) {
     const int font = cv::FONT_HERSHEY_SIMPLEX;
     const double scale = 0.4;
     const int thickness = 1;
