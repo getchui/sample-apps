@@ -123,7 +123,7 @@ int main() {
                 // Display the bounding box and label
                 cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
                 cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
-                cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0));
+                cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
 
                 setLabel(frame, gallery[maxIdx].second, topLeft);
             } else {

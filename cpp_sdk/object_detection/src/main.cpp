@@ -61,7 +61,7 @@ int main() {
             // Draw a rectangle using the top left and bottom right coordinates of the bounding box
             cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
             cv::Point bottomRight(bbox.topLeft.x + bbox.width, bbox.topLeft.y + bbox.height);
-            cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0));
+            cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
 
             // Convert the object label to a string
             // Draw the string on the frame
