@@ -9,6 +9,8 @@ If an identify is not recognized, the face is blurred
 
 ![alt text](./demo_gifs/demo2.gif)
 
+![alt text](./demo_gifs/demo3.gif)
+
 ### Prerequisites
 Must have OpenCV installed with the `Video I/O` module built. 
 
