@@ -129,7 +129,7 @@ int main() {
             } else {
                 // If the face has not been enrolled in our database, blur the face
                 cv::Rect blurRect(bbox.topLeft.x, bbox.topLeft.y, bbox.bottomRight.x - bbox.topLeft.x, bbox.bottomRight.y - bbox.topLeft.y);
-                cv::GaussianBlur(frame(blurRect), frame(blurRect), cv::Size(0, 0), 50);
+                cv::blur(frame(blurRect), frame(blurRect), cv::Size(18, 18));
             }
         }
 
