@@ -10,6 +10,9 @@ Images are loaded from a provided directory. The facial landmarks and face score
 
 ![alt text](./demo_images/obama1_landmarks.jpg)
 
+![alt text](./demo_images/family2_landmarks.jpg)
+
+
 ### Prerequisites
 Must have OpenCV installed.
 
