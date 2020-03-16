@@ -1,7 +1,7 @@
 # Trueface SDK C++ Sample App
 ## Landmark Detection - Draw Landmarks and Save Images
 This sample app demonstrates how to detect facial landmarks and bounding boxes using the SDK.
-Images are loaded from a provided directory. The facial landmarks and face scores are drawn onto the images, then the images are saved to the build directory. 
+Images are loaded from a provided directory. The facial landmarks and face scores are drawn onto the images, then the images are saved to the run directory. 
 
 # Demo
 ![alt text](./demo_images/family_landmarks.jpg)
