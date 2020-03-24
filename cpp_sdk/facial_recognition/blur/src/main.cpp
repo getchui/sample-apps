@@ -112,20 +112,19 @@ int main() {
                 continue;
 
             // Run the identify function
-            float similarity;
-            std::string identity;
-            errorCode = tfSdk.identify(faceprint, identity, similarity);
+            std::vector<Trueface::Candidate> candidates;
+            errorCode = tfSdk.identify(faceprint, candidates);
 
             if (errorCode != Trueface::ErrorCode::NO_ERROR) {
                 continue;
             }
 
             // If the similarity is greater than our threshold, then we have a match
-            if (similarity > threshold) {
+            if (candidates[0].similarityMeasure > threshold) {
                 cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
                 cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
                 cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
-                setLabel(frame, identity, topLeft);
+                setLabel(frame, candidates[0].identity, topLeft);
             } else {
                 // If the face has not been enrolled in our database, blur the face
                 cv::Rect blurRect(bbox.topLeft.x, bbox.topLeft.y, bbox.bottomRight.x - bbox.topLeft.x, bbox.bottomRight.y - bbox.topLeft.y);
