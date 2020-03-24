@@ -24,7 +24,7 @@ void setLabel(cv::Mat& im, const std::string label, const cv::Point & origin) {
 
 int main() {
     Trueface::ConfigurationOptions options;
-    options.smallestFaceHeight = 30;
+    options.smallestFaceHeight = 20;
     Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
