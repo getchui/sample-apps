@@ -1,6 +1,6 @@
 # Trueface SDK C++ Sample Apps
 ## Documentation
-[C++ Documentation](https://reference.trueface.ai/cpp/dev/latest/index.html)
+[C++ SDK Documentation](https://reference.trueface.ai/cpp/dev/latest/index.html)
 
 ## Getting Started
 * Place Trueface include files and `libtf.a` in `./trueface_sdk/`
