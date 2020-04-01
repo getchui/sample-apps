@@ -8,24 +8,28 @@
 #include "tf_data_types.h"
 
 // Utility function for drawing the label on our image
-void setLabel(cv::Mat& im, const std::string& label, const cv::Point & origin) {
+void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin, const cv::Scalar& color) {
+    cv::Point origin(oldOrigin.x - 2, oldOrigin.y - 10);
     const int font = cv::FONT_HERSHEY_SIMPLEX;
-    const double scale = 0.6;
+    // Can change scale and thickness to change label size
+    const double scale = 0.8;
     const int thickness = 1;
     int baseline = 0;
 
     cv::Size text = cv::getTextSize(label, font, scale, thickness, &baseline);
-    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), CV_RGB(0,0,0), cv::FILLED);
-    cv::putText(im, label, origin, font, scale, CV_RGB(255,255,255), thickness, cv::LINE_AA);
+    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), color, cv::FILLED);
+    cv::putText(im, label, origin, font, scale, CV_RGB(0,0,0), thickness, cv::LINE_AA);
 }
 
 
 int main() {
     // TODO: Select a threshold for your application using the ROC curves
     // https://performance.trueface.ai/
-    const float threshold = 0.6;
+    const float threshold = 0.3;
 
-    Trueface::SDK tfSdk;
+    Trueface::ConfigurationOptions options;
+    options.frModel = Trueface::FacialRecognitionModel::FULL;
+    Trueface::SDK tfSdk(options);
 
     // Create a collection
     const std::string collectionpath = "collection.db";
@@ -112,23 +116,29 @@ int main() {
                 continue;
 
             // Run the identify function
+            // Only consider a match if it is above our threshold
             Trueface::Candidate candidate;
-            errorCode = tfSdk.identifyTopCandidate(faceprint, candidate);
+            errorCode = tfSdk.identifyTopCandidate(faceprint, candidate, threshold);
 
             if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-                continue;
-            }
+                if (errorCode != Trueface::ErrorCode::IDENTITY_NOT_FOUND)
+                    continue;
 
-            // If the similarity is greater than our threshold, then we have a match
-            if (candidate.similarityMeasure > threshold) {
-                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
-                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
-                cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
-                setLabel(frame, candidate.identity, topLeft);
-            } else {
-                // If the face has not been enrolled in our database, blur the face
+                // The identity was not found, blur the face
                 cv::Rect blurRect(bbox.topLeft.x, bbox.topLeft.y, bbox.bottomRight.x - bbox.topLeft.x, bbox.bottomRight.y - bbox.topLeft.y);
                 cv::blur(frame(blurRect), frame(blurRect), cv::Size(18, 18));
+
+                // Draw white rectangle around face
+                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
+                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
+                cv::Scalar color(255, 255, 255);
+                cv::rectangle(frame, topLeft, bottomRight, color, 2);
+            } else {
+                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
+                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
+                cv::Scalar color(0, 255, 0);
+                cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                setLabel(frame, candidate.identity, topLeft, color);
             }
         }
 
