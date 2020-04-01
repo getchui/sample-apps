@@ -5,15 +5,16 @@
 #include "tf_data_types.h"
 
 // Utility function for drawing the label on our image
-void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin) {
+void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin, const cv::Scalar& color) {
     cv::Point origin(oldOrigin.x - 2, oldOrigin.y - 10);
     const int font = cv::FONT_HERSHEY_SIMPLEX;
+    // Can change scale and thickness to change label size
     const double scale = 0.8;
     const int thickness = 1;
     int baseline = 0;
 
     cv::Size text = cv::getTextSize(label, font, scale, thickness, &baseline);
-    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), CV_RGB(255,0,255), cv::FILLED);
+    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), color, cv::FILLED);
     cv::putText(im, label, origin, font, scale, CV_RGB(0,0,0), thickness, cv::LINE_AA);
 }
 
@@ -59,15 +60,24 @@ int main() {
         for (const auto& bbox: bboxVec) {
             // TODO: Can use the bbox.probability to filter results if desired
 
+            // TODO: Can set color for each class
+            cv::Scalar color;
+            if (bbox.label == Trueface::ObjectLabel::person) {
+                // Note: Opencv uses BGR
+                color = cv::Scalar(0, 255, 0);
+            } else {
+                color = cv::Scalar(255, 0, 255);
+            }
+
             // Draw a rectangle using the top left and bottom right coordinates of the bounding box
             cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
             cv::Point bottomRight(bbox.topLeft.x + bbox.width, bbox.topLeft.y + bbox.height);
-            cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 255), 3);
+            cv::rectangle(frame, topLeft, bottomRight, color, 3);
 
             // Convert the object label to a string
             // Draw the string on the frame
             const auto label = tfSdk.getObjectLabelString(bbox.label);
-            setLabel(frame, label, topLeft);
+            setLabel(frame, label, topLeft, color);
         }
 
         cv::imshow("frame", frame);
