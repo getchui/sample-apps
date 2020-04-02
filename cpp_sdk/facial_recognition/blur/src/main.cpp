@@ -27,9 +27,7 @@ int main() {
     // https://performance.trueface.ai/
     const float threshold = 0.3;
 
-    Trueface::ConfigurationOptions options;
-    options.frModel = Trueface::FacialRecognitionModel::FULL;
-    Trueface::SDK tfSdk(options);
+    Trueface::SDK tfSdk;
 
     // Create a collection
     const std::string collectionpath = "collection.db";
