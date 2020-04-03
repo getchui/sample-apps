@@ -115,20 +115,22 @@ int main() {
             // Run the identify function
             // Only consider a match if it is above our threshold
             Trueface::Candidate candidate;
-            errorCode = tfSdk.identifyTopCandidate(faceprint, candidate, threshold);
+            bool found;
+            errorCode = tfSdk.identifyTopCandidate(faceprint, candidate, found, threshold);
 
             if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-                // The identity was not found
+                // There was an error
                 continue;
             }
 
-            // If the similarity is greater than our threshold, then we have a match
-           cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
-           cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
-           cv::Scalar color (0, 255, 0);
-           cv::rectangle(frame, topLeft, bottomRight, color, 2);
-           setLabel(frame, candidate.identity, topLeft, color);
-
+            if (found) {
+                // If the similarity is greater than our threshold, then we have a match
+                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
+                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
+                cv::Scalar color (0, 255, 0);
+                cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                setLabel(frame, candidate.identity, topLeft, color);
+            }
         }
 
         cv::imshow("frame", frame);

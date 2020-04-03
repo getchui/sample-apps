@@ -116,12 +116,15 @@ int main() {
             // Run the identify function
             // Only consider a match if it is above our threshold
             Trueface::Candidate candidate;
-            errorCode = tfSdk.identifyTopCandidate(faceprint, candidate, threshold);
+            bool found;
+            errorCode = tfSdk.identifyTopCandidate(faceprint, candidate, found, threshold);
 
             if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-                if (errorCode != Trueface::ErrorCode::IDENTITY_NOT_FOUND)
-                    continue;
+                // There was an error
+                continue;
+            }
 
+            if (!found) {
                 // The identity was not found, blur the face
                 cv::Rect blurRect(bbox.topLeft.x, bbox.topLeft.y, bbox.bottomRight.x - bbox.topLeft.x, bbox.bottomRight.y - bbox.topLeft.y);
                 cv::blur(frame(blurRect), frame(blurRect), cv::Size(18, 18));
