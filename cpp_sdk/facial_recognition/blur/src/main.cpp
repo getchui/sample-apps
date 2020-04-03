@@ -125,9 +125,12 @@ int main() {
             }
 
             if (!found) {
+                // Can change the blur size depending on the level of blur desired
+                size_t blurSize = 45;
+
                 // The identity was not found, blur the face
                 cv::Rect blurRect(bbox.topLeft.x, bbox.topLeft.y, bbox.bottomRight.x - bbox.topLeft.x, bbox.bottomRight.y - bbox.topLeft.y);
-                cv::blur(frame(blurRect), frame(blurRect), cv::Size(18, 18));
+                cv::blur(frame(blurRect), frame(blurRect), cv::Size(blurSize, blurSize));
 
                 // Draw white rectangle around face
                 cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
