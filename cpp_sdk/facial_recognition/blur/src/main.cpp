@@ -29,19 +29,27 @@ int main() {
 
     Trueface::SDK tfSdk;
 
-    // Create a collection
-    const std::string collectionpath = "collection.db";
-    auto errorCode = tfSdk.createCollection(collectionpath);
-
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-        std::cout << "Error: unable to create collection\n";
-        return -1;
-    }
-
     // TODO: replace <LICENSE_CODE> with your license code.
     const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
     if (!isValid) {
         std::cout << "Error: the provided license is invalid\n";
+        return -1;
+    }
+
+    // Create a new database
+    const std::string databaseName = "myDatabase.db";
+    auto errorCode = tfSdk.createDatabaseConnection(databaseName);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Error: unable to create database\n";
+        return -1;
+    }
+
+    // Create a collection
+    const std::string collectioName = "myCollection";
+    errorCode = tfSdk.createCollection(collectioName);
+
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Error: unable to create collection\n";
         return -1;
     }
 
