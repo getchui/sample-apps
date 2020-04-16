@@ -1,5 +1,5 @@
 # Trueface SDK C++ Sample Apps
-## Documentation
+## SDK Download and Documentation
 [C++ SDK Documentation](https://reference.trueface.ai/cpp/dev/latest/index.html)
 
 ## Getting Started
