@@ -27,7 +27,10 @@ int main() {
     // https://performance.trueface.ai/
     const float threshold = 0.3;
 
-    Trueface::SDK tfSdk;
+    Trueface::ConfigurationOptions options;
+    options.frModel = Trueface::FacialRecognitionModel::FULL;
+    options.dbms = Trueface::DatabaseManagementSystem::NONE; // The data will not persist
+    Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
     auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
@@ -37,6 +40,7 @@ int main() {
     }
 
     // Create a new database
+    // This step is not required if using Trueface::DatabaseManagementSystem::NONE
     const std::string databaseName = "myDatabase.db";
     auto errorCode = tfSdk.createDatabaseConnection(databaseName);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
@@ -105,33 +109,34 @@ int main() {
         std::vector<Trueface::FaceBoxAndLandmarks> bboxVec;
         tfSdk.detectFaces(bboxVec);
 
-        // For each bounding box, get the aligned chip
-        for (auto &bbox: bboxVec) {
+        // For each bounding box, get the face feature vector
+        std::vector<Trueface::Faceprint> faceprints;
+        faceprints.reserve(bboxVec.size());
 
-            const size_t imgSize = 112 * 112 * 3;
-            uint8_t *alignedChip = new uint8_t[imgSize];
+        for (const auto &bbox: bboxVec) {
+            // Obtain the aligned chip
+            uint8_t alignedChip[112 * 112 * 3];
             tfSdk.extractAlignedFace(bbox, alignedChip);
 
-            // Generate a template from the aligned chip
-            Trueface::Faceprint faceprint;
-            errorCode = tfSdk.getFaceFeatureVector(alignedChip, faceprint);
-            delete[] alignedChip;
+            // Get the face feature vector
+            Trueface::Faceprint tmpFaceprint;
+            tfSdk.getFaceFeatureVector(alignedChip, tmpFaceprint);
+            faceprints.emplace_back(std::move(tmpFaceprint));
+        }
 
-            if (errorCode != Trueface::ErrorCode::NO_ERROR)
-                continue;
+        // Run batch identification on the faceprints
+        std::vector<bool> found;
+        std::vector<Trueface::Candidate> candidates;
+        tfSdk.batchIdentifyTopCandidate(faceprints, candidates, found, threshold);
 
-            // Run the identify function
-            // Only consider a match if it is above our threshold
-            Trueface::Candidate candidate;
-            bool found;
-            errorCode = tfSdk.identifyTopCandidate(faceprint, candidate, found, threshold);
+        // If the identity was found, draw the identity label
+        // If the identity was not found, blur the face
 
-            if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-                // There was an error
-                continue;
-            }
+        for (size_t i = 0; i < found.size(); ++i) {
+            const auto& bbox = bboxVec[i];
+            const auto& candidate = candidates[i];
 
-            if (found) {
+            if (found[i]) {
                 // If the similarity is greater than our threshold, then we have a match
                 cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
                 cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
