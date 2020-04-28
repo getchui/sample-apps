@@ -28,7 +28,7 @@ int main() {
     const float threshold = 0.3;
 
     Trueface::ConfigurationOptions options;
-    options.frModel = Trueface::FacialRecognitionModel::FULL;
+    options.frModel = Trueface::FacialRecognitionModel::LITE;
     options.dbms = Trueface::DatabaseManagementSystem::NONE; // The data will not persist
     Trueface::SDK tfSdk(options);
 
