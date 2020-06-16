@@ -50,7 +50,7 @@ int main() {
 
     // Create a collection
     const std::string collectioName = "myCollection";
-    errorCode = tfSdk.createCollection(collectioName);
+    errorCode = tfSdk.createLoadCollection(collectioName);
 
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to create collection\n";
