@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(
         cpp_sample_apps_video_analyze
-        DESCRIPTION "Trueface C++ SDK sample app, head orientation"
+        DESCRIPTION "Trueface C++ SDK sample app, video analysis"
         LANGUAGES CXX
 )
 

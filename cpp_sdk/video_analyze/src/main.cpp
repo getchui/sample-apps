@@ -1,5 +1,4 @@
 #include <chrono>
-
 #include <opencv2/opencv.hpp>
 
 #include "tf_sdk.h"
