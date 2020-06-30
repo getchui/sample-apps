@@ -1,0 +1,119 @@
+<html>
+  <head>
+            <link href="/static/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous"></link>
+            <link rel="stylesheet" href="/static/styles.css"></link>
+            <script src="/static/pollyfill.min.js"></script>
+            <script src="/static/jquery.js"  crossorigin="anonymous"></script>
+            <script src="/static/popper.min.js"  crossorigin="anonymous"></script>
+            <script src="/static/bootstrap.min.js"  crossorigin="anonymous"></script>
+            <script src="/static/superagent.js"></script>
+            <script src="/static/vue.js"></script>      
+      <style>
+          .instructions {
+              margin-top: 2rem;
+              font-size: 1.5rem;
+          }
+          .august-main{
+              text-align:center;
+          }
+          .august-form{
+              width: 50%;
+              margin-top: 20px;
+              margin-right: auto;
+              margin-left: auto;
+          }
+          .spinner {
+              width: 40px;
+              height: 40px;
+              position: relative;
+
+              -webkit-animation: sk-rotate 2.0s infinite linear;
+              animation: sk-rotate 2.0s infinite linear;
+          }
+
+          .dot1, .dot2 {
+              width: 60%;
+              height: 60%;
+              display: inline-block;
+              position: absolute;
+              top: 0;
+              background-color: #fff;
+              border-radius: 100%;
+
+              -webkit-animation: sk-bounce 2.0s infinite ease-in-out;
+              animation: sk-bounce 2.0s infinite ease-in-out;
+          }
+
+          #accordion{
+              width:50%;
+          }
+          .ctable{
+              margin-top:20px;
+              width:45%;
+              float:left;
+          }
+          .crow{
+              margin-top:20px;
+          }
+          .dot2 {
+              top: auto;
+              bottom: 0;
+              -webkit-animation-delay: -1.0s;
+              animation-delay: -1.0s;
+          }
+          @-webkit-keyframes sk-rotate { 100% { -webkit-transform: rotate(360deg) }}
+          @keyframes sk-rotate { 100% { transform: rotate(360deg); -webkit-transform: rotate(360deg) }}
+          @-webkit-keyframes sk-bounce {
+              0%, 100% { -webkit-transform: scale(0.0) }
+              50% { -webkit-transform: scale(1.0) }
+          }
+
+          @keyframes sk-bounce {
+              0%, 100% { 
+                  transform: scale(0.0);
+                  -webkit-transform: scale(0.0);
+              } 50% { 
+                  transform: scale(1.0);
+                  -webkit-transform: scale(1.0);
+              }
+          }
+      </style>   
+  </head>
+<body>
+  <div id="af-plugin">
+    <header class="header">
+      <div class="">
+        <img class="header__logo" src="https://uploads-ssl.webflow.com/5d8cf11de6f0c88822d5cb33/5d8d539a8f129f8271e4f9b3_trueface-white.svg" />
+        <h1 class="header__title">Trueface Glykon Demo</h1>
+      </div>
+    </header>
+    <button class="button" v-on:click="startFunction">Sign in</button>
+    <main class="grid-wrapper">
+      <div class="stream">
+        <div class="stream__video-container">
+          <div v-if="spinner" class="spinner">
+              <div class="dot1"></div>
+              <div class="dot2"></div>
+          </div>
+        </div>
+        <div  v-if="result" class="stream__details">
+          <div class="stream__title">Result: [{result.prediction}]</div>
+          <div class="stream__title">Blinks: [{result.blinks}]</div>
+          <div class="stream__title">Frame Analysis Fake: [{result.frame_analysis_fake_score}]</div>
+          <div class="stream__title">Frame Analysis Real: [{result.frame_analysis_real_score}]</div>
+          <div class="stream__title">Guidance: [{result.guidance}]</div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/static/main.js"></script>
+
+</body>
+<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+<script type="text/javascript" charset="utf-8">
+  var socket = io();
+  socket.on('connect', function() {
+      socket.emit('my event', {data: 'I\'m connected!'});
+  });
+</script> -->
+</html>

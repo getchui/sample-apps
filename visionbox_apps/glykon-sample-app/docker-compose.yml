@@ -1,0 +1,27 @@
+version: '3'
+
+networks:
+  spoof_demo:
+    driver: bridge
+
+services:
+  glykon-sample-app:
+    image: "trueface/glykon-sample-app"
+    restart: always
+    container_name: "glykon-sample-app"
+    networks:
+      - spoof_demo
+    ports:
+      - "5000:5000"
+    environment:
+        - API_PATH=http://glykon:8000
+  glykon:
+    image: "trueface/glykon"
+    restart: always
+    container_name: glykon
+    networks:
+      - spoof_demo
+    ports:
+      - "8000:8000"
+    environment:
+        - TOKEN=

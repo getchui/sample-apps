@@ -1,0 +1,4 @@
+apps:
+  - script : server.py
+    name   : api
+    interpreter : /usr/bin/python3
