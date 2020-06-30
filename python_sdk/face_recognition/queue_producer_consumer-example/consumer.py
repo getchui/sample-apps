@@ -17,9 +17,9 @@ import os
 import json
 
 face_recognition = FaceRecognizer(ctx='gpu',
-               fd_model_path='/home/nchafni/Development/models/fd_model',
-               fr_model_path='/home/nchafni/Development/models/model-tfv2/model.trueface', 
-               params_path='/home/nchafni/Development/models/model-tfv2/model.params',
+               fd_model_path='./fd_model',
+               fr_model_path='./model-tfv2/model.trueface', 
+               params_path='./model-tfv2/model.params',
                license=os.environ['TF_TOKEN'])
 
 q = RedisQueue('office_camera')

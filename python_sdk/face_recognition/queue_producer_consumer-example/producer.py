@@ -12,6 +12,7 @@ from trueface.utils import RedisQueue
 import base64
 import json
 import os
+import traceback
 
 
 face_detector = FaceRecognizer(ctx='gpu',
@@ -20,7 +21,7 @@ face_detector = FaceRecognizer(ctx='gpu',
 
 q = RedisQueue('office_camera')
 
-vcap = VideoStream(src=0).start()
+vcap = VideoStream(src="rtsp://192.168.1.177:554/stream2").start()
 
 
 def init_worker():
@@ -59,7 +60,7 @@ while True:
             frames = []
 
             data = {
-                "chips":base64.b64encode(np.asarray(allchips)),
+                "chips":base64.b64encode(np.asarray(allchips)).decode(),
                 "chip_count":len(allchips)
             }
 
@@ -67,6 +68,7 @@ while True:
             counter += 1
             print('batch', counter)
         except Exception as error:
+            print(traceback.format_exc())
             print(error)
             p.terminate()
             p.join()
