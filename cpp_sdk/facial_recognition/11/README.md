@@ -14,6 +14,3 @@ The templates are then compared to generate a similiarity score.
 * `mkdir build && cd build`
 * `cmake ..`
 * `make`
-
-### Notes
-This sample was built with SDK version 0.2

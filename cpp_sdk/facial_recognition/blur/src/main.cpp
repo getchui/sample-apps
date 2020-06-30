@@ -8,26 +8,29 @@
 #include "tf_data_types.h"
 
 // Utility function for drawing the label on our image
-void setLabel(cv::Mat& im, const std::string label, const cv::Point & origin) {
+void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin, const cv::Scalar& color) {
+    cv::Point origin(oldOrigin.x - 2, oldOrigin.y - 10);
     const int font = cv::FONT_HERSHEY_SIMPLEX;
-    const double scale = 0.6;
+    // Can change scale and thickness to change label size
+    const double scale = 0.8;
     const int thickness = 1;
     int baseline = 0;
 
     cv::Size text = cv::getTextSize(label, font, scale, thickness, &baseline);
-    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), CV_RGB(0,0,0), cv::FILLED);
-    cv::putText(im, label, origin, font, scale, CV_RGB(255,255,255), thickness, cv::LINE_AA);
+    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), color, cv::FILLED);
+    cv::putText(im, label, origin, font, scale, CV_RGB(0,0,0), thickness, cv::LINE_AA);
 }
 
 
 int main() {
-    // Threshold used to determine if it is a match
-    const float threshold = 0.6;
+    // TODO: Select a threshold for your application using the ROC curves
+    // https://performance.trueface.ai/
+    const float threshold = 0.3;
 
-    // Gallery used to store our templates
-    std::vector<std::pair<Trueface::Faceprint, std::string>> gallery;
-
-    Trueface::SDK tfSdk;
+    Trueface::ConfigurationOptions options;
+    options.frModel = Trueface::FacialRecognitionModel::LITE;
+    options.dbms = Trueface::DatabaseManagementSystem::NONE; // The data will not persist
+    Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
     const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
@@ -36,8 +39,26 @@ int main() {
         return -1;
     }
 
+    // Create a new database
+    // This step is not required if using Trueface::DatabaseManagementSystem::NONE
+    const std::string databaseName = "myDatabase.db";
+    auto errorCode = tfSdk.createDatabaseConnection(databaseName);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Error: unable to create database\n";
+        return -1;
+    }
+
+    // Create a collection
+    const std::string collectioName = "myCollection";
+    errorCode = tfSdk.createLoadCollection(collectioName);
+
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Error: unable to create collection\n";
+        return -1;
+    }
+
     // Load the image / images we want to enroll
-    auto errorCode = tfSdk.setImage("../../../images/armstrong/armstrong1.jpg");
+    errorCode = tfSdk.setImage("../../../images/armstrong/armstrong1.jpg");
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to read image\n";
         return -1;
@@ -51,8 +72,14 @@ int main() {
         return -1;
     }
 
-    // Add the enrollment template to our gallery
-    gallery.emplace_back(enrollmentFaceprint, "Armstrong");
+    // Add the enrollment template to our collection
+    // Any data that is added to the collection will persist after the application is terminated
+    std::string UUID;
+    errorCode = tfSdk.enrollTemplate(enrollmentFaceprint, "Armstrong", UUID);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Error: Unable to enroll template\n";
+        return -1;
+    }
 
     // Can add other template pairs to the gallery here...
 
@@ -73,7 +100,7 @@ int main() {
         }
 
         // Set the image using the capture frame buffer
-        auto errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, Trueface::ColorCode::bgr);
+        errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, Trueface::ColorCode::bgr);
         if (errorCode != Trueface::ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
@@ -83,56 +110,55 @@ int main() {
         std::vector<Trueface::FaceBoxAndLandmarks> bboxVec;
         tfSdk.detectFaces(bboxVec);
 
-        // For each bounding box, get the aligned chip
-        for (auto &bbox: bboxVec) {
+        // For each bounding box, get the face feature vector
+        std::vector<Trueface::Faceprint> faceprints;
+        faceprints.reserve(bboxVec.size());
 
-            const size_t imgSize = 112 * 112 * 3;
-            uint8_t *alignedChip = new uint8_t[imgSize];
+        for (const auto &bbox: bboxVec) {
+            // Obtain the aligned chip
+            uint8_t alignedChip[112 * 112 * 3];
             tfSdk.extractAlignedFace(bbox, alignedChip);
 
-            // Generate a template from the aligned chip
-            Trueface::Faceprint faceprint;
-            const auto err = tfSdk.getFaceFeatureVector(alignedChip, faceprint);
-            delete[] alignedChip;
+            // Get the face feature vector
+            Trueface::Faceprint tmpFaceprint;
+            tfSdk.getFaceFeatureVector(alignedChip, tmpFaceprint);
+            faceprints.emplace_back(std::move(tmpFaceprint));
+        }
 
-            if (err != Trueface::ErrorCode::NO_ERROR)
-                continue;
+        // Run batch identification on the faceprints
+        std::vector<bool> found;
+        std::vector<Trueface::Candidate> candidates;
+        tfSdk.batchIdentifyTopCandidate(faceprints, candidates, found, threshold);
 
-            // Compare the template to those in our gallery
-            float maxScore = 0;
-            int maxIdx = 0;
+        // If the identity was found, draw the identity label
+        // If the identity was not found, blur the face
 
-            // Iterate through the gallery to find the template with the highest match probability
-            // If the match probability is greater than our threshold, then we know it's a match
-            for (int i = 0; i < gallery.size(); ++i) {
-                float matchProbability;
-                float similarityMeasure;
+        for (size_t i = 0; i < found.size(); ++i) {
+            const auto& bbox = bboxVec[i];
+            const auto& candidate = candidates[i];
 
-                auto returnCode = tfSdk.getSimilarity(gallery[i].first, faceprint, matchProbability, similarityMeasure);
-                if (returnCode != Trueface::ErrorCode::NO_ERROR)
-                    continue;
-
-                if (matchProbability > maxScore) {
-                    maxScore = matchProbability;
-                    maxIdx = i;
-                }
-            }
-
-            if (maxScore > threshold) {
-                // We have a match
-                // Display the bounding box and label
+            if (found[i]) {
+                // The identity was found, draw the identity label
                 cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
                 cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
-                cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0));
-
-                setLabel(frame, gallery[maxIdx].second, topLeft);
+                cv::Scalar color(0, 255, 0);
+                cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                setLabel(frame, candidate.identity, topLeft, color);
             } else {
+                // The identity was not found, blur the face
+                // Can change the blur size depending on the level of blur desired
+                size_t blurSize = 45;
 
-                // If the face has not been enrolled in our database, blur the face
+                // The identity was not found, blur the face
                 cv::Rect blurRect(bbox.topLeft.x, bbox.topLeft.y, bbox.bottomRight.x - bbox.topLeft.x, bbox.bottomRight.y - bbox.topLeft.y);
-                cv::GaussianBlur(frame(blurRect), frame(blurRect), cv::Size(0, 0), 50);
-            }
+                cv::blur(frame(blurRect), frame(blurRect), cv::Size(blurSize, blurSize));
 
+                // Draw white rectangle around face
+                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
+                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
+                cv::Scalar color(255, 255, 255);
+                cv::rectangle(frame, topLeft, bottomRight, color, 2);
+            }
         }
 
         cv::imshow("frame", frame);

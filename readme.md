@@ -17,8 +17,12 @@ For support, please visit https://trueface.freshdesk.com/
 ### 1:N Identification
 ![alt text](./cpp_sdk/facial_recognition/1N/demo_gifs/demo3.gif)
 
+![alt text](./cpp_sdk/facial_recognition/1N/demo_gifs/demo4.gif)
+
 ### 1:N Identification with Blur
 ![alt text](./cpp_sdk/facial_recognition/blur/demo_gifs/demo2.gif)
+
+![alt text](./cpp_sdk/facial_recognition/blur/demo_gifs/demo3.gif)
 
 ### Landmark Detection
 ![alt text](./cpp_sdk/landmark_detection/live_streaming/demo_gifs/demo2.gif)
