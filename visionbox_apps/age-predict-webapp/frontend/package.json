@@ -4,14 +4,15 @@
   "private": true,
   "proxy": "http://localhost:5000",
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.19.2",
     "less": "^3.9.0",
-    "less-watch-compiler": "^1.13.0",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
+    "less-watch-compiler": "^1.14.6",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "react-loading": "^2.0.3",
-    "react-scripts": "^3.3.0",
-    "react-webcam": "^1.1.1"
+    "react-scripts": "^3.4.1",
+    "react-webcam": "^1.1.1",
+    "typescript": "^3.7.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -33,5 +34,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.6.1",
+    "@typescript-eslint/parser": "^3.6.1"
   }
 }
