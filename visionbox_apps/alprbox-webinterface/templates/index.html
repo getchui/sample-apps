@@ -1,0 +1,77 @@
+
+<!DOCTYPE HTML>
+<!--
+	Identity by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>ALPR Sample APP</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="icon" href="static/favicon.ico" />
+		<link rel="stylesheet" href="static/assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
+		<script src="static/jquery-3.3.1.min.js"></script>
+		<script src="static/superagent.min.js"></script>
+		<script src="static/vue.js"></script>
+
+		<style>
+			canvas{
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select: none;
+			}
+		</style>
+
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<section id="main">
+						<div id="home" >
+								<div class="spinner" v-if="spinner">
+								  <div class="dot1"></div>
+								  <div class="dot2"></div>
+								</div>
+								<header v-if="!spinner">
+									<img src="static/images/trueface_logo.png" />
+									<p>ALPR SAMPLE APP</p>
+
+									<h2>Input a URL <b>Or</b> select a file</h2>
+									<input v-model="url" type="text" placeholder="url you'd like to post" />
+									<br />
+									<input type="file" accept='image/*' id="file" ref="file" v-on:change="handleFileUpload()"/>
+									
+									<br />
+									<br />
+									<h2>Process</h2>
+									<button  v-on:click="post_url">Process</button>
+
+									<div v-for="license in lastresponse.data">
+
+										<p>[[license.license_plate]]</p>
+									</div>
+								</header>
+								
+								<footer>
+									<a href="https://trueface.ai" class="">Trueface.ai</a>
+								</footer>
+								</div>
+					</section>
+
+			</div>
+			<script src="static/main.js"></script>
+			<script>
+				if ('addEventListener' in window) {
+					window.addEventListener('load', function() { document.body.className = document.body.className.replace(/\bis-preload\b/, ''); });
+					document.body.className += (navigator.userAgent.match(/(MSIE|rv:11\.0)/) ? ' is-ie' : '');
+				}
+			</script>
+
+	</body>
+</html>
