@@ -1,7 +1,7 @@
 # Trueface Temperature Detection Frontend Sample App
 
 ## Overview
-This sample app demonstrates how to build a simple frontend app which connects to the Trueface Temperature Detection and Access Controll application.
+This sample app demonstrates how to build a simple frontend app which connects to the Trueface Temperature Detection and Access Control application.
 To learn more, please visit: https://docs.trueface.ai/access-control 
 
 ## API Documentation
