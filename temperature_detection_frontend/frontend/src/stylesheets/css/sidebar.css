@@ -1,0 +1,7 @@
+.sidebar {
+  width: 200px;
+  z-index: 15;
+}
+.sidebar img {
+  width: 100px;
+}

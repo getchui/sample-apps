@@ -1,0 +1,83 @@
+html {
+  font-family: 'Roboto', sans-serif;
+}
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+a {
+  text-decoration: none;
+}
+.main {
+  text-align: center;
+}
+.main .webcam {
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+.main .webcam video {
+  object-fit: fill;
+  width: 100%;
+}
+.main .webcam button {
+  top: 80%;
+  left: 50%;
+  margin-left: -50px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.8rem;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.main .webcam button:hover {
+  background-color: rgba(207, 9, 50, 0.7);
+  border: 1px solid rgba(207, 9, 50, 0.7);
+}
+
+.spinner {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  background: white;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0.4;
+  z-index: 10;
+}
+
+.annotator{
+  background: transparent;
+  border-color: white;
+  color: white;
+}
+
+.logo{
+  width:150px;
+  margin:10px;
+}
+.center-text{
+  text-align: center;
+}
+.s-half{
+  height: 100%;
+}
+
+.video-holder{
+  width:90%;
+  height: 90%;
+  margin-right: auto;
+  margin-left:auto;
+  margin-top:10px;
+}
