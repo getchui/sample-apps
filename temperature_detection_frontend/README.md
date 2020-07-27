@@ -14,11 +14,13 @@ To learn more, please visit: https://docs.trueface.ai/access-control
 ## Building the demo
 To build the demo, run the following commands:
 `cd frontend`
+
 `npm install`
+
 `npm run-script build`
 
 ## Running the demo
-To run the following demo, run the following command:
+To run the demo, run the following command:
 `python3 main.py`
 
 Next, go to `http://0.0.0.0:5000` in your browser.
