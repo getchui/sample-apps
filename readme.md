@@ -9,6 +9,7 @@ For support, please visit https://trueface.freshdesk.com/
 * [C++ SDK](./cpp_sdk/)
 * [Python SDK](./python_sdk/)
 * [Visionbox](./visionbox_apps/)
+* [Temperature Detection Frontend](./temperature_detection_frontend/)
 
 ## A preview of some of our sample apps
 ### 1:1 Identification
