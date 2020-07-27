@@ -34,5 +34,5 @@ For support, please visit https://trueface.freshdesk.com/
 ![alt text](./cpp_sdk/head_orientation/demo_gifs/demo1.gif)
 
 ### Temperature Detection
-![alt text](./temperature_detection_frontend/demo/demo1.gif)
+![alt text](./temperature_detection_frontend/demo/demo.gif)
 
