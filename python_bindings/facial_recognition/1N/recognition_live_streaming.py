@@ -77,7 +77,7 @@ if (is_valid == False):
 cap = cv2.VideoCapture(filepath)
 
 # VideoWriter
-ret, frame = cap.read()
+res, frame = cap.read()
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 # out_width = 640
@@ -105,31 +105,33 @@ out = cv2.VideoWriter(os.path.join(out_directory, "detected-tfv4-{}".format(file
                       fourcc, 25.0, (out_width, out_height))
 
 # Create a new collection
-sdk.create_database_connection("my_collection.sqlite")
-res = sdk.create_load_collection("my_memory_collection")
-if (res != tfsdk.ERRORCODE.NO_ERROR):
-    print("Unable to create collection. Error: {}".format(res))
-    quit()
-
-# Some identities to populate into our collection
-# read folder argument
-# make a list of  tuples of the form (image_path, label)
-images = sorted(list(paths.list_images(collection_folder)))
-for image in images:
-    sdk.set_image(image)
-    try:
-        ret, faceprint = sdk.get_largest_face_feature_vector()
-    except:
-        print("Couldn't get largest feature vector for {}".format(image))
-        continue
-    print("enrolling {}".format(image))
-    sdk.enroll_template(faceprint, os.path.split(os.path.dirname(image))[-1])
+collection_file = "my_collection.sqlite"
+if os.path.exists(collection_file):
+    sdk.create_database_connection(collection_file)
+    res = sdk.create_load_collection("my_memory_collection")
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print("Unable to create collection. Error: {}".format(res))
+        quit()
+else:
+    # build the collection
+    # Some identities to populate into our collection
+    # read folder argument
+    # make a list of  tuples of the form (image_path, label)
+    images = sorted(list(paths.list_images(collection_folder)))
+    for image in images:
+        sdk.set_image(image)
+        res, faceprint = sdk.get_largest_face_feature_vector()
+        if (res != tfsdk.ERRORCODE.NO_ERROR):
+            print("Couldn't get largest feature vector for {}".format(image))
+            continue
+        print("enrolling {}".format(image))
+        sdk.enroll_template(faceprint, os.path.split(os.path.dirname(image))[-1])
 
 
 while(True):
     # Capture frame-by-frame
-    ret, frame = cap.read()
-    if not ret:
+    res, frame = cap.read()
+    if not res:
         break
 
     #frame = cv2.flip(frame, 0)
@@ -158,9 +160,8 @@ while(True):
 
     # Run 1:N search for all extracted faces
     for facebox in faceboxes:
-        try:
-            res, faceprint = sdk.get_face_feature_vector(facebox)
-        except:
+        res, faceprint = sdk.get_face_feature_vector(facebox)
+        if (res != tfsdk.ERRORCODE.NO_ERROR):
             print("skipping facebox")
             continue
         res, match_bool, candidate = sdk.identify_top_candidate(faceprint, threshold=0.3)
