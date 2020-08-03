@@ -55,7 +55,7 @@ if filepath.isdigit():
 options = tfsdk.ConfigurationOptions()
 # Can set configuration options here
 # ex:
-# options.smallest_face_height = 40
+options.smallest_face_height = -1
 options.fd_mode = tfsdk.FACEDETECTIONMODE.VERSATILE
 # options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.FULL
@@ -106,26 +106,30 @@ out = cv2.VideoWriter(os.path.join(out_directory, "detected-tfv4-{}".format(file
 
 # Create a new collection
 collection_file = "my_collection.sqlite"
-if os.path.exists(collection_file):
-    sdk.create_database_connection(collection_file)
-    res = sdk.create_load_collection("my_memory_collection")
+# build the collection
+# Some identities to populate into our collection
+# read folder argument
+# make a list of  tuples of the form (image_path, label)
+sdk.create_database_connection(collection_file)
+res = sdk.create_load_collection("my_memory_collection")
+images = sorted(list(paths.list_images(collection_folder)))
+for image in images:
+    print("setting {}".format(image))
+    res = sdk.set_image(image)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print("Unable to create collection. Error: {}".format(res))
-        quit()
-else:
-    # build the collection
-    # Some identities to populate into our collection
-    # read folder argument
-    # make a list of  tuples of the form (image_path, label)
-    images = sorted(list(paths.list_images(collection_folder)))
-    for image in images:
-        sdk.set_image(image)
+        print("Couldn't set image for {}".format(image))
+        continue
+    try:
         res, faceprint = sdk.get_largest_face_feature_vector()
-        if (res != tfsdk.ERRORCODE.NO_ERROR):
-            print("Couldn't get largest feature vector for {}".format(image))
-            continue
-        print("enrolling {}".format(image))
-        sdk.enroll_template(faceprint, os.path.split(os.path.dirname(image))[-1])
+    except Exception as e:
+        print(e)
+        continue
+
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print("Couldn't get largest feature vector for {}".format(image))
+        continue
+    print("enrolling {}".format(image))
+    sdk.enroll_template(faceprint, os.path.split(os.path.dirname(image))[-1])
 
 
 while(True):
