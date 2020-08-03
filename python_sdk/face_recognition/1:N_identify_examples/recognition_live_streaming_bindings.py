@@ -55,7 +55,7 @@ if filepath.isdigit():
 options = tfsdk.ConfigurationOptions()
 # Can set configuration options here
 # ex:
-options.smallest_face_height = -1
+#options.smallest_face_height = -1
 options.fd_mode = tfsdk.FACEDETECTIONMODE.VERSATILE
 # options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.FULL
