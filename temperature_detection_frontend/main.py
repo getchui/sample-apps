@@ -16,7 +16,6 @@ from datetime import datetime
 import time
 import base64
 import uuid
-import cv2
 import numpy as np
 
 
