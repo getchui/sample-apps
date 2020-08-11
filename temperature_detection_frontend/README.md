@@ -30,5 +30,12 @@ Next, go to `http://0.0.0.0:5000` in your browser.
 If connecting to the IRYX camera, use the IP address of the camera.
 If connecting to the FLIR A400 camera, use the IP address of the device running the Trueface software.
 
+## Docker
+Instead of building the project manually, you can run the docker container instead.
+
+`docker run -p 5000:5000 -d --name tf-ebt-frontend trueface/ebt-frontend`
+
+Next, go to `http://0.0.0.0:5000` in your browser.
+
 ### Demo
 ![alt text](./demo/demo.gif)
