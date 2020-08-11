@@ -27,6 +27,8 @@ To run the demo, run the following command:
 
 Next, go to `http://0.0.0.0:5000` in your browser.
 
+Note, if on windows, you may have to go to `http://127.0.0.1:5000`
+
 If connecting to the IRYX camera, use the IP address of the camera.
 If connecting to the FLIR A400 camera, use the IP address of the device running the Trueface software.
 
@@ -36,6 +38,8 @@ Instead of building the project manually, you can run the docker container inste
 `docker run -p 5000:5000 -d --name tf-ebt-frontend trueface/ebt-frontend`
 
 Next, go to `http://0.0.0.0:5000` in your browser.
+
+Note, if on windows, you may have to go to `http://127.0.0.1:5000`
 
 ### Demo
 ![alt text](./demo/demo.gif)
