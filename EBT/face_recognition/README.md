@@ -1,7 +1,7 @@
 # Face Recognition EBT Integration
 
 ## Overview
-This sample app demonstrates how to build a facial recognition application and integration with the EBT solution
+This sample app demonstrates how to build a facial recognition application and integrate with the EBT solution
 
 ## API Documentation
 [Documentation](https://docs.google.com/document/d/1BAZO66pC694ZPZEqDvVaWI0cFafzIbz9qaNmkXRG0Tw/edit?usp=sharing)
