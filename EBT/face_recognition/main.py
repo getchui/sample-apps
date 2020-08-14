@@ -80,6 +80,7 @@ class ConnectionHandler:
         response = json.loads(message)
 
         # TODO: Do something with the temp, mask status, etc. 
+        # ex: can prompt the user to put on a mask, remove mask for FR, remove glasses for temp, etc
         print("Avg Temp:", response['average_temperature_measured'], response['temp_unit'])
 
         # Mask label only set when there is a face in the frame
