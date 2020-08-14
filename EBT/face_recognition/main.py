@@ -90,6 +90,7 @@ class ConnectionHandler:
         # Check if there is a face in the frame
         if response["face_detected"] == True:
             # If there is a face, we can request a template
+            # TODO: You can choose to only request a template every nth frame with a face
             endpoint = "http://" + self.ip + ":8090/fr-template-lite"
             f = urllib.request.urlopen(endpoint)
             decoded = json.loads(f.read().decode('utf-8'))
