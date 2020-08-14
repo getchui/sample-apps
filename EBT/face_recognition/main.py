@@ -11,28 +11,6 @@ except ImportError:
 import tfsdk
 
 
-def on_message(ws, message):
-    data = json.loads(message)
-    print(data)
-    # url = 'http://192.168.0.12:8090/fr-template-lite'
-    # f = urllib.request.urlopen(url)
-    # print(f.read().decode('utf-8'))
-    # print(data['mask_label'])
-
-def on_error(ws, error):
-    print(error)
-
-def on_close(ws):
-    print("### closed ###")
-
-def on_open(ws):
-    def run(*args):
-        while True:
-            time.sleep(1)
-        ws.close()
-        print("thread terminating...")
-    thread.start_new_thread(run, ())
-
 class ConnectionHandler:
     def __init__(self, token, ip):
         self.ip = ip
@@ -92,6 +70,23 @@ class ConnectionHandler:
             # TODO: Can store the UUID for later use
             print("Success, enrolled template with UUID:", UUID)
 
+    def on_message(ws, message):
+        # data = json.loads(message)
+        # print(data)
+        url = 'http://192.168.0.12:8090/fr-template-lite'
+        f = urllib.request.urlopen(url)
+        print(f.read().decode('utf-8'))
+        # print(data['mask_label'])
+
+    def on_error(ws, error):
+        print(error)
+
+    def on_close(ws):
+        print("---------------Connection Closed-------------")
+
+    def on_open(ws):
+        print("---------------Connection Opened-------------")
+        
 
     def start_connection(self):
         # Creates the websocket connection
@@ -99,10 +94,10 @@ class ConnectionHandler:
         websocket_ip = "ws://" + self.ip + ":8091"
         print(websocket_ip)
         self.ws = websocket.WebSocketApp(websocket_ip,
-                              on_message = on_message,
-                              on_error = on_error,
-                              on_close = on_close)
-        self.ws.on_open = on_open
+                              on_message = self.on_message,
+                              on_error = self.on_error,
+                              on_close = self.on_close,
+                              on_open = self.on_open)
         self.ws.run_forever()
 
 
