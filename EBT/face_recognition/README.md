@@ -10,6 +10,8 @@ This sample app demonstrates how to build a facial recognition application and i
 
 
 ## Running the demo
-TODO: Add stuff about adding license, etc
+
+- Export your trueface token: `export TRUEFACE_TOKEN=${TRUEFACE_TOKEN}`
+- Export the camera IP address: `export IP_ADDRESS=${CAMERA_IP_ADDRESS}`
 
 TODO: Tell them to download the trueface SDK 
