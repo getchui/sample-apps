@@ -21,6 +21,7 @@ class ConnectionHandler:
         options = tfsdk.ConfigurationOptions()
         options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.LITE
         options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.NONE # We will NOT be writing template to disk for this demo.
+        options.smallest_face_height = -1
         self.sdk = tfsdk.SDK(options)
 
         is_valid = self.sdk.set_license(token)
@@ -41,6 +42,7 @@ class ConnectionHandler:
             quit()
 
         # Some identities to populate into our collection
+        # TODO: Can add images of yourself here
         image_identities = [
             ("../../cpp_sdk/images/armstrong/armstrong1.jpg", "Armstrong"),
             ("../../cpp_sdk/images/armstrong/armstrong2.jpg", "Armstrong"), # Can add the same identity more than once
@@ -53,19 +55,19 @@ class ConnectionHandler:
             res = self.sdk.set_image(path)
             if (res != tfsdk.ERRORCODE.NO_ERROR):
                 print("Unable to set image at path:", path)
-                continue
+                quit()
 
             # Extract the feature vector
             res, v = self.sdk.get_largest_face_feature_vector()
             if (res != tfsdk.ERRORCODE.NO_ERROR):
                 print("Unable to generate feature vector")
-                continue
+                quit()
 
             # Enroll the feature vector into the collection
             res, UUID = self.sdk.enroll_template(v, identity)
             if (res != tfsdk.ERRORCODE.NO_ERROR):
                 print("Unable to enroll feature vector")
-                continue
+                quit()
 
             # TODO: Can store the UUID for later use
             print("Success, enrolled template with UUID:", UUID)
@@ -104,9 +106,10 @@ class ConnectionHandler:
             elif found == True:
                 print("Found match with identity:", candidate.identity)
                 print("Match probability:", candidate.match_probability)
-                print()
             else:
                 print("Unable to find match")
+
+        print()
             
 
 
