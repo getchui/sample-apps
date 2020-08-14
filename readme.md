@@ -9,7 +9,7 @@ For support, please visit https://trueface.freshdesk.com/
 * [C++ SDK](./cpp_sdk/)
 * [Python SDK](./python_sdk/)
 * [Visionbox](./visionbox_apps/)
-* [Temperature Detection Frontend](./temperature_detection_frontend/)
+* [Elevated Body Temperature](./EBT/)
 
 ## A preview of some of our sample apps
 ### 1:1 Identification
@@ -35,5 +35,5 @@ For support, please visit https://trueface.freshdesk.com/
 ![alt text](./cpp_sdk/head_orientation/demo_gifs/demo1.gif)
 
 ### Temperature Detection
-![alt text](./temperature_detection_frontend/demo/demo.gif)
+![alt text](./EBT/temperature_detection_frontend/demo/demo.gif)
 
