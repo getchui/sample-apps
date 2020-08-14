@@ -21,7 +21,7 @@ class ConnectionHandler:
         options = tfsdk.ConfigurationOptions()
         options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.LITE
         options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.NONE # We will NOT be writing template to disk for this demo.
-        options.smallest_face_height = -1
+        options.smallest_face_height = -1 # https://reference.trueface.ai/cpp/dev/latest/py/general.html#tfsdk.ConfigurationOptions
         self.sdk = tfsdk.SDK(options)
 
         is_valid = self.sdk.set_license(token)
