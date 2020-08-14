@@ -13,8 +13,6 @@ This sample app demonstrates how to build a facial recognition application and i
 - Download the python bindings library from [here](https://reference.trueface.ai/cpp/dev/latest/index.html#x86-64-python-bindings), then move the library to the same directory as `main.py`
 
 ## Running the demo
-- Export your trueface token: `export TRUEFACE_TOKEN=${TRUEFACE_TOKEN}`
-- Export the camera IP address: `export IP_ADDRESS=${CAMERA_IP_ADDRESS}`
+- Export your trueface token as an environment variable: `export TRUEFACE_TOKEN=${TRUEFACE_TOKEN}`
+- Export the camera IP address as an environment variable: `export IP_ADDRESS=${CAMERA_IP_ADDRESS}`
 - `python3 main.py`
-
-TODO: Tell them to download the trueface SDK 
