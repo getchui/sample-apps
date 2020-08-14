@@ -70,21 +70,54 @@ class ConnectionHandler:
             # TODO: Can store the UUID for later use
             print("Success, enrolled template with UUID:", UUID)
 
-    def on_message(ws, message):
-        # data = json.loads(message)
-        # print(data)
-        url = 'http://192.168.0.12:8090/fr-template-lite'
-        f = urllib.request.urlopen(url)
-        print(f.read().decode('utf-8'))
-        # print(data['mask_label'])
+    def on_message(self, message):
+        # This is where we do the bulk of the processing
 
-    def on_error(ws, error):
+        # First, parse the response
+        response = json.loads(message)
+
+        # TODO: Do something with the temp, mask status, etc. 
+        print("Avg Temp:", response['average_temperature_measured'], response['temp_unit'])
+
+        # Mask label only set when there is a face in the frame
+        if 'mask_label' in response.keys():
+            print("Mask Status:", response["mask_label"])
+
+        # Check if there is a face in the frame
+        if response["face_detected"] == True:
+            # If there is a face, we can request a template
+            endpoint = "http://" + self.ip + ":8090/fr-template-lite"
+            f = urllib.request.urlopen(endpoint)
+            decoded = json.loads(f.read().decode('utf-8'))
+            
+            # Create a faceprint, populate it
+            probe_faceprint = tfsdk.Faceprint()
+            probe_faceprint.model_name = decoded["model_name"]
+            probe_faceprint.model_options = decoded["model_options"]
+            probe_faceprint.sdk_version = decoded["sdk_version"]
+            probe_faceprint.feature_vector = decoded["feature_vector"]
+
+            # Now run 1 to N identification
+            ret_code, found, candidate = self.sdk.identify_top_candidate(probe_faceprint)
+            if ret_code != tfsdk.ERRORCODE.NO_ERROR:
+                print("Something went wrong!")
+            elif found == True:
+                print("Found match with identity:", candidate.identity)
+                print("Match probability:", candidate.match_probability)
+                print()
+            else:
+                print("Unable to find match")
+            
+
+
+    def on_error(self, error):
+        print("---------------Error-------------------------")
         print(error)
 
-    def on_close(ws):
+    def on_close(self):
         print("---------------Connection Closed-------------")
 
-    def on_open(ws):
+    def on_open(self):
         print("---------------Connection Opened-------------")
         
 
