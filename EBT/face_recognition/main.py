@@ -29,11 +29,12 @@ class ConnectionHandler:
             print("Invalid License Provided")
             quit() 
 
-        # At this point, we can either load an existing database & collection, or create a new one and populate it with data
+        # At this point, we can either load an existing trueface database & collection, or create a new one and populate it with data
         # For the sake of this demo, we will create a new collection (memory only, meaning data will not persist after app shuts down) 
         
         # If we are using a database backend, need to first call create_database_connection
         # Since we are using DATABASEMANAGEMENTSYSTEM.NONE this is not necessary
+        # For more aobut 1 to N, please refer to: https://reference.trueface.ai/cpp/dev/latest/usage/identification.html
 
         # Create a new collection
         res = self.sdk.create_load_collection("my_collection")
@@ -91,23 +92,26 @@ class ConnectionHandler:
             endpoint = "http://" + self.ip + ":8090/fr-template-lite"
             f = urllib.request.urlopen(endpoint)
             decoded = json.loads(f.read().decode('utf-8'))
-            
-            # Create a faceprint, populate it
-            probe_faceprint = tfsdk.Faceprint()
-            probe_faceprint.model_name = decoded["model_name"]
-            probe_faceprint.model_options = decoded["model_options"]
-            probe_faceprint.sdk_version = decoded["sdk_version"]
-            probe_faceprint.feature_vector = decoded["feature_vector"]
 
-            # Now run 1 to N identification
-            ret_code, found, candidate = self.sdk.identify_top_candidate(probe_faceprint)
-            if ret_code != tfsdk.ERRORCODE.NO_ERROR:
-                print("Something went wrong!")
-            elif found == True:
-                print("Found match with identity:", candidate.identity)
-                print("Match probability:", candidate.match_probability)
+            if 'error' in decoded.keys():
+                print("There was an error getting the template")
             else:
-                print("Unable to find match")
+                # Create a faceprint, populate it
+                probe_faceprint = tfsdk.Faceprint()
+                probe_faceprint.model_name = decoded["model_name"]
+                probe_faceprint.model_options = decoded["model_options"]
+                probe_faceprint.sdk_version = decoded["sdk_version"]
+                probe_faceprint.feature_vector = decoded["feature_vector"]
+
+                # Now run 1 to N identification
+                ret_code, found, candidate = self.sdk.identify_top_candidate(probe_faceprint)
+                if ret_code != tfsdk.ERRORCODE.NO_ERROR:
+                    print("Something went wrong!")
+                elif found == True:
+                    print("Found match with identity:", candidate.identity)
+                    print("Match probability:", candidate.match_probability)
+                else:
+                    print("Unable to find match")
 
         print()
             
