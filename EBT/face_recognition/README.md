@@ -1,7 +1,11 @@
 # Face Recognition EBT Integration
 
 ## Overview
-This sample app demonstrates how to build a facial recognition application and integrate with the EBT solution
+This sample app demonstrates how to build a facial recognition application and integrate with the EBT solution.
+
+Face templates are first enrolled into a collection on the client. This collection can represent people of interest, authorized employees, etc.
+Next, we listen to the websocket packet and wait for a face detected event. Once this event is detected, a face template is requested from the camera using the `GET /fr-template` or `GET /fr-template-lite` endpoints. This face template is then searched against the collection on the client to determine of there is a match.
+
 
 ## API Documentation
 [Documentation](https://docs.google.com/document/d/1BAZO66pC694ZPZEqDvVaWI0cFafzIbz9qaNmkXRG0Tw/edit?usp=sharing)
