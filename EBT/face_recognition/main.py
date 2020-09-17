@@ -131,7 +131,7 @@ class ConnectionHandler:
 
     def start_connection(self):
         # Creates the websocket connection
-        websocket.enableTrace(True)
+        websocket.enableTrace(False)
         websocket_ip = "ws://" + self.ip + ":8091"
         print(websocket_ip)
         self.ws = websocket.WebSocketApp(websocket_ip,
