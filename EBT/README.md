@@ -9,5 +9,5 @@
 ## Sample Apps
 * [Sample frontend app](./temperature_detection_frontend)
 * [Face recognition](./face_recognition)
-* [Temperature Based Email alerts](./temperature_alerts)
+* [Temperature Based Alerts](./temperature_alerts)
 

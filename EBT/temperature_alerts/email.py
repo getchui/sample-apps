@@ -112,7 +112,7 @@ class ConnectionHandler:
                     if self.faceprint:
                         # Check to see if the identity is the same
                         res =  self.faceprint.compare(probe_faceprint)
-                        if res["cosine_similarity"] > 0.25:
+                        if res["cosine_similarity"] > 0.2:
                             # Same identity, so let's skip. 
                             # We already sent a notification for this identity
                             return
