@@ -14,7 +14,7 @@ The apps also use facial recognition to ensure we only send one notification per
 - Download the python bindings library from [here](https://reference.trueface.ai/cpp/dev/latest/index.html#x86-64-python-bindings), then move the library to the same directory as `main.py`
 
 ## Prerequisites - Email
-The `email.py` sample app uses the gmail smtp server. You will therefore need to have or create a gmail account to run the demo.
+The `send_email.py` sample app uses the gmail smtp server. You will therefore need to have or create a gmail account to run the demo.
 "Allow less secure apps" must be turned ON for the gmail account. This can be done at the following link: https://myaccount.google.com/lesssecureapps
 
 ## Prerequisites - SMS
@@ -42,7 +42,7 @@ The `email.py` sample app uses the gmail smtp server. You will therefore need to
         # TODO: Set this threshold to whatever you want
         self.temperature_threshold_C = 35 # In degrees C
 
-- `python3 email.py`
+- `python3 send_email.py`
 
 ## Running the Demo - SMS
 - Export your trueface token as an environment variable: `export TRUEFACE_TOKEN=${TRUEFACE_TOKEN}`
@@ -64,4 +64,4 @@ The `email.py` sample app uses the gmail smtp server. You will therefore need to
         # TODO: Set this threshold to whatever you want
         self.temperature_threshold_C = 35 # In degrees C
 
-- `python3 text.py`
+- `python3 send_text.py`
