@@ -99,11 +99,10 @@ class ConnectionHandler:
                 print("There was an error getting the template")
             else:
                 # Create a faceprint, populate it
-                probe_faceprint = tfsdk.Faceprint()
-                probe_faceprint.model_name = decoded["model_name"]
-                probe_faceprint.model_options = decoded["model_options"]
-                probe_faceprint.sdk_version = decoded["sdk_version"]
-                probe_faceprint.feature_vector = decoded["feature_vector"]
+                errorcode, probe_faceprint = tfsdk.SDK.json_to_faceprint(json.dumps(decoded))
+                if (errorcode != tfsdk.ERRORCODE.NO_ERROR):
+                    print("There was an error decoding the json to a faceprint")
+                    return
 
                 # Now run 1 to N identification
                 ret_code, found, candidate = self.sdk.identify_top_candidate(probe_faceprint)
