@@ -54,7 +54,7 @@ os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = "rtsp_transport;udp"
 
 if isinstance(filepath, int):
     out_directory = os.path.curdir
-    filename = "camera{}.mkv".format(filepath)
+    filename = "camera{}.mp4".format(filepath)
 elif 'youtube' in filepath:
     video = pafy.new(filepath)
     best = video.getbest(preftype="mp4")
@@ -63,7 +63,7 @@ elif 'youtube' in filepath:
     filename = best.filename
 elif 'rtsp://' in filepath:
     out_directory = '.'
-    filename = 'rtsp.stream.h264.mp4'
+    filename = f"{datetime.datetime.now().strftime('%Y%m%d.%H:%M:%S')}.rtsp.stream.h264.mp4"
 else:
     out_directory = os.path.dirname(filepath)
     filename = os.path.basename(filepath)
@@ -94,11 +94,11 @@ options = tfsdk.ConfigurationOptions()
 options.enable_GPU = True
 options.GPU_device_index = 0
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.FULL
+options.fd_filter = tfsdk.FACEDETECTIONFILTER.HIGH_PRECISION
 options.fr_vector_compression = True
 options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE
 options.smallest_face_height = int(scaled_height / 10)
-options.models_path = "/home/seelaman/Workspace/trueface/trueface.base/" \
-                      "tfsdk_python3.7.gpu/trueface_sdk"
+options.models_path = "/home/camarografiatrueface/Descargas/cuda6.0.fdchange/tfsdk_python3.7/trueface_sdk"
 # options.smallest_face_height = 100
 
 sdk = tfsdk.SDK(options)
@@ -113,7 +113,9 @@ collection_file = "my_database.db"
 sdk.create_database_connection(collection_file)
 res = sdk.create_load_collection("my_collection")
 
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
+#fourcc = cv2.VideoWriter_fourcc(*'XVID')
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+#fourcc = cv2.VideoWriter_fourcc(*'X264')
 
 out = cv2.VideoWriter(os.path.join(out_directory,
                                    "detected-FULL-{}".format(filename)),
@@ -147,7 +149,7 @@ out = cv2.VideoWriter(os.path.join(out_directory,
 
 
 counter = 0
-frameskip = 10
+frameskip = 2
 
 faceboxes = []
 candidate = None
@@ -159,7 +161,7 @@ first_face_detected = False
 identities = {}
 
 logfile_name = f"{sys.argv[0]}." \
-               f"{datetime.datetime.now().strftime('%Y%m%d.%H:%m:%s')}.log"
+               f"{datetime.datetime.now().strftime('%Y%m%d.%H:%M:%S')}.log"
 logfile = open(logfile_name, 'w')
 logfile.write(f"timestamp,match,identity,similarity_measure,"
               f"match_probability,message\n")
@@ -167,7 +169,7 @@ while True:
     res, frame = cap.read()
     if not res:
         break
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S')
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     frame = cv2.resize(frame, (scaled_width, scaled_height), cv2.INTER_AREA)
     font = cv2.FONT_HERSHEY_SIMPLEX
     # print(f"counter: {counter}")
@@ -201,16 +203,21 @@ while True:
     if res != tfsdk.ERRORCODE.NO_ERROR:
         message = f"Unable to set frame."
         logfile.write(f"{timestamp},False,,,,{message}\n")
+        logfile.flush()
 
         cv2.putText(frame, timestamp, (20, 20), font, 1, (255, 255, 255), 2)
         out.write(frame)
         if first_face_detected:
             cv2.imshow(filename, frame)
         continue
+
+    faceboxes = []
     faceboxes = sdk.detect_faces()
     if not faceboxes or len(faceboxes) == 0:
         message = "Unable to detect faces."
+        identities = {}
         logfile.write(f"{timestamp},False,,,,{message}\n")
+        logfile.flush()
         cv2.putText(frame, timestamp, (20, 20), font, 1, (255, 255, 255), 2)
         out.write(frame)
         if first_face_detected:
@@ -219,6 +226,8 @@ while True:
 
     # Run 1:N search for all extracted faces
     identities = {}
+    faceboxes = [facebox for facebox in faceboxes if facebox.score > 0.961]
+
     for i, facebox in enumerate(faceboxes):
         res, faceprint = sdk.get_face_feature_vector(facebox)
         identities[i] = {}
@@ -227,19 +236,22 @@ while True:
             message = "skipping facebox"
             identities[i]['label'] = "Skipping"
             logfile.write(f"{timestamp},False,,,,{message}\n")
+            logfile.flush()
             continue
         first_face_detected = True
         res, match_bool, candidate = sdk.identify_top_candidate(faceprint,
-                                                                threshold=0.4)
+                                                                threshold=0.5)
         draw_rectangle(frame, facebox)
         if res != tfsdk.ERRORCODE.NO_ERROR:
             message = "Error identifying match"
             identities[i]['label'] = "id error"
             logfile.write(f"{timestamp},False,,,,{message}\n")
+            logfile.flush()
             continue
         elif not match_bool:
             message = "No matching face in collection"
             logfile.write(f"{timestamp},False,,,,{message}\n")
+            logfile.flush()
             identities[i]['label'] = "Unknown"
             identities[i]['match_probability'] = 0
             identities[i]['similarity_measure'] = 0
@@ -252,6 +264,7 @@ while True:
                 f"{timestamp},{match_bool},{identities[i]['label']},"
                 f"{identities[i]['similarity_measure']},"
                 f"{identities[i]['match_probability']},\n")
+            logfile.flush()
 
             continue
         elif match_bool:
@@ -271,6 +284,7 @@ while True:
                 f"{timestamp},{match_bool},{candidate.identity},"
                 f"{candidate.similarity_measure},"
                 f"{candidate.match_probability},\n")
+            logfile.flush()
 
     cv2.putText(frame, timestamp, (20, 20), font, 1, (255, 255, 255), 2)
     out.write(frame)
