@@ -1,7 +1,12 @@
 # Trueface SDK C++ Sample App
 ## Facial Recognition - 1:N Identification
-This sample app demonstrates the use of 1:N matching. Templates are first generated and enrolled into a collection with their associated ID.
-Next, all faces are extracted from the camera frame and used to generate templates. If any of these templates match those in the collection, the identity is draw on the image. 
+This sample app demonstrates the use of 1:N matching. 
+Face Recognition templates are first generated and enrolled into a collection with their associated ID.
+The quality of these enrollment images are checked before enrolling into the collection as we want to ensure only high quality images are enrolled in collections.
+Meanwhile, a separate thread is launched which grabs frames from an RTSP stream.
+Face recognition is then run on these RTSP frames. 
+If any of the identities match those in the collection, the identity and bounding box is draw on the video stream.
+The video stream is then displayed in real time.  
 
 ### Demo
 ![alt text](./demo_gifs/demo1.gif)
