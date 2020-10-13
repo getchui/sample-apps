@@ -264,7 +264,7 @@ int main() {
 
         cv::imshow("frame", frame);
 
-        if (cv::waitKey(10) == 27) {
+        if (cv::waitKey(1) == 27) {
             run = false;
             break; // stop capturing by pressing ESC
         }
