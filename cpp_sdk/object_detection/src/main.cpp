@@ -1,8 +1,72 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <memory>
+#include <atomic>
 
 #include "tf_sdk.h"
 #include "tf_data_types.h"
+
+// Utility class for grabbing RTSP stream frames
+// Runs in alternate thread to ensure we always have the latest frame from our RTSP stream
+class StreamController{
+public:
+    explicit StreamController(std::atomic<bool>& run)
+            : m_run(run)
+    {
+        // Launch a thread to start the rtsp processing
+        m_rtspThread = std::make_unique<std::thread>(&StreamController::rtspThreadFunc, this);
+    }
+
+    ~StreamController() {
+        // Stop the thread function loop
+        m_run = false;
+        if (m_rtspThread && m_rtspThread->joinable()) {
+            m_rtspThread->join();
+        }
+    }
+
+    void rtspThreadFunc() {
+        cv::VideoCapture cap;
+        // Open the default camera, use something different from 0 otherwise
+        if (!cap.open(0)) {
+            throw std::runtime_error("Unable to open video capture");
+        }
+
+        while(m_run) {
+            // Read the frame from the VideoCapture source
+            cv::Mat tempFrame;
+            cap >> tempFrame;
+            if (tempFrame.empty()) {
+                m_run = false;
+                break; // End of video stream
+            }
+
+            m_mtx.lock();
+            m_frame = tempFrame;
+            m_processed = false;
+            m_mtx.unlock();
+        }
+    }
+
+    // Returns true is the frame has not yet been processed
+    // That way we can avoid running inference on the same frame multiple times (if our main loop is faster than the rtsp loop)
+    bool grabFrame(cv::Mat& frame) {
+        const std::lock_guard<std::mutex> lock(m_mtx);
+        frame = m_frame;
+        const auto hasProcessed = !m_processed;
+        m_processed = true;
+        return hasProcessed;
+    }
+private:
+    std::unique_ptr<std::thread> m_rtspThread = nullptr;
+    std::mutex m_mtx;
+    cv::Mat m_frame;
+    bool m_processed = true;
+    std::atomic<bool>& m_run;
+};
+
 
 // Utility function for drawing the label on our image
 void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin, const cv::Scalar& color) {
@@ -20,7 +84,12 @@ void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin,
 
 
 int main() {
-    Trueface::SDK tfSdk;
+    std::atomic<bool> run {true};
+    StreamController streamController(run);
+
+    Trueface::ConfigurationOptions options;
+    options.objModel = Trueface::ObjectDetectionModel::ACCURATE; // Can choose the FAST model here instead
+    Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
     const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
@@ -29,20 +98,13 @@ int main() {
         return -1;
     }
 
-    cv::VideoCapture cap;
-    // Open the default camera, use something different from 0 otherwise
-    if (!cap.open(0)) {
-        std::cout << "Unable to open video capture\n";
-        return -1;
-    }
-
-    while(true) {
-        // Read the frame from the VideoCapture source
+    while(run) {
+        // Grab the latest frame
+        // Only process and display if it is a 'fresh' frame and has not already been processed
         cv::Mat frame;
-        cap >> frame;
-
-        if (frame.empty()) {
-            break; // End of video stream
+        auto shouldProcess = streamController.grabFrame(frame);
+        if (!shouldProcess) {
+            continue;
         }
 
         // Set the image using the capture frame buffer
@@ -82,7 +144,8 @@ int main() {
 
         cv::imshow("frame", frame);
 
-        if (cv::waitKey(10) == 27) {
+        if (cv::waitKey(1) == 27) {
+            run = false;
             break; // stop capturing by pressing ESC
         }
     }
