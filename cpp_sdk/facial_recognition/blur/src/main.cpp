@@ -3,9 +3,73 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <memory>
+#include <atomic>
 
 #include "tf_sdk.h"
 #include "tf_data_types.h"
+
+// Utility class for grabbing RTSP stream frames
+// Runs in alternate thread to ensure we always have the latest frame from our RTSP stream
+class StreamController{
+public:
+    explicit StreamController(std::atomic<bool>& run)
+            : m_run(run)
+    {
+        // Launch a thread to start the rtsp processing
+        m_rtspThread = std::make_unique<std::thread>(&StreamController::rtspThreadFunc, this);
+    }
+
+    ~StreamController() {
+        // Stop the thread function loop
+        m_run = false;
+        if (m_rtspThread && m_rtspThread->joinable()) {
+            m_rtspThread->join();
+        }
+    }
+
+    void rtspThreadFunc() {
+        cv::VideoCapture cap;
+        // Open the default camera, use something different from 0 otherwise
+        if (!cap.open(0)) {
+            throw std::runtime_error("Unable to open video capture");
+        }
+
+        while(m_run) {
+            // Read the frame from the VideoCapture source
+            cv::Mat tempFrame;
+            cap >> tempFrame;
+            if (tempFrame.empty()) {
+                m_run = false;
+                break; // End of video stream
+            }
+
+            m_mtx.lock();
+            m_frame = tempFrame;
+            m_processed = false;
+            m_mtx.unlock();
+        }
+    }
+
+    // Returns true is the frame has not yet been processed
+    // That way we can avoid running inference on the same frame multiple times (if our main loop is faster than the rtsp loop)
+    bool grabFrame(cv::Mat& frame) {
+        const std::lock_guard<std::mutex> lock(m_mtx);
+        frame = m_frame;
+        const auto hasProcessed = !m_processed;
+        m_processed = true;
+        return hasProcessed;
+    }
+private:
+    std::unique_ptr<std::thread> m_rtspThread = nullptr;
+    std::mutex m_mtx;
+    cv::Mat m_frame;
+    bool m_processed = true;
+    std::atomic<bool>& m_run;
+};
 
 // Utility function for drawing the label on our image
 void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin, const cv::Scalar& color) {
@@ -23,13 +87,18 @@ void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin,
 
 
 int main() {
+    std::atomic<bool> run {true};
+    StreamController streamController(run);
+
     // TODO: Select a threshold for your application using the ROC curves
     // https://performance.trueface.ai/
     const float threshold = 0.3;
 
+    // TODO: If you have a NVIDIA gpu, then enable the enableGPU flag (you will require a GPU specific token for this).
     Trueface::ConfigurationOptions options;
-    options.frModel = Trueface::FacialRecognitionModel::LITE;
-    options.dbms = Trueface::DatabaseManagementSystem::NONE; // The data will not persist
+    options.frModel = Trueface::FacialRecognitionModel::LITE; // TODO: Can use full model here for better performance
+    options.dbms = Trueface::DatabaseManagementSystem::NONE; // The data will not persist after the app terminates using this backend option.
+    options.smallestFaceHeight = 40; // https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface20ConfigurationOptions18smallestFaceHeightE
     Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
@@ -64,9 +133,52 @@ int main() {
         return -1;
     }
 
+    // Detect the face in the image
+    Trueface::FaceBoxAndLandmarks faceBoxAndLandmarks;
+    bool faceDetected;
+    errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, faceDetected);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "There was an error with the call to detectLargestFace\n";
+        return -1;
+    }
+
+    if (!faceDetected) {
+        std::cout << "Unable to detect face\n";
+        return -1;
+    }
+
+    // We want to only enroll high quality images into the database / collection
+    // Therefore, ensure that the face height is at least 100px
+    if ((faceBoxAndLandmarks.bottomRight.y - faceBoxAndLandmarks.topLeft.y) < 100) {
+        std::cout << "The face is too small in the image for a high quality enrollment." << std::endl;
+        return -1;
+    }
+
+    // Get the aligned face chip so that we can compute the image quality
+    uint8_t alignedImage[37632];
+    errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, alignedImage);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "There was an error extracting the aligned face\n";
+        return -1;
+    }
+
+    float quality;
+    errorCode = tfSdk.estimateFaceImageQuality(alignedImage, quality);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Unable to compute image quality\n";
+        return -1;
+    }
+
+    // Ensure the image quality is above 0.8 (you can change this threshold).
+    // Once again, we only want to enroll high quality images into our collection
+    if (quality < 0.8) {
+        std::cout << "Please choose a higher quality enrollment image\n";
+        return -1;
+    }
+
     // Generate the enrollment template
     Trueface::Faceprint enrollmentFaceprint;
-    errorCode = tfSdk.getLargestFaceFeatureVector(enrollmentFaceprint);
+    errorCode = tfSdk.getFaceFeatureVector(alignedImage, enrollmentFaceprint);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
@@ -83,20 +195,13 @@ int main() {
 
     // Can add other template pairs to the gallery here...
 
-    cv::VideoCapture cap;
-    // Open the default camera, use something different from 0 otherwise
-    if (!cap.open(0)) {
-        std::cout << "Unable to open video capture\n";
-        return -1;
-    }
-
-    while(true) {
-        // Read the frame from the VideoCapture source
+    while(run) {
+        // Grab the latest frame
+        // Only process and display if it is a 'fresh' frame and has not already been processed
         cv::Mat frame;
-        cap >> frame;
-
-        if (frame.empty()) {
-            break; // End of video stream
+        auto shouldProcess = streamController.grabFrame(frame);
+        if (!shouldProcess) {
+            continue;
         }
 
         // Set the image using the capture frame buffer
@@ -115,13 +220,9 @@ int main() {
         faceprints.reserve(bboxVec.size());
 
         for (const auto &bbox: bboxVec) {
-            // Obtain the aligned chip
-            uint8_t alignedChip[112 * 112 * 3];
-            tfSdk.extractAlignedFace(bbox, alignedChip);
-
             // Get the face feature vector
             Trueface::Faceprint tmpFaceprint;
-            tfSdk.getFaceFeatureVector(alignedChip, tmpFaceprint);
+            tfSdk.getFaceFeatureVector(bbox, tmpFaceprint);
             faceprints.emplace_back(std::move(tmpFaceprint));
         }
 
@@ -164,6 +265,7 @@ int main() {
         cv::imshow("frame", frame);
 
         if (cv::waitKey(10) == 27) {
+            run = false;
             break; // stop capturing by pressing ESC
         }
 

@@ -218,13 +218,9 @@ int main() {
         faceprints.reserve(bboxVec.size());
 
         for (const auto &bbox: bboxVec) {
-            // Obtain the aligned chip
-            uint8_t alignedChip[112 * 112 * 3];
-            tfSdk.extractAlignedFace(bbox, alignedChip);
-
             // Get the face feature vector
             Trueface::Faceprint tmpFaceprint;
-            tfSdk.getFaceFeatureVector(alignedChip, tmpFaceprint);
+            tfSdk.getFaceFeatureVector(bbox, tmpFaceprint);
             faceprints.emplace_back(std::move(tmpFaceprint));
         }
 
