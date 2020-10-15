@@ -3,6 +3,7 @@
 #include <thread>
 #include <mutex>
 #include <memory>
+#include <chrono>
 #include <atomic>
 
 #include "tf_sdk.h"
@@ -15,7 +16,13 @@ public:
     explicit StreamController(std::atomic<bool>& run)
             : m_run(run)
     {
-        // Launch a thread to start the rtsp processing
+        // Open the video capture
+        // Open the default camera (TODO: Can change the camera source, for example to an RTSP stream)
+        if (!m_cap.open(0)) {
+            throw std::runtime_error("Unable to open video capture");
+        }
+
+        // Launch a thread to start grab the newest frame from the frame buffer
         m_rtspThread = std::make_unique<std::thread>(&StreamController::rtspThreadFunc, this);
     }
 
@@ -28,43 +35,31 @@ public:
     }
 
     void rtspThreadFunc() {
-        cv::VideoCapture cap;
-        // Open the default camera, use something different from 0 otherwise
-        if (!cap.open(0)) {
-            throw std::runtime_error("Unable to open video capture");
-        }
+        double fps = m_cap.get(cv::CAP_PROP_FPS);
+        int sleepDurationMs = static_cast<int>(1.0 / fps);
+        std::cout << "Sleep duration: " << sleepDurationMs << std::endl;
 
         while(m_run) {
-            // Read the frame from the VideoCapture source
-            cv::Mat tempFrame;
-            cap >> tempFrame;
-            if (tempFrame.empty()) {
-                m_run = false;
-                break; // End of video stream
-            }
+            // Sleep so that we match the camera frame rate
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleepDurationMs));
 
+            // Grab a frame from the frame buffer, discard the return value
             m_mtx.lock();
-            m_frame = tempFrame;
-            m_processed = false;
+            m_cap.grab();
             m_mtx.unlock();
         }
     }
 
-    // Returns true is the frame has not yet been processed
-    // That way we can avoid running inference on the same frame multiple times (if our main loop is faster than the rtsp loop)
+    // Returns true if a frame was grabber
     bool grabFrame(cv::Mat& frame) {
         const std::lock_guard<std::mutex> lock(m_mtx);
-        frame = m_frame;
-        const auto hasProcessed = !m_processed;
-        m_processed = true;
-        return hasProcessed;
+        return m_cap.retrieve(frame);
     }
 private:
     std::unique_ptr<std::thread> m_rtspThread = nullptr;
     std::mutex m_mtx;
-    cv::Mat m_frame;
-    bool m_processed = true;
     std::atomic<bool>& m_run;
+    cv::VideoCapture m_cap;
 };
 
 
@@ -99,8 +94,7 @@ int main() {
     }
 
     while(run) {
-        // Grab the latest frame
-        // Only process and display if it is a 'fresh' frame and has not already been processed
+        // Grab the latest frame from the videostream
         cv::Mat frame;
         auto shouldProcess = streamController.grabFrame(frame);
         if (!shouldProcess) {
