@@ -8,6 +8,7 @@
 #include <memory>
 #include <atomic>
 #include <chrono>
+#include <cmath>
 
 #include "tf_sdk.h"
 #include "tf_data_types.h"
@@ -143,7 +144,9 @@ int main() {
 
     // We want to only enroll high quality images into the database / collection
     // Therefore, ensure that the face height is at least 100px
-    if ((faceBoxAndLandmarks.bottomRight.y - faceBoxAndLandmarks.topLeft.y) < 100) {
+    auto faceHeight = faceBoxAndLandmarks.bottomRight.y - faceBoxAndLandmarks.topLeft.y;
+    std::cout << "Face height: " << faceHeight << std::endl;
+    if (faceHeight < 100) {
         std::cout << "The face is too small in the image for a high quality enrollment." << std::endl;
         return -1;
     }
@@ -163,12 +166,26 @@ int main() {
         return -1;
     }
 
-    // Ensure the image quality is above 0.8 (you can change this threshold).
+    // Ensure the image quality is above a threshold (TODO: adjust this threshold based on your use case).
     // Once again, we only want to enroll high quality images into our collection
+    std::cout << "Face quality: " << quality << std::endl;
     if (quality < 0.8) {
         std::cout << "Please choose a higher quality enrollment image\n";
         return -1;
     }
+
+    // As a final check, we can check the orientation of the head and ensure that it is facing forward
+    // To see the effect of yaw and pitch on the match score, refer to: https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
+    float yaw, pitch, roll;
+    errorCode = tfSdk.estimateHeadOrientation(faceBoxAndLandmarks, yaw, pitch, roll);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        std::cout << "Unable to compute head orientation\n";
+        return -1;
+    }
+
+    std::cout << "Yaw: " << yaw * 180 / M_PI  << ", Pitch: " << pitch * 180 / M_PI << ", Roll: " << roll * 180 / M_PI << " degrees" << std::endl;
+
+    // TODO: Can filter out images with extreme yaw and pitch here
 
     // Generate the enrollment template
     Trueface::Faceprint enrollmentFaceprint;
