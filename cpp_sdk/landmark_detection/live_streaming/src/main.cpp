@@ -70,6 +70,7 @@ int main() {
     Trueface::ConfigurationOptions options;
     options.fdFilter = Trueface::FaceDetectionFilter::BALANCED; // https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface19FaceDetectionFilterE
     options.fdMode = Trueface::FaceDetectionMode::VERSATILE; // https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface17FaceDetectionModeE
+    options.smallestFaceHeight = 40; // https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface20ConfigurationOptions18smallestFaceHeightE
 
     Trueface::SDK tfSdk(options);
 

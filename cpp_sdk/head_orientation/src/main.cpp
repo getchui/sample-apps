@@ -85,7 +85,9 @@ int main() {
     RunningAvg pitchAvg(NUM_ELEM);
     RunningAvg rollAvg(NUM_ELEM);
 
-    Trueface::SDK tfSdk;
+    Trueface::ConfigurationOptions options;
+    options.smallestFaceHeight = 40;
+    Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
     const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
