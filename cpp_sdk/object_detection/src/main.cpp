@@ -36,8 +36,7 @@ public:
 
     void rtspThreadFunc() {
         double fps = m_cap.get(cv::CAP_PROP_FPS);
-        int sleepDurationMs = static_cast<int>(1.0 / fps);
-        std::cout << "Sleep duration: " << sleepDurationMs << std::endl;
+        int sleepDurationMs = static_cast<int>(1000 / fps);
 
         while(m_run) {
             // Sleep so that we match the camera frame rate
