@@ -1,10 +1,9 @@
 # Face Recognition EBT Integration
 
 ## Overview
-This sample app demonstrates how to build a facial recognition application and integrate with the EBT solution.
+There are two sample apps contained within this project. Both demonstrate how to build a face recognition application which integrates with the EBT solution and how to consume the websocket stream.
 
-Face templates are first enrolled into a collection on the client. This collection can represent people of interest, authorized employees, etc.
-Next, we listen to the websocket packet and wait for a face detected event. Once this event is detected, a face template is requested from the camera using the `GET /fr-template` or `GET /fr-template-lite` endpoints. This face template is then searched against the collection on the client to determine of there is a match.
+The first app, named `fr_with_endpoints.py` achieves this by generating face recognition templates using the `GET /fr-template` or `GET /fr-template-lite` endpoints. These endpoints generate templates within the EBT application. In the case of the IRYX camera, these templates are generated directly onboard the camera. The IRYX camera currently only supports the LITE model as the full model has not yet been ported over (in progress). Therefore in order to use the FULL model with the IRYX EBT solution, follow the second solution, named `fr_with_sdk.py`. In this demo, the aligned face chips, which are sent as part of the websocket packet, are used to generate face recognition templates using the SDK.
 
 
 ## API Documentation
@@ -14,9 +13,10 @@ Next, we listen to the websocket packet and wait for a face detected event. Once
 
 ## Prerequisites
 - You will need to have the EBT application running on your camera.
-- Download the python bindings library from [here](https://reference.trueface.ai/cpp/dev/latest/index.html#x86-64-python-bindings), then move the library to the same directory as `main.py`
+- Download the python bindings library from [here](https://reference.trueface.ai/cpp/dev/latest/index.html#x86-64-python-bindings), then move the library to this directory.
 
 ## Running the demo
 - Export your trueface token as an environment variable: `export TRUEFACE_TOKEN=${TRUEFACE_TOKEN}`
 - Export the camera IP address as an environment variable: `export IP_ADDRESS=${CAMERA_IP_ADDRESS}`
-- `python3 main.py`
+- `python3 fr_with_endpoints.py`
+- `python3 fr_with_sdk.py`
