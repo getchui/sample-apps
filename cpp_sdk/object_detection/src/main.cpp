@@ -43,6 +43,7 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(sleepDurationMs));
 
             // Grab a frame from the frame buffer, discard the return value
+            // This will discard built up frames in the buffer to ensure we only process the latest frame to remove any delay
             m_mtx.lock();
             m_cap.grab();
             m_mtx.unlock();
@@ -93,7 +94,7 @@ int main() {
     }
 
     while(run) {
-        // Grab the latest frame from the videostream
+        // Grab the latest frame from the video stream
         cv::Mat frame;
         auto shouldProcess = streamController.grabFrame(frame);
         if (!shouldProcess) {
@@ -114,6 +115,9 @@ int main() {
         // Display the bounding boxes and labels for the detected objects
         for (const auto& bbox: bboxVec) {
             // TODO: Can use the bbox.probability to filter results if desired
+//            if (bbox.probability < SOME_THRESHOLD) {
+//                continue;
+//            }
 
             // TODO: Can set color for each class
             cv::Scalar color;
