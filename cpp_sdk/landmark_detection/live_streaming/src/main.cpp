@@ -67,7 +67,11 @@ int main() {
     std::atomic<bool> run {true};
     StreamController streamController(run);
 
-    Trueface::SDK tfSdk;
+    Trueface::ConfigurationOptions options;
+    options.fdFilter = Trueface::FaceDetectionFilter::BALANCED; // https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface19FaceDetectionFilterE
+    options.fdMode = Trueface::FaceDetectionMode::VERSATILE; // https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface17FaceDetectionModeE
+
+    Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
     const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
@@ -96,21 +100,18 @@ int main() {
         tfSdk.detectFaces(landmarksVec);
 
         // Display the landmark locations and bounding box on the image
-        for (const auto& landmarks: landmarksVec) {
-            // Only use the landmarks / bounding box if the score is above 0.90
-            if (landmarks.score < 0.90)
-                continue;
+        for (const auto& faceBoxAndLandmarks: landmarksVec) {
 
             // Draw a rectangle using the top left and bottom right coordinates of the bounding box
-            cv::Point topLeft(landmarks.topLeft.x, landmarks.topLeft.y);
-            cv::Point bottomRight(landmarks.bottomRight.x, landmarks.bottomRight.y);
+            cv::Point topLeft(faceBoxAndLandmarks.topLeft.x, faceBoxAndLandmarks.topLeft.y);
+            cv::Point bottomRight(faceBoxAndLandmarks.bottomRight.x, faceBoxAndLandmarks.bottomRight.y);
             cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
 
             // Draw the facial landmarks
             // the facial landmark points: left eye, right eye, nose, left mouth corner, right mouth corner
-            for (const auto& landmark: landmarks.landmarks) {
+            for (const auto& landmark: faceBoxAndLandmarks.landmarks) {
                 cv::Point p(landmark.x, landmark.y);
-                cv::circle(frame, p, 1, cv::Scalar(0, 255, 0), 3, cv::LINE_AA);
+                cv::circle(frame, p, 2, cv::Scalar(0, 255, 0), 3, cv::LINE_AA);
             }
         }
 
