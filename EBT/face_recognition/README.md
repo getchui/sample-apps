@@ -3,7 +3,7 @@
 ## Overview
 There are two sample apps contained within this project. Both demonstrate how to build a face recognition application which integrates with the EBT solution and how to consume the websocket stream.
 
-The first app, named `fr_with_endpoints.py` achieves this by generating face recognition templates using the `GET /fr-template` or `GET /fr-template-lite` endpoints. These endpoints generate templates within the EBT application. In the case of the IRYX camera, these templates are generated directly onboard the camera. The IRYX camera currently only supports the LITE model as the full model has not yet been ported over (in progress). Therefore in order to use the FULL model with the IRYX EBT solution, follow the second solution, named `fr_with_sdk.py`. In this demo, the aligned face chips, which are sent as part of the websocket packet, are used to generate face recognition templates using the SDK.
+The first app, named `fr_with_endpoints.py` achieves this by generating face recognition templates using the `GET /fr-template` or `GET /fr-template-lite` endpoints. These endpoints generate templates within the EBT application. In the case of the IRYX camera, these templates are generated directly onboard the camera. The IRYX camera currently only supports the LITE model because the full model has not yet been ported over (in progress). Therefore in order to use the FULL model with the IRYX EBT solution, follow the second solution, named `fr_with_sdk.py`. In this demo, the aligned face chips, which are sent as part of the websocket packet, are used to generate face recognition templates using the SDK.
 
 
 ## API Documentation
