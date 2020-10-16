@@ -180,6 +180,7 @@ class Controller:
             print("--------------------------------------------")
 
         while True:
+            # TODO: If the queue get's too backed up, can remove some items without processing
             template = templateQueue.get()
             errorcode, probe_faceprint = tfsdk.SDK.json_to_faceprint(template)
             if (errorcode != tfsdk.ERRORCODE.NO_ERROR):
@@ -194,6 +195,7 @@ class Controller:
                 print("Match probability:", candidate.match_probability)
             else:
                 print("Unable to find match")
+            print(" ")
 
 
 
