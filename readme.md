@@ -7,7 +7,7 @@ For support, please visit https://trueface.freshdesk.com/
 
 ## Sample Apps
 * [C++ SDK](./cpp_sdk/)
-* [Python SDK](./python_sdk/)
+* [Python SDK (depricated)](./python_sdk/)
 * [Visionbox](./visionbox_apps/)
 * [Elevated Body Temperature](./EBT/)
 
