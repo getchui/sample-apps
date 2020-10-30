@@ -9,9 +9,9 @@ Additionally, both sample apps demonstrate how to use the worker queue pattern.
 
 
 ## API Documentation
-[Documentation](https://docs.google.com/document/d/1BAZO66pC694ZPZEqDvVaWI0cFafzIbz9qaNmkXRG0Tw/edit?usp=sharing)
+[Documentation](https://docs.trueface.ai/ebt-docs)
 
-[Postman Collection](https://documenter.getpostman.com/view/12009415/T17M7RNe?version=latest)
+[Postman Collection](https://docs.trueface.ai/ebt-postman)
 
 ## Prerequisites
 - You will need to have the EBT application running on your camera.
