@@ -8,9 +8,22 @@
 #include <atomic>
 #include <queue>
 #include <condition_variable>
+#include <csignal>
 
 #include "tf_sdk.h"
 #include "tf_data_types.h"
+
+bool Run = true;
+std::mutex Mtx;
+std::condition_variable ConditionVariable;
+
+void sigstop(int a) {
+    {
+        std::lock_guard<std::mutex> lock(Mtx);
+        Run = false;
+    }
+    ConditionVariable.notify_one();
+}
 
 class Controller {
 public:
@@ -21,10 +34,25 @@ public:
         options.smallestFaceHeight = 40;
         options.dbms = Trueface::DatabaseManagementSystem::POSTGRESQL;
 
-        // Create our worker threads
+        // Create a rtsp worker thread for each rtsp stream
         for (const auto& rtspURL: rtspURLs) {
             std::thread t(&Controller::grabAndEnqueueFrames, this, rtspURL);
-            m_rtspWorkerThreads.emplace_back(std::move(t));
+            m_workerThreads.emplace_back(std::move(t));
+        }
+
+        // Create only a single worker thread for face detection (will use 8 threads for inference)
+        size_t numFaceDetectionWorkerThreads = 1;
+        for (size_t i = 0; i < numFaceDetectionWorkerThreads; ++i) {
+            std::thread t(&Controller::detectAndEnqueueFaces, this, sdkToken, options);
+            m_workerThreads.emplace_back(std::move(t));
+        }
+
+        // Create a few worker threads for template extraction as this is slower (> 100ms).
+        // Each worker can use up to 8 threads for inference
+        size_t numTemplateExtractionWorkerThreads = 2;
+        for (size_t i = 0; i < numTemplateExtractionWorkerThreads; ++i) {
+            std::thread t(&Controller::extractAndEnqueueTemplate, this, sdkToken, options);
+            m_workerThreads.emplace_back(std::move(t));
         }
     }
 
@@ -36,17 +64,20 @@ public:
 
     // Signal to all the work threads that it's time to stop
     void terminate() {
+        std::cout << "Terminate command received, shutting down all worker threads..." << std::endl;
         m_run = false;
 
         m_imageQueueCondVar.notify_all();
         m_faceChipQueueCondVar.notify_all();
 
         // Wait for all of our threads
-        for (auto& t: m_rtspWorkerThreads) {
-            t.join();
+        for (auto& t: m_workerThreads) {
+            if (t.joinable()) {
+                t.join();
+            }
         }
 
-        m_rtspWorkerThreads.clear();
+        m_workerThreads.clear();
 
         m_terminated = true;
     }
@@ -81,12 +112,13 @@ private:
             {
                 std::lock_guard<std::mutex> lock(m_imageQueueMtx);
                 m_imageQueue.push(std::move(frame));
+                std::cout << "Image Queue Size " << m_imageQueue.size() << std::endl;
             }
 
             m_imageQueueCondVar.notify_one();
         }
 
-        std::cout << "Kill command received, rtsp thread shutting down..." << std::endl;
+        std::cout << "RTSP thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
     }
 
     // Function for searching for all faces in the frame and pushing the aligned face chips
@@ -148,12 +180,51 @@ private:
                 {
                     std::lock_guard<std::mutex> lock(m_faceChipQueueMtx);
                     m_faceChipQueue.push(std::move(faceImage));
+                    std::cout << "Face chip queue size: " << m_faceChipQueue.size() << std::endl;
                 }
                 m_faceChipQueueCondVar.notify_one();
             }
         }
+        std::cout << "Face detection thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
+    }
 
+    // Function for generating a face recognition template from the face chips.
+    // The face templates are then added to a queue to be processed for identification
+    void extractAndEnqueueTemplate(const std::string& sdkToken, const Trueface::ConfigurationOptions& options) {
+        // Create and initialize a Trueface SDK
+        Trueface::SDK tfSdk(options);
+        auto ret = tfSdk.setLicense(sdkToken);
+        if (!ret) {
+            throw std::runtime_error("Invalid token");
+        }
 
+        // Main loop
+        while (m_run) {
+            std::vector<uint8_t> faceImage;
+            // wait for work
+            {
+                std::unique_lock<std::mutex> lock(m_faceChipQueueMtx);
+                m_faceChipQueueCondVar.wait(lock, [this] {return !this->m_faceChipQueue.empty() || !this->m_run;});
+
+                if (!m_run) {
+                    // Exit signal received
+                    break;
+                }
+
+                faceImage = std::move(m_faceChipQueue.front());
+                m_faceChipQueue.pop();
+            }
+
+            // Generate a face recognition template from the face image
+            Trueface::Faceprint faceprint;
+            auto retcode = tfSdk.getFaceFeatureVector(faceImage.data(), faceprint);
+            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+                std::cout << "Thread " << std::this_thread::get_id() << ": Unable to generate feature vector" << std::endl;
+                continue;
+            }
+
+            // TODO: DO something with the feature vector
+        }
     }
 
     // Shared queues and their mutexes
@@ -169,19 +240,31 @@ private:
 
     // When set to false, worker threads should stop running
     std::atomic<bool> m_run {true};
-    bool m_terminated = false;
+    std::atomic<bool> m_terminated {false};
 
     // Worker threads
-    std::vector<std::thread> m_rtspWorkerThreads;
+    std::vector<std::thread> m_workerThreads;
 };
 
 int main() {
+    // The main thread will sleep until a stop signal is received
+    signal(SIGINT, sigstop);
+    signal(SIGQUIT, sigstop);
+    signal(SIGTERM, sigstop);
+
     // TODO Cyrus, remove token
-    const std::string token = "";
+    // Simulate connecting to 4 different RTSP streams
     std::vector<std::string> rtspURLS = {
+            "rtsp://root:!admin@192.168.0.11/stream1",
+            "rtsp://root:!admin@192.168.0.11/stream1",
+            "rtsp://root:!admin@192.168.0.11/stream1",
             "rtsp://root:!admin@192.168.0.11/stream1",
     };
 
     // Starts our main process
     Controller controller(token, rtspURLS);
+
+    // Have the main thread sleep until kill signal recieved
+    std::unique_lock<std::mutex> lock(Mtx);
+    ConditionVariable.wait(lock, []{return !Run;});
 }
