@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(
         cpp_sample_apps_fr_1_N
-        DESCRIPTION "Trueface C++ SDK sample app, facial recognition, 1:N"
+        DESCRIPTION "Trueface C++ SDK sample app, facial recognition, 1:N thread pool CPU"
         LANGUAGES CXX
 )
 
