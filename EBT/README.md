@@ -1,9 +1,9 @@
 # Elevated Body Temperature (EBT)
 
 ## API Documentation
-[Documentation](https://docs.google.com/document/d/1BAZO66pC694ZPZEqDvVaWI0cFafzIbz9qaNmkXRG0Tw/edit?usp=sharing)
+[Documentation](https://docs.trueface.ai/ebt-docs)
 
-[Postman Collection](https://documenter.getpostman.com/view/12009415/T17M7RNe?version=latest)
+[Postman Collection](https://docs.trueface.ai/ebt-postman)
 
 
 ## Sample Apps
