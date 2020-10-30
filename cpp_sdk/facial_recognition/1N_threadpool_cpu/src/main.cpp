@@ -9,6 +9,7 @@
 #include <queue>
 #include <condition_variable>
 #include <csignal>
+#include <unistd.h>
 
 #include "tf_sdk.h"
 #include "tf_data_types.h"
@@ -27,12 +28,17 @@ void sigstop(int a) {
 
 class Controller {
 public:
-    Controller(const std::string& sdkToken, const std::vector<std::string>& rtspURLs) {
+    Controller(const std::string& sdkToken, const std::vector<std::string>& rtspURLs,
+               const std::string& databaseConnectionURL, const std::string& collectionName) {
         // Choose our SDK configuration options
         Trueface::ConfigurationOptions options;
-        options.frModel = Trueface::FacialRecognitionModel::FULL;
+        // Since we are running on CPU only, use the lite model
+        options.frModel = Trueface::FacialRecognitionModel::LITE;
         options.smallestFaceHeight = 40;
         options.dbms = Trueface::DatabaseManagementSystem::POSTGRESQL;
+
+        // Create our logging thread
+        m_workerThreads.emplace_back(std::thread(&Controller::logQueueSizes, this));
 
         // Create a rtsp worker thread for each rtsp stream
         for (const auto& rtspURL: rtspURLs) {
@@ -40,18 +46,24 @@ public:
             m_workerThreads.emplace_back(std::move(t));
         }
 
-        // Create only a single worker thread for face detection (will use 8 threads for inference)
-        size_t numFaceDetectionWorkerThreads = 1;
+        // Create our face detection worker threads
+        size_t numFaceDetectionWorkerThreads = 2;
         for (size_t i = 0; i < numFaceDetectionWorkerThreads; ++i) {
             std::thread t(&Controller::detectAndEnqueueFaces, this, sdkToken, options);
             m_workerThreads.emplace_back(std::move(t));
         }
 
-        // Create a few worker threads for template extraction as this is slower (> 100ms).
-        // Each worker can use up to 8 threads for inference
-        size_t numTemplateExtractionWorkerThreads = 2;
+        // Create template extraction worker threads
+        size_t numTemplateExtractionWorkerThreads = 3;
         for (size_t i = 0; i < numTemplateExtractionWorkerThreads; ++i) {
             std::thread t(&Controller::extractAndEnqueueTemplate, this, sdkToken, options);
+            m_workerThreads.emplace_back(std::move(t));
+        }
+
+        // Create identification worker thread
+        size_t numIdentificationWorkerThreads = 1;
+        for (size_t i = 0; i < numIdentificationWorkerThreads; ++i) {
+            std::thread t (&Controller::identifyTemplate, this, sdkToken, options, databaseConnectionURL, collectionName, i == 0);
             m_workerThreads.emplace_back(std::move(t));
         }
     }
@@ -69,6 +81,7 @@ public:
 
         m_imageQueueCondVar.notify_all();
         m_faceChipQueueCondVar.notify_all();
+        m_faceprintQueueCondVar.notify_all();
 
         // Wait for all of our threads
         for (auto& t: m_workerThreads) {
@@ -82,6 +95,27 @@ public:
         m_terminated = true;
     }
 private:
+    // Function for logging the queue sizes
+    void logQueueSizes() {
+        while(m_run) {
+            // If the queue sizes get too large,
+            // then you need to create more workers or reduce the number of input streams
+            sleep(2);
+            {
+                std::lock_guard<std::mutex> lock (m_imageQueueMtx);
+                std::cout << "Image Queue Size: " << m_imageQueue.size() << std::endl;
+            }
+            {
+                std::lock_guard<std::mutex> lock (m_faceChipQueueMtx);
+                std::cout << "Face Chip Queue Size: " << m_faceChipQueue.size() << std::endl;
+            }
+            {
+                std::lock_guard<std::mutex> lock (m_faceprintQueueMtx);
+                std::cout << "Faceprint Queue Size: " << m_faceprintQueue.size() << std::endl;
+            }
+        }
+    }
+
     // Function for connecting to an RTSP stream and enrolling frames into a queue.
     // Assuming our cameras stream at 30FPS, we will only process every 6th frame
     // to process at 5FPS because any higher and we end up processing very similar frames
@@ -112,7 +146,6 @@ private:
             {
                 std::lock_guard<std::mutex> lock(m_imageQueueMtx);
                 m_imageQueue.push(std::move(frame));
-                std::cout << "Image Queue Size " << m_imageQueue.size() << std::endl;
             }
 
             m_imageQueueCondVar.notify_one();
@@ -180,7 +213,6 @@ private:
                 {
                     std::lock_guard<std::mutex> lock(m_faceChipQueueMtx);
                     m_faceChipQueue.push(std::move(faceImage));
-                    std::cout << "Face chip queue size: " << m_faceChipQueue.size() << std::endl;
                 }
                 m_faceChipQueueCondVar.notify_one();
             }
@@ -223,24 +255,108 @@ private:
                 continue;
             }
 
-            // TODO: DO something with the feature vector
+            // Push the faceprint into the queue and indicate that work is ready
+            {
+                std::lock_guard<std::mutex> lock (m_faceprintQueueMtx);
+                m_faceprintQueue.push(std::move(faceprint));
+            }
+
+            m_faceprintQueueCondVar.notify_one();
         }
+        std::cout << "Template extraction thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
+    }
+
+    void identifyTemplate(const std::string& sdkToken, const Trueface::ConfigurationOptions& options,
+                          const std::string& databaseURL, const std::string& collectionName, bool first) {
+        // Create and initialize a Trueface SDK
+        Trueface::SDK tfSdk(options);
+        auto ret = tfSdk.setLicense(sdkToken);
+        if (!ret) {
+            throw std::runtime_error("Invalid token");
+        }
+
+        // As long as all instances of the SDK are in the same process, then only one instance needs to connect to the database
+        // To learn more, read the top of: https://reference.trueface.ai/cpp/dev/latest/usage/identification.html
+        if (first) {
+            auto retcode = tfSdk.createDatabaseConnection(databaseURL);
+            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+                throw std::runtime_error("Unable to connect to database");
+            }
+
+            retcode = tfSdk.createLoadCollection(collectionName);
+            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+                throw std::runtime_error("Unable to create new collection or load existing collection");
+            }
+
+            {
+                std::lock_guard<std::mutex> lock(m_databaseConnectionMtx);
+                m_databaseConnected = true;
+            }
+            m_databaseConnectionConVar.notify_all();
+        } else {
+            // Wait for the first thread to connect to the database
+            {
+                std::unique_lock<std::mutex> lock (m_databaseConnectionMtx);
+                m_databaseConnectionConVar.wait(lock, [this]{return this->m_databaseConnected;});
+            }
+        }
+
+
+        // Main loop
+        while(m_run) {
+            Trueface::Faceprint faceprint;
+            // Wait for work
+            {
+                std::unique_lock<std::mutex> lock(m_faceprintQueueMtx);
+                m_imageQueueCondVar.wait(lock, [this]{ return !this->m_faceprintQueue.empty() || !this->m_run;});
+
+                if (!m_run) {
+                    // Exit signal received
+                    break;
+                }
+
+                faceprint = std::move(m_faceprintQueue.front());
+                m_faceprintQueue.pop();
+            }
+
+            // Run 1 to N identification
+            Trueface::Candidate candidate;
+            bool found;
+            auto retcode = tfSdk.identifyTopCandidate(faceprint, candidate, found);
+            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+                std::cout << "Unable to run identify top candidate" << std::endl;
+            }
+
+            if (found) {
+                // A match was found
+                // TODO: Do something with match information, run callback function, etc
+                // For the sake of the demo, we will just log it to the console
+                std::cout << "Match found: " << candidate.identity << " with " << candidate.matchProbability << " probability" << std::endl;
+            }
+        }
+        std::cout << "Identify thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
     }
 
     // Shared queues and their mutexes
     std::queue<cv::Mat> m_imageQueue;
     std::queue<std::vector<uint8_t>> m_faceChipQueue;
+    std::queue<Trueface::Faceprint> m_faceprintQueue;
 
     std::mutex m_imageQueueMtx;
     std::mutex m_faceChipQueueMtx;
+    std::mutex m_faceprintQueueMtx;
+    std::mutex m_databaseConnectionMtx;
 
     // Conditional variables for indicating work is ready
     std::condition_variable m_imageQueueCondVar;
     std::condition_variable m_faceChipQueueCondVar;
+    std::condition_variable m_faceprintQueueCondVar;
+    std::condition_variable m_databaseConnectionConVar;
 
     // When set to false, worker threads should stop running
     std::atomic<bool> m_run {true};
     std::atomic<bool> m_terminated {false};
+    bool m_databaseConnected  = false;
 
     // Worker threads
     std::vector<std::thread> m_workerThreads;
@@ -252,9 +368,17 @@ int main() {
     signal(SIGQUIT, sigstop);
     signal(SIGTERM, sigstop);
 
-    // TODO Cyrus, remove token
-    // Simulate connecting to 4 different RTSP streams
+    // TODO: Replace with your license token
+    const std::string token = "<LICENSE_CODE>";
+
+    // TODO: Fill out your database connection string and collection name
+    // Should point to an existing collection that you have already filled with enrollment templates.
+    const std::string postgresConnectionString = "host=localhost port=5432 dbname=my_database user=postgres password=admin";
+    const std::string collectionName = "my_collection";
+
+    // Simulate connecting to 6 different RTSP streams
     std::vector<std::string> rtspURLS = {
+            "rtsp://root:!admin@192.168.0.11/stream1",
             "rtsp://root:!admin@192.168.0.11/stream1",
             "rtsp://root:!admin@192.168.0.11/stream1",
             "rtsp://root:!admin@192.168.0.11/stream1",
@@ -262,9 +386,9 @@ int main() {
     };
 
     // Starts our main process
-    Controller controller(token, rtspURLS);
+    Controller controller(token, rtspURLS, postgresConnectionString, collectionName);
 
-    // Have the main thread sleep until kill signal recieved
+    // Have the main thread sleep until kill signal received
     std::unique_lock<std::mutex> lock(Mtx);
     ConditionVariable.wait(lock, []{return !Run;});
 }
