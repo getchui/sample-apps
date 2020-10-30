@@ -18,7 +18,7 @@ public:
     {
         // Open the video capture
         // Open the default camera (TODO: Can change the camera source, for example to an RTSP stream)
-        if (!m_cap.open("rtsp://root:!admin@192.168.0.11/stream1")) {
+        if (!m_cap.open(0)) {
             throw std::runtime_error("Unable to open video capture");
         }
 
@@ -75,7 +75,7 @@ int main() {
     Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
-    const auto isValid = tfSdk.setLicense("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbW90aW9uIjp0cnVlLCJmciI6dHJ1ZSwiYnlwYXNzX2dwdV91dWlkIjp0cnVlLCJwYWNrYWdlX2lkIjpudWxsLCJleHBpcnlfZGF0ZSI6IjIwMjEtMDEtMDEiLCJncHVfdXVpZCI6W10sInRocmVhdF9kZXRlY3Rpb24iOnRydWUsIm1hY2hpbmVzIjoxLCJhbHByIjp0cnVlLCJuYW1lIjoiQ3lydXMgR1BVIiwidGtleSI6Im5ldyIsImV4cGlyeV90aW1lX3N0YW1wIjoxNjA5NDU5MjAwLjAsImF0dHJpYnV0ZXMiOnRydWUsInR5cGUiOiJvZmZsaW5lIiwiZW1haWwiOiJjeXJ1c0B0cnVlZmFjZS5haSJ9.2uQZTG_AXcHVXEFahbvkM8-gmosLPxjSSnbfEAz5gpY");
+    const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
     if (!isValid) {
         std::cout << "Error: the provided license is invalid\n";
         return -1;
@@ -97,21 +97,23 @@ int main() {
         }
 
         // Get the landmark locations
-        Trueface::FaceBoxAndLandmarks faceBoxAndLandmarks;
-        bool found;
-        tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
-        if (!found) {
-            continue;
-        }
-
-        std::vector<Trueface::Point<int>> points;
-        tfSdk.getFaceLandmarks(faceBoxAndLandmarks, points);
-
+        std::vector<Trueface::FaceBoxAndLandmarks> landmarksVec;
+        tfSdk.detectFaces(landmarksVec);
 
         // Display the landmark locations and bounding box on the image
-        for (const auto& point: points) {
-            cv::Point p(point.x, point.y);
-            cv::circle(frame, p, 2, cv::Scalar(0, 255, 0), 3, cv::LINE_AA);
+        for (const auto& faceBoxAndLandmarks: landmarksVec) {
+
+            // Draw a rectangle using the top left and bottom right coordinates of the bounding box
+            cv::Point topLeft(faceBoxAndLandmarks.topLeft.x, faceBoxAndLandmarks.topLeft.y);
+            cv::Point bottomRight(faceBoxAndLandmarks.bottomRight.x, faceBoxAndLandmarks.bottomRight.y);
+            cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
+
+            // Draw the facial landmarks
+            // the facial landmark points: left eye, right eye, nose, left mouth corner, right mouth corner
+            for (const auto& landmark: faceBoxAndLandmarks.landmarks) {
+                cv::Point p(landmark.x, landmark.y);
+                cv::circle(frame, p, 2, cv::Scalar(0, 255, 0), 3, cv::LINE_AA);
+            }
         }
 
         cv::imshow("frame", frame);
