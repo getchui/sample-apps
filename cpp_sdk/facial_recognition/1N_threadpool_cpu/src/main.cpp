@@ -5,10 +5,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
-#include <memory>
 #include <atomic>
-#include <chrono>
-#include <cmath>
 #include <queue>
 #include <condition_variable>
 
@@ -17,8 +14,42 @@
 
 class Controller {
 public:
-    Controller(const std::string& sdkToken, const std::vector<std::string>& rtspURLs);
+    Controller(const std::string& sdkToken, const std::vector<std::string>& rtspURLs) {
+        // Choose our SDK configuration options
+        Trueface::ConfigurationOptions options;
+        options.frModel = Trueface::FacialRecognitionModel::FULL;
+        options.smallestFaceHeight = 40;
+        options.dbms = Trueface::DatabaseManagementSystem::POSTGRESQL;
 
+        // Create our worker threads
+        for (const auto& rtspURL: rtspURLs) {
+            std::thread t(&Controller::grabAndEnqueueFrames, this, rtspURL);
+            m_rtspWorkerThreads.emplace_back(std::move(t));
+        }
+    }
+
+    ~Controller() {
+        if (!m_terminated) {
+            terminate();
+        }
+    }
+
+    // Signal to all the work threads that it's time to stop
+    void terminate() {
+        m_run = false;
+
+        m_imageQueueCondVar.notify_all();
+        m_faceChipQueueCondVar.notify_all();
+
+        // Wait for all of our threads
+        for (auto& t: m_rtspWorkerThreads) {
+            t.join();
+        }
+
+        m_rtspWorkerThreads.clear();
+
+        m_terminated = true;
+    }
 private:
     // Function for connecting to an RTSP stream and enrolling frames into a queue.
     // Assuming our cameras stream at 30FPS, we will only process every 6th frame
@@ -138,4 +169,19 @@ private:
 
     // When set to false, worker threads should stop running
     std::atomic<bool> m_run {true};
+    bool m_terminated = false;
+
+    // Worker threads
+    std::vector<std::thread> m_rtspWorkerThreads;
 };
+
+int main() {
+    // TODO Cyrus, remove token
+    const std::string token = "";
+    std::vector<std::string> rtspURLS = {
+            "rtsp://root:!admin@192.168.0.11/stream1",
+    };
+
+    // Starts our main process
+    Controller controller(token, rtspURLS);
+}
