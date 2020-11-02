@@ -3,7 +3,7 @@
 This sample apps demonstrates how to build a scalable architecture for 1 to N search using a thread pool with CPU only.
 For the sake of demonstration, the entire app is contained within a single process (which is not very scalable in itself).
 In order to make it truly scalable, separate each worker thread into it's own microservice process, and use a Message Queue system
-such as Redis to facilitate communication between the processes. This allows for the microservices to be distributed across multiple devices.
+such as [Redis](https://redis.io/clients#c--) to facilitate communication between the processes. This allows for the microservices to be distributed across multiple devices.
 Therefore more services can be spun up (each running on their own CPU) as the demand increases.
 This app shows the general approach you can take - primarily, how to pass data between services (which are simulated by different threads) 
 and which SDK functions to call. 

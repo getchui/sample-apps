@@ -5,9 +5,9 @@ The two sample apps in this directory demonstrate how to send alerts when the de
 The apps also use facial recognition to ensure we only send one notification per identity with elevated temperature.
 
 ## API Documentation
-[Documentation](https://docs.google.com/document/d/1BAZO66pC694ZPZEqDvVaWI0cFafzIbz9qaNmkXRG0Tw/edit?usp=sharing)
+[Documentation](https://docs.trueface.ai/ebt-docs)
 
-[Postman Collection](https://documenter.getpostman.com/view/12009415/T17M7RNe?version=latest)
+[Postman Collection](https://docs.trueface.ai/ebt-postman)
 
 ## Prerequisites - Common
 - You will need to have the EBT application running on your camera.
