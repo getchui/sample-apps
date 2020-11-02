@@ -44,6 +44,15 @@ class Controller:
         templateGenerationProcess.daemon = True
         templateGenerationProcess.start()
 
+        # Create processes to monitor the queue size
+        templateQueueStatusProcess = Process(target=self.printQueueStatus, args=(self.templateQueue, "Template Queue"))
+        templateQueueStatusProcess.daemon = True
+        templateQueueStatusProcess.start()
+
+        facechipQueueStatusProcess = Process(target=self.printQueueStatus, args=(self.faceChipQueue, "Facechip Queue"))
+        facechipQueueStatusProcess.daemon = True
+        facechipQueueStatusProcess.start()
+
         self.start_connection()
 
     def on_message(self, message):
@@ -94,6 +103,13 @@ class Controller:
                               on_close = self.on_close,
                               on_open = self.on_open)
         self.ws.run_forever()
+
+    def printQueueStatus(self, queue, queuename):
+        while True:
+            # Sleep for 1 second, then print the size of the queue
+            time.sleep(1)
+            print("[STATUS]", queuename, "size:", queue.qsize())
+
 
     def generateTemplate(self, templateQueue, faceChipQueue, token, options):
         # Initialize the trueface SDK
