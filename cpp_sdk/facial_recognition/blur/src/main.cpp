@@ -257,8 +257,8 @@ int main() {
                 setLabel(frame, candidate.identity, topLeft, color);
             } else {
                 // The identity was not found, blur the face
-                // Can change the blur size depending on the level of blur desired
-                size_t blurSize = 45;
+                const auto faceWidth = bbox.bottomRight.x - bbox.topLeft.x;
+                const auto blurSize = static_cast<int>(faceWidth / 8);
 
                 // The identity was not found, blur the face
                 cv::Rect blurRect(bbox.topLeft.x, bbox.topLeft.y, bbox.bottomRight.x - bbox.topLeft.x, bbox.bottomRight.y - bbox.topLeft.y);
