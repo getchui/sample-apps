@@ -69,6 +69,8 @@ public:
     }
 
     ~Controller() {
+        // Must check value of m_terminated before calling terminate()
+        // because user of the API could have manually called terminate()
         if (!m_terminated) {
             terminate();
         }
