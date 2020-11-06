@@ -14,16 +14,16 @@
 #include "tf_sdk.h"
 #include "tf_data_types.h"
 
-bool Run = true;
-std::mutex Mtx;
-std::condition_variable ConditionVariable;
+bool g_run = true;
+std::mutex g_mtx;
+std::condition_variable g_conditionVariable;
 
 void sigstop(int a) {
     {
-        std::lock_guard<std::mutex> lock(Mtx);
-        Run = false;
+        std::lock_guard<std::mutex> lock(g_mtx);
+        g_run = false;
     }
-    ConditionVariable.notify_one();
+    g_conditionVariable.notify_one();
 }
 
 class Controller {
@@ -130,7 +130,7 @@ private:
 
         // Main loop
         while(m_run) {
-            // Only retrieve ever 6th frame from the stream
+            // Only retrieve ever 6th frame from the stream (5FPS)
             for (auto i = 0; i < 6; ++i) {
                 cap.grab();
             }
@@ -389,6 +389,6 @@ int main() {
     Controller controller(token, rtspURLS, postgresConnectionString, collectionName);
 
     // Have the main thread sleep until kill signal received
-    std::unique_lock<std::mutex> lock(Mtx);
-    ConditionVariable.wait(lock, []{return !Run;});
+    std::unique_lock<std::mutex> lock(g_mtx);
+    g_conditionVariable.wait(lock, []{return !g_run;});
 }
