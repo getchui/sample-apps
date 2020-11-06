@@ -376,7 +376,7 @@ int main() {
     const std::string postgresConnectionString = "host=localhost port=5432 dbname=my_database user=postgres password=admin";
     const std::string collectionName = "my_collection";
 
-    // Simulate connecting to 6 different RTSP streams
+    // Simulate connecting to 5 different 1920x1080 resolution RTSP streams
     std::vector<std::string> rtspURLS = {
             "rtsp://root:!admin@192.168.0.11/stream1",
             "rtsp://root:!admin@192.168.0.11/stream1",
