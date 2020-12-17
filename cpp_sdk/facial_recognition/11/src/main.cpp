@@ -23,9 +23,10 @@ int main() {
 
     // Generate a template from the first image
     Trueface::Faceprint faceprint1;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint1);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-        std::cout << "Error: Unable to generate template\n";
+    bool foundFace;
+    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint1, foundFace);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR || !foundFace) {
+        std::cout << "Error: Unable to generate template, no face detected\n";
         return -1;
     }
 
@@ -38,9 +39,9 @@ int main() {
 
     // Generate a template from the second image
     Trueface::Faceprint faceprint2;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint2);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-        std::cout << "Error: Unable to generate template\n";
+    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint2, foundFace);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR || !foundFace) {
+        std::cout << "Error: Unable to generate template, no face detected\n";
         return -1;
     }
 
@@ -63,9 +64,9 @@ int main() {
 
     // Generate a template from the second third
     Trueface::Faceprint faceprint3;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint3);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-        std::cout << "Error: Unable to generate template\n";
+    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint3, foundFace);
+    if (errorCode != Trueface::ErrorCode::NO_ERROR || !foundFace) {
+        std::cout << "Error: Unable to generate template, no face detected\n";
         return -1;
     }
 

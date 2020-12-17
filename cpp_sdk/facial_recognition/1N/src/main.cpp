@@ -198,7 +198,7 @@ int main() {
     // Add the enrollment template to our collection
     // Any data that is added to the collection will persist after the application is terminated because of the DatabaseManagementSystem we chose.
     std::string UUID;
-    errorCode = tfSdk.enrollTemplate(enrollmentFaceprint, "Armstrong", UUID);
+    errorCode = tfSdk.enrollFaceprint(enrollmentFaceprint, "Armstrong", UUID);
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to enroll template\n";
         return -1;
