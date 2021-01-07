@@ -20,6 +20,8 @@ class App extends Component {
       loading: '',
       results: [],
       ip:'',
+      username:'',
+      password:'',
       snapshot:null,
       camera_type:'IRYX',
       host:"192.168.1.3",
@@ -40,7 +42,7 @@ class App extends Component {
     this.setState({"camera_type": event.target.value});
   }
 
-  play (host, encoding = 'h264', pipeline) {
+  play (host, username, password, encoding = 'h264', pipeline) {
       try {
         console.log('play');
 
@@ -66,10 +68,14 @@ class App extends Component {
           videoEl.style.display = 'none'
           canvasEl.style.display = ''
         }
+
+        let rtspUri = "rtsp://"+ username + ":" + password + "@" +host+"/stream6"
+        console.log(rtspUri)
+
         // Setup a new pipeline
         const pipeline = new Pipeline({
           ws: { uri: "ws://"+host+"/rtsp-over-websocket" },
-          rtsp: { uri: "rtsp://"+host+"/stream6" },
+          rtsp: { uri: rtspUri },
           mediaElement,
         })
 
@@ -99,7 +105,7 @@ class App extends Component {
           console.log(host, encoding)
 
           // await authorize(host)
-          pipeline = this.play(host, encoding, pipeline);
+          pipeline = this.play(host, this.state.username, this.state.password, encoding, pipeline);
       }
       this.listen_for_events();
 
@@ -180,6 +186,22 @@ class App extends Component {
                           class="form-control" placeholder="Camera IP"
                           onChange={(event) => this.setState({ip: event.target.value})} 
                           value={this.state.ip} />
+                      </div>
+                    </Col>
+                  </Row>
+                  <Row center="xs" center="lg" center="md">
+                    <Col xs={10} sm={10} md={6} lg={6}>
+                      <div className="input-group mb-3">
+                          <input 
+                          type="text" 
+                          class="form-control" placeholder="IRYX username"
+                          onChange={(event) => this.setState({username: event.target.value})} 
+                          value={this.state.username} />
+                          <input 
+                          type="text" 
+                          class="form-control" placeholder="IRYX password"
+                          onChange={(event) => this.setState({password: event.target.value})} 
+                          value={this.state.password} />
                       </div>
                     </Col>
                   </Row>
