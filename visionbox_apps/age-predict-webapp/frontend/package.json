@@ -5,7 +5,7 @@
   "proxy": "http://localhost:5000",
   "dependencies": {
     "axios": "^0.21.1",
-    "less": "^4.0.0",
+    "less": "^4.1.0",
     "less-watch-compiler": "^1.14.6",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
