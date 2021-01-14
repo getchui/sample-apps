@@ -7,18 +7,21 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
-    automerged_updates: "yes"
+    assignees:
+      - "yudataguy"
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/visionbox_apps/age-predict-webapp/frontend/"
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
-    automerged_updates: "yes"
+    assignees:
+      - "yudataguy"
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/visionbox_apps/age-predict-webapp/server/"
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
-    automerged_updates: "yes"
+    assignees:
+      - "yudataguy"
