@@ -11,6 +11,7 @@
 * [Object Detection](./object_detection/)
 * [Facial Recognition - 1:1 Identification](./facial_recognition/11/)
 * [Facial Recognition - 1:N Identification](./facial_recognition/1N/)
+* [Facial Recognition - 1:N Identification Read Write Video](./facial_recognition/1N_read_write_video/)
 * [Facial Recognition - 1:N Identification with Thread Pool (CPU)](./facial_recognition/1N_threadpool_cpu/)
 * [Facial Recognition - 1:1 Identification with Blur](./facial_recognition/blur/)
 * [Head Orientation](./head_orientation/)
