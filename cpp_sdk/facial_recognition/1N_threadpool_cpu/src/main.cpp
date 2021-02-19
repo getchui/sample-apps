@@ -33,7 +33,8 @@ public:
         // Choose our SDK configuration options
         Trueface::ConfigurationOptions options;
         // Since we are running on CPU only, use the lite model
-        options.frModel = Trueface::FacialRecognitionModel::LITE;
+        options.frModel = Trueface::FacialRecognitionModel::LITE; // If you want better accuracy, use the TFV5 model.
+        // Note, if you do use TFV5, you will need to run the download script in /download_models to obtain the model file
         options.smallestFaceHeight = 40;
         options.dbms = Trueface::DatabaseManagementSystem::POSTGRESQL;
 
