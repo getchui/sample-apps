@@ -6,7 +6,7 @@ For documentation, please visit https://docs.trueface.ai/
 For support, please visit https://trueface.freshdesk.com/
 
 ## Sample Apps
-* [SDK](./cpp_sdk/) We currently only have C++ sample apps for the SDK.
+* [SDK](./cpp_sdk/) - We currently only have C++ sample apps for the SDK.
 * [Visionbox](./visionbox_apps/)
 * [Elevated Body Temperature](./EBT/)
 
