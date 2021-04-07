@@ -6,8 +6,7 @@ For documentation, please visit https://docs.trueface.ai/
 For support, please visit https://trueface.freshdesk.com/
 
 ## Sample Apps
-* [C++ SDK](./cpp_sdk/)
-* [Python SDK (depricated)](./python_sdk_deprecated/). Note, this python SDK is different from our *new* SDK which does offer python bindings. 
+* [SDK](./cpp_sdk/) We currently only have C++ sample apps for the SDK.
 * [Visionbox](./visionbox_apps/)
 * [Elevated Body Temperature](./EBT/)
 
