@@ -7,7 +7,7 @@
 int main() {
     // For a full list of configuration options, visit: https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface20ConfigurationOptionsE
     Trueface::ConfigurationOptions options;
-    options.frModel = Trueface::FacialRecognitionModel::LITE; // TODO: Can use TFV5 model here for better performance
+    options.frModel = Trueface::FacialRecognitionModel::TFV5;
     // Note, if you do use TFV5, you will need to run the download script in /download_models to obtain the model file
     // TODO: If you have a NVIDIA gpu, then enable the enableGPU flag (you will require a GPU specific token for this).
 

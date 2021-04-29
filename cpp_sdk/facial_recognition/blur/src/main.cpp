@@ -91,7 +91,7 @@ int main() {
 
     // TODO: If you have a NVIDIA gpu, then enable the enableGPU flag (you will require a GPU specific token for this).
     Trueface::ConfigurationOptions options;
-    options.frModel = Trueface::FacialRecognitionModel::LITE; // TODO: Can use full model here for better performance
+    options.frModel = Trueface::FacialRecognitionModel::TFV5;
     options.dbms = Trueface::DatabaseManagementSystem::NONE; // The data will not persist after the app terminates using this backend option.
     options.smallestFaceHeight = 40; // https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface20ConfigurationOptions18smallestFaceHeightE
     Trueface::SDK tfSdk(options);
