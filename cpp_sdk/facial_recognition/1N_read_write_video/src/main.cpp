@@ -30,12 +30,13 @@ void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin,
 
 int main() {
     // TODO: Select a threshold for your application using the ROC curves
-    // https://performance.trueface.ai/
+    // https://docs.trueface.ai/ROC-Curves-d47d2730cf0a44afacb39aae0ed1b45a
     const float threshold = 0.3;
 
     // TODO: If you have a NVIDIA gpu, then enable the enableGPU flag (you will require a GPU specific token for this).
     Trueface::ConfigurationOptions options;
     options.frModel = Trueface::FacialRecognitionModel::TFV5; 
+
     // Note, if you do use TFV5, you will need to run the download script in /download_models to obtain the model file
 
     options.dbms = Trueface::DatabaseManagementSystem::NONE; // The data will not persist after the app terminates using this backend option.
