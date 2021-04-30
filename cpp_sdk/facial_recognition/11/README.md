@@ -10,7 +10,9 @@ The templates are then compared to generate a similarity score.
 
 ### Build Instructions
 * Place Trueface include files and `libtf.a` in `../../trueface_sdk/`
+* Download the appropriate face recognition model using the download scripts which come bundled with the SDK. 
 * replace `<LICENSE_CODE>` with your license code in `src/main.cpp`
 * `mkdir build && cd build`
 * `cmake ..`
 * `make`
+
