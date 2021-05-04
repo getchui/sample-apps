@@ -6,7 +6,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "less": "^4.1.1",
-    "less-watch-compiler": "^1.14.7",
+    "less-watch-compiler": "^1.15.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-loading": "^2.0.3",
