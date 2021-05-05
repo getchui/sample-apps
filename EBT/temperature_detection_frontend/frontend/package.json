@@ -13,7 +13,7 @@
     "react-dom": "^16.8.6",
     "react-flexbox-grid": "^2.1.2",
     "react-loading": "^2.0.3",
-    "react-scripts": "^3.4.1",
+    "react-scripts": "^4.0.3",
     "react-webcam": "^1.1.1"
   },
   "scripts": {
