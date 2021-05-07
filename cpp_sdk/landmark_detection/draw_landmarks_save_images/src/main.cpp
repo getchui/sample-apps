@@ -35,7 +35,7 @@ int main() {
     }
 
     // Can modify this path to point to another directory with images
-    const std::string imageDirPath = "../../../images";
+    const std::string imageDirPath = "../../../../images";
     const auto imageList = getFilesInDir(imageDirPath);
 
     int imageNum = 0;

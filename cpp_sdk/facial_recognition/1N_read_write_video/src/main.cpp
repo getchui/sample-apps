@@ -69,7 +69,7 @@ int main() {
     }
 
     // Load the image / images we want to enroll
-    errorCode = tfSdk.setImage("../../../images/obama/obama1.jpg");
+    errorCode = tfSdk.setImage("../../../../images/obama/obama1.jpg");
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to read image\n";
         return -1;
@@ -153,7 +153,7 @@ int main() {
     // Can add other template pairs to the collection here...
 
     // TODO: Add the path to your video below
-    cv::VideoCapture cap("../../../images/obama/speech.mp4");
+    cv::VideoCapture cap("../../../../images/obama/speech.mp4");
     cv::VideoWriter outputVideo;
 
     cv::Size frameSize (static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH)), static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT)));
