@@ -1,13 +1,7 @@
-# Sample code: Generate face recognition templates for images and then enroll them into a collection.
-
-# This sample app demonstrates how you can enroll face recognition templates or Faceprints into a collection on disk.
-# First, we create a database and create a new collection within that database.
-# Next, we generate face recognition templates and enroll those templates into the collection.
-# Note, after running this sample app, you can run the identification_1_n sample app.
 import tfsdk
 import os
 options = tfsdk.ConfigurationOptions()
-# Can set configuration options here
+
 
 options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE # Save the templates in an SQLITE database
 
@@ -49,9 +43,8 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 
 # Since our collection is empty, lets populate the collection with some identities
 image_identities = [
-    ("../images/brad_pitt_2.jpg", "Brad Pitt"),
-    ("../images/brad_pitt_3.jpg", "Brad Pitt"), # Can add the same identity more than once
-    ("../images/tom_cruise_1.jpg", "Tom Cruise")
+    ("../../images/armstrong/armstrong1.jpg", "Armstrong"),
+    ("../../images/obama/obama1.jpg", "Obama")
 ]
 
 for path, identity in image_identities:
