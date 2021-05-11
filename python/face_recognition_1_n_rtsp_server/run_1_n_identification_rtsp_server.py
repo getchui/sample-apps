@@ -6,11 +6,12 @@ import tfsdk
 import os
 import argparse
 
-# import required library like Gstreamer and GstreamerRtspServer
+# Import required library like Gstreamer and GstreamerRtspServer.
 gi.require_version('Gst', '1.0')
 gi.require_version('GstRtspServer', '1.0')
 from gi.repository import Gst, GstRtspServer, GLib
 
+# Utility function for drawing a label on the image.
 def draw_label(image, point, label, color_code = (194,134,58),
                font=cv2.FONT_HERSHEY_SIMPLEX,
                font_scale=1.0, thickness=2):
@@ -27,9 +28,8 @@ def draw_label(image, point, label, color_code = (194,134,58),
         image, label.capitalize(), (x_label, y_label - 5), font, font_scale,
         (0, 0, 0), thickness, cv2.LINE_AA)
 
-
+# Utility function for drawing a rectangle on the image.
 def draw_rectangle(frame, bounding_box, color_code = (194,134,58)):
-    # Draw the rectangle on the frame
     cv2.rectangle(frame,
                   (int(bounding_box.top_left.x), int(bounding_box.top_left.y)),
                   (int(bounding_box.bottom_right.x), int(bounding_box.bottom_right.y)), color_code, 3)
@@ -40,7 +40,7 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
     def __init__(self, **properties):
         super(SensorFactory, self).__init__(**properties)
         
-        # Create a connection to our input RTSP stream and obtain the width and height
+        # Create a connection to our input RTSP stream and obtain the width and height.
         # TODO Cyrus need to tell user in readme that they require opencv with gstreamer in order to use this
         # TODO Cyrus LD_LIBRARY_PATH and PYTHONPATH
         input_gstreamer_pipeline = "rtspsrc location={} ! decodebin ! videoconvert ! appsink max-buffers=2 drop=true".format(opt.input_rtsp_stream)
@@ -76,7 +76,7 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
             print("Be sure to export your license token as TRUEFACE_TOKEN")
             quit()
 
-        # Load the database and collection which we previously populated from disk
+        # Load the database and collection which we previously populated from disk.
         res = self.sdk.create_database_connection("my_database.db")
         if (res != tfsdk.ERRORCODE.NO_ERROR):
           print("Unable to create database connection")
@@ -88,12 +88,13 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
             quit()
 
         # Run a single identification query to load the model into memory before the main loop
+        # because the module uses lazy initialization.
         res = self.sdk.set_image("../../images/armstrong/armstrong1.jpg")
         if (res != tfsdk.ERRORCODE.NO_ERROR):
             print("Unable to set image 1")
             quit()
 
-        # Extract the feature vector
+        # Extract the feature vector.
         res, v1, found = self.sdk.get_largest_face_feature_vector()
         if (res != tfsdk.ERRORCODE.NO_ERROR or found == False):
             print("Unable to generate feature vector 1, no face detected")
@@ -103,44 +104,81 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
         print("Ready to accept connections...")
 
 
-    # Method for grabbing frames from the video capture, running face recognition, then pushing annotated images to streaming buffer
+    # Method for grabbing frames from the video capture, running face recognition, then pushing annotated images to streaming buffer.
     def on_need_data(self, src, lenght):
         if self.cap.isOpened():
-            # Grab a frame from the input rtsp stream
+            # Grab a frame from the input rtsp stream.
             ret, frame = self.cap.read()
             if ret:
-                # Set the image with the SDK
+                # Set the image with the SDK.
                 res = self.sdk.set_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
                 if (res == tfsdk.ERRORCODE.NO_ERROR):
 
-                    # Run face detection
-                    faceboxes = self.sdk.detect_faces()
-                    for facebox in faceboxes:
-                        did_find_match = False
+                    # The following code detects all the faces in the image and runs face recognition on all the detected faces.
+                    # Runing FR on all the detected faces can cause a variable output frame rate depending on the number of detected faces 
+                    # as FR template generation can be slow on some devices (ex. nvidia jetson).
 
-                        # Extract a feature vector for all detected faces in the image
+                    # For the sake of the demo, we will only run face recognition on the largest face in the image 
+                    # in order to achieve a fixed frame rate and keep things simple. 
+
+                    ###########################################
+                    ########## Run FR on all faces in the image
+                    ###########################################
+
+                    # faceboxes = self.sdk.detect_faces()
+                    # for facebox in faceboxes:
+                    #     did_find_match = False
+
+                    #     # Extract a feature vector for all detected faces in the image
+                    #     res, faceprint = self.sdk.get_face_feature_vector(facebox)
+                    #     if (res == tfsdk.ERRORCODE.NO_ERROR):
+                            
+                    #         # Run a 1 to N identification query against our collection
+                    #         res, match_found, candidate = self.sdk.identify_top_candidate(faceprint, threshold=0.35)
+
+                    #         if (res == tfsdk.ERRORCODE.NO_ERROR and match_found):
+                    #             # We found a match
+                    #             # Draw the label and a green box around the face
+                    #             did_find_match = True
+                    #             draw_rectangle(frame, facebox, color_code=(0, 255, 0))   
+                    #             draw_label(frame,
+                    #                        (int(facebox.top_left.x), int(facebox.top_left.y)),
+                    #                        "{} {}%".format(
+                    #                            candidate.identity,
+                    #                            int(candidate.match_probability*100)),
+                    #                        color_code=(0, 255, 0))
+                                        
+                    #     if not did_find_match:
+                    #         # Draw a blue box around the detected face
+                    #         draw_rectangle(frame, facebox)
+
+                    ###########################################
+                    ########## Run FR on only the largest face
+                    ###########################################   
+
+                    found, facebox = self.sdk.detect_largest_face()
+                    if found:
+                        found_face_id = False
+                        # Extract the feature vector for the largest face
                         res, faceprint = self.sdk.get_face_feature_vector(facebox)
                         if (res == tfsdk.ERRORCODE.NO_ERROR):
-                            
-                            # Run a 1 to N identification query against our collection
-                            res, match_found, candidate = self.sdk.identify_top_candidate(faceprint, threshold=0.4)
-
+                            # Run the identification query
+                            res, match_found, candidate = self.sdk.identify_top_candidate(faceprint, threshold=0.35)
                             if (res == tfsdk.ERRORCODE.NO_ERROR and match_found):
-                                # We found a match
-                                # Draw the label and a green box around the face
-                                did_find_match = True
+                                found_face_id = True
+                                # Draw a green rectangle around the face and the corresponding label
                                 draw_rectangle(frame, facebox, color_code=(0, 255, 0))   
                                 draw_label(frame,
-                                           (int(facebox.top_left.x), int(facebox.top_left.y)),
-                                           "{} {}%".format(
-                                               candidate.identity,
-                                               int(candidate.match_probability*100)),
-                                           color_code=(0, 255, 0))
-                                            
-               
-                        if not did_find_match:
-                            # Draw a blue box around the detected face
-                            draw_rectangle(frame, facebox)   
+                                       (int(facebox.top_left.x), int(facebox.top_left.y)),
+                                       "{} {}%".format(
+                                           candidate.identity,
+                                           int(candidate.match_probability*100)),
+                                       color_code=(0, 255, 0))
+
+
+                        if not found_face_id:
+                            # Draw a blue rectangle around the face
+                            draw_rectangle(frame, facebox)
 
                 data = frame.tobytes()
                 buf = Gst.Buffer.new_allocate(None, len(data), None)
