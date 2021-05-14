@@ -13,3 +13,4 @@ If using the GPU library, you must add the directory where the GPU library `libt
   If you download the model files to a directory other than the run directory, you must specify the path to the directory using the `tfsdk.ConfigurationOptions.models_path` configuration option.
 
 ## Sample Apps
+- [Face Recognition RTSP Server](./face_recognition_1_n_rtsp_server)
