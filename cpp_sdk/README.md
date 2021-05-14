@@ -1,9 +1,13 @@
-# Trueface SDK C++ Sample Apps
+# Trueface SDK - C++ API Sample Apps
 ## SDK Download and Documentation
-[C++ SDK Documentation](https://reference.trueface.ai/cpp/dev/latest/index.html)
+[C++ API Documentation](https://reference.trueface.ai/cpp/dev/latest/index.html)
 
 ## Getting Started
-* Place Trueface include files and `libtf.a` in `./trueface_sdk/`
+* Place Trueface include files and `libtf.a` or `libtf.so` in `./trueface_sdk/`
+* Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
+The model files can be downloaded by running the scripts in the `/download_models/` directory which comes packaged as part of the SDK download bundle. 
+  If you download the model files to a directory other than the build directory, you must specify the path to the directory using the `Trueface::ConfigurationOptions.modelsPath` configuration option. 
+
 
 ## Sample Apps
 * [Landmark Detection - Live Streaming](./landmark_detection/live_streaming)

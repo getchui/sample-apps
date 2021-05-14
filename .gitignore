@@ -13,3 +13,5 @@ node_modules
 .idea/
 .idea/workspace.xml
 spoofv4
+
+*.trueface.enc

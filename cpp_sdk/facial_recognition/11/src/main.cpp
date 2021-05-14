@@ -21,7 +21,7 @@ int main() {
     }
 
     // Load the first image of Obama
-    auto errorCode = tfSdk.setImage("../../../images/obama/obama1.jpg");
+    auto errorCode = tfSdk.setImage("../../../../images/obama/obama1.jpg");
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to read image\n";
         return -1;
@@ -37,7 +37,7 @@ int main() {
     }
 
     // Load the second image of obama
-    errorCode = tfSdk.setImage("../../../images/obama/obama2.jpg");
+    errorCode = tfSdk.setImage("../../../../images/obama/obama2.jpg");
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: uanble to read image\n";
         return -1;
@@ -62,7 +62,7 @@ int main() {
     std::cout << "Similarity between two Obama images: " << matchProbabilitiy << "\n";
 
     // Load image of armstrong
-    errorCode = tfSdk.setImage("../../../images/armstrong/armstrong1.jpg");
+    errorCode = tfSdk.setImage("../../../../images/armstrong/armstrong1.jpg");
     if (errorCode != Trueface::ErrorCode::NO_ERROR) {
         std::cout << "Error: uanble to read image\n";
         return -1;
