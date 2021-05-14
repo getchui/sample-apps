@@ -9,7 +9,6 @@ from threading import Thread
 from threading import Thread, Lock
 from time import sleep
 
-# Import required library like Gstreamer and GstreamerRtspServer.
 gi.require_version('Gst', '1.0')
 gi.require_version('GstRtspServer', '1.0')
 from gi.repository import Gst, GstRtspServer, GLib
@@ -40,18 +39,14 @@ def draw_rectangle(frame, bounding_box, color_code = (194,134,58)):
 # Sensor Factory class which inherits the GstRtspServer base class and add
 # properties to it.
 class SensorFactory(GstRtspServer.RTSPMediaFactory):
-    def __init__(self, camera_thread, **properties):
+    def __init__(self, camera_thread, output_fps, **properties):
         super(SensorFactory, self).__init__(**properties)
         
         self.camera_thread = camera_thread
-
-        
-        
-        
         width, height = self.camera_thread.getFrameDims()
 
         self.number_frames = 0
-        self.fps = 30
+        self.fps = output_fps 
         self.duration = 1 / self.fps * Gst.SECOND  # duration of a frame in nanoseconds
         self.launch_string = 'appsrc name=source is-live=true block=true format=GST_FORMAT_TIME ' \
                              'caps=video/x-raw,format=BGR,width={},height={},framerate={}/1 ' \
@@ -190,9 +185,7 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
             buf.offset = timestamp
             self.number_frames += 1
             retval = src.emit('push-buffer', buf)
-            print('pushed buffer, frame {}, duration {} ns, durations {} s'.format(self.number_frames,
-                                                                                   self.duration,
-                                                                                   self.duration / Gst.SECOND))
+            print('pushed buffer, frame {}, durations {} s'.format(self.number_frames, self.duration / Gst.SECOND))
             if retval != Gst.FlowReturn.OK:
                 print(retval)
 
@@ -208,9 +201,9 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
 
 # Rtsp server implementation where we attach the factory sensor with the stream uri
 class GstServer(GstRtspServer.RTSPServer):
-    def __init__(self, camera_thread, stream_uri, **properties):
+    def __init__(self, camera_thread, stream_uri, output_fps, **properties):
         super(GstServer, self).__init__(**properties)
-        self.factory = SensorFactory(camera_thread)
+        self.factory = SensorFactory(camera_thread, output_fps)
         self.factory.set_shared(True)
         self.get_mount_points().add_factory(stream_uri, self.factory)
         self.attach(None)
@@ -258,13 +251,15 @@ class ThreadedCamera():
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_rtsp_stream", required=True, help="The url for the input RTSP stream")
 parser.add_argument("--stream_uri", default = "/video_stream", help="output rtsp video stream uri")
+parser.add_argument("--output_fps", default = 30, type = int, help="output fps")
+
 opt = parser.parse_args()
 
 camera_thread = ThreadedCamera(opt.input_rtsp_stream)
 
 # initializing the threads and running the stream on loop.
 Gst.init(None)
-server = GstServer(camera_thread, opt.stream_uri)
+server = GstServer(camera_thread, opt.stream_uri, opt.output_fps)
 loop = GLib.MainLoop()
 loop.run()
 
