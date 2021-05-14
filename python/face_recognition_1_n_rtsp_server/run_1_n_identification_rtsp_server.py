@@ -8,6 +8,7 @@ import argparse
 from threading import Thread
 from threading import Thread, Lock
 from time import sleep
+import datetime
 
 gi.require_version('Gst', '1.0')
 gi.require_version('GstRtspServer', '1.0')
@@ -39,21 +40,21 @@ def draw_rectangle(frame, bounding_box, color_code = (194,134,58)):
 # Sensor Factory class which inherits the GstRtspServer base class and add
 # properties to it.
 class SensorFactory(GstRtspServer.RTSPMediaFactory):
-    def __init__(self, camera_thread, output_fps, **properties):
+    def __init__(self, camera_thread, **properties):
         super(SensorFactory, self).__init__(**properties)
         
         self.camera_thread = camera_thread
         width, height = self.camera_thread.getFrameDims()
 
+        self.timestamp = 0
         self.number_frames = 0
-        self.fps = output_fps 
-        self.duration = 1 / self.fps * Gst.SECOND  # duration of a frame in nanoseconds
+
         self.launch_string = 'appsrc name=source is-live=true block=true format=GST_FORMAT_TIME ' \
-                             'caps=video/x-raw,format=BGR,width={},height={},framerate={}/1 ' \
+                             'caps=video/x-raw,format=BGR,width={},height={} ' \
                              '! videoconvert ! video/x-raw,format=I420 ' \
                              '! x264enc speed-preset=ultrafast tune=zerolatency ' \
                              '! rtph264pay config-interval=1 name=pay0 pt=96' \
-                             .format(width, height, self.fps)
+                             .format(width, height)
 
         print("RTSP server initialized")
 
@@ -103,6 +104,9 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
 
     # Method for grabbing frames from the video capture, running face recognition, then pushing annotated images to streaming buffer.
     def on_need_data(self, src, lenght):
+        # Allow for variable frame rate by manually computing the timestamps
+        start_time = datetime.datetime.now()
+
         # Grab a frame from the input rtsp stream.
         ret, frame = self.camera_thread.getFrame()
         if ret:
@@ -114,78 +118,83 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
                 # Runing FR on all the detected faces can cause a variable output frame rate depending on the number of detected faces 
                 # as FR template generation can be slow on some devices (ex. nvidia jetson).
 
-                # For the sake of the demo, we will only run face recognition on the largest face in the image 
-                # in order to achieve a fixed frame rate and keep things simple. 
-
                 ###########################################
                 ########## Run FR on all faces in the image
                 ###########################################
 
-                # faceboxes = self.sdk.detect_faces()
-                # for facebox in faceboxes:
-                #     did_find_match = False
+                faceboxes = self.sdk.detect_faces()
+                for facebox in faceboxes:
+                    did_find_match = False
 
-                #     # Extract a feature vector for all detected faces in the image
-                #     res, faceprint = self.sdk.get_face_feature_vector(facebox)
-                #     if (res == tfsdk.ERRORCODE.NO_ERROR):
+                    # Extract a feature vector for all detected faces in the image
+                    res, faceprint = self.sdk.get_face_feature_vector(facebox)
+                    if (res == tfsdk.ERRORCODE.NO_ERROR):
                         
-                #         # Run a 1 to N identification query against our collection
-                #         res, match_found, candidate = self.sdk.identify_top_candidate(faceprint, threshold=0.35)
+                        # Run a 1 to N identification query against our collection
+                        res, match_found, candidate = self.sdk.identify_top_candidate(faceprint, threshold=0.35)
 
-                #         if (res == tfsdk.ERRORCODE.NO_ERROR and match_found):
-                #             # We found a match
-                #             # Draw the label and a green box around the face
-                #             did_find_match = True
-                #             draw_rectangle(frame, facebox, color_code=(0, 255, 0))   
-                #             draw_label(frame,
-                #                        (int(facebox.top_left.x), int(facebox.top_left.y)),
-                #                        "{} {}%".format(
-                #                            candidate.identity,
-                #                            int(candidate.match_probability*100)),
-                #                        color_code=(0, 255, 0))
+                        if (res == tfsdk.ERRORCODE.NO_ERROR and match_found):
+                            # We found a match
+                            # Draw the label and a green box around the face
+                            did_find_match = True
+                            draw_rectangle(frame, facebox, color_code=(0, 255, 0))   
+                            draw_label(frame,
+                                       (int(facebox.top_left.x), int(facebox.top_left.y)),
+                                       "{} {}%".format(
+                                           candidate.identity,
+                                           int(candidate.match_probability*100)),
+                                       color_code=(0, 255, 0))
                                     
-                #     if not did_find_match:
-                #         # Draw a blue box around the detected face
-                #         draw_rectangle(frame, facebox)
+                    if not did_find_match:
+                        # Draw a blue box around the detected face
+                        draw_rectangle(frame, facebox)
 
                 ###########################################
                 ########## Run FR on only the largest face
                 ###########################################   
 
-                found, facebox = self.sdk.detect_largest_face()
-                if found:
-                    found_face_id = False
-                    # Extract the feature vector for the largest face
-                    res, faceprint = self.sdk.get_face_feature_vector(facebox)
-                    if (res == tfsdk.ERRORCODE.NO_ERROR):
-                        # Run the identification query
-                        res, match_found, candidate = self.sdk.identify_top_candidate(faceprint, threshold=0.35)
-                        if (res == tfsdk.ERRORCODE.NO_ERROR and match_found):
-                            found_face_id = True
-                            # Draw a green rectangle around the face and the corresponding label
-                            draw_rectangle(frame, facebox, color_code=(0, 255, 0))   
-                            draw_label(frame,
-                                   (int(facebox.top_left.x), int(facebox.top_left.y)),
-                                   "{} {}%".format(
-                                       candidate.identity,
-                                       int(candidate.match_probability*100)),
-                                   color_code=(0, 255, 0))
+                # found, facebox = self.sdk.detect_largest_face()
+                # if found:
+                #     found_face_id = False
+                #     # Extract the feature vector for the largest face
+                #     res, faceprint = self.sdk.get_face_feature_vector(facebox)
+                #     if (res == tfsdk.ERRORCODE.NO_ERROR):
+                #         # Run the identification query
+                #         res, match_found, candidate = self.sdk.identify_top_candidate(faceprint, threshold=0.35)
+                #         if (res == tfsdk.ERRORCODE.NO_ERROR and match_found):
+                #             found_face_id = True
+                #             # Draw a green rectangle around the face and the corresponding label
+                #             draw_rectangle(frame, facebox, color_code=(0, 255, 0))   
+                #             draw_label(frame,
+                #                    (int(facebox.top_left.x), int(facebox.top_left.y)),
+                #                    "{} {}%".format(
+                #                        candidate.identity,
+                #                        int(candidate.match_probability*100)),
+                #                    color_code=(0, 255, 0))
 
 
-                    if not found_face_id:
-                        # Draw a blue rectangle around the face
-                        draw_rectangle(frame, facebox)
+                #     if not found_face_id:
+                #         # Draw a blue rectangle around the face
+                #         draw_rectangle(frame, facebox)
 
             data = frame.tobytes()
             buf = Gst.Buffer.new_allocate(None, len(data), None)
             buf.fill(0, data)
-            buf.duration = self.duration
-            timestamp = self.number_frames * self.duration
+
+            # Compute the end timestamp to get the frame timestamp and duration
+            end_time = datetime.datetime.now()
+            time_diff = (end_time - start_time)
+            duration = time_diff.total_seconds() * 1000
+
+            buf.duration = duration
+            timestamp = self.timestamp
+            self.timestamp += duration * 1000000
             buf.pts = buf.dts = int(timestamp)
             buf.offset = timestamp
             self.number_frames += 1
             retval = src.emit('push-buffer', buf)
-            print('pushed buffer, frame {}, durations {} s'.format(self.number_frames, self.duration / Gst.SECOND))
+
+            print('pushed buffer, frame {}, durations {} s'.format(self.number_frames, duration / 1000))
             if retval != Gst.FlowReturn.OK:
                 print(retval)
 
@@ -201,9 +210,9 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
 
 # Rtsp server implementation where we attach the factory sensor with the stream uri
 class GstServer(GstRtspServer.RTSPServer):
-    def __init__(self, camera_thread, stream_uri, output_fps, **properties):
+    def __init__(self, camera_thread, stream_uri, **properties):
         super(GstServer, self).__init__(**properties)
-        self.factory = SensorFactory(camera_thread, output_fps)
+        self.factory = SensorFactory(camera_thread)
         self.factory.set_shared(True)
         self.get_mount_points().add_factory(stream_uri, self.factory)
         self.attach(None)
@@ -251,7 +260,6 @@ class ThreadedCamera():
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_rtsp_stream", required=True, help="The url for the input RTSP stream")
 parser.add_argument("--stream_uri", default = "/video_stream", help="output rtsp video stream uri")
-parser.add_argument("--output_fps", default = 30, type = int, help="output fps")
 
 opt = parser.parse_args()
 
@@ -259,7 +267,7 @@ camera_thread = ThreadedCamera(opt.input_rtsp_stream)
 
 # initializing the threads and running the stream on loop.
 Gst.init(None)
-server = GstServer(camera_thread, opt.stream_uri, opt.output_fps)
+server = GstServer(camera_thread, opt.stream_uri)
 loop = GLib.MainLoop()
 loop.run()
 
@@ -267,4 +275,5 @@ while True:
     sleep(1)
 
 
+# Ouput RTSP url:
 # rtsp://localhost:8554/trueface_stream
