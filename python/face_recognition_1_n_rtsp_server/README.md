@@ -30,3 +30,11 @@ https://user-images.githubusercontent.com/17056751/118336033-c1eca300-b4c5-11eb-
 
 
 
+## Notes
+- The RTSP stream may freeze initially, give it a few minutes to stabilize.
+- Using an input stream with smaller dimensions will result in better performance. If the output stream is very slow and lags a lot, try scaling down the input video.
+- If running the app on a device such as an NVIDIA Jetson, you may need to replace `self.cap = cv2.VideoCapture(source)` with something like the following:
+```
+gstreamer_pipeline_string = 'rtspsrc location="{}" ! rtph264depay ! h264parse ! omxh264dec ! videoconvert ! appsink'.format(source)
+self.cap = cv2.VideoCapture(gstreamer_pipeline_string)
+```
