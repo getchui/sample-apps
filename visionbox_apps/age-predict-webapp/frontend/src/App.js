@@ -24,11 +24,11 @@ class App extends Component {
     this.submitPhoto = this.submitPhoto.bind(this)
   }
 
-  setRef = webcam => {
+  setRef(webcam) {
     this.webcam = webcam;
   }
 
-  submitPhoto = photo => {
+  submitPhoto(photo) {
     this.setState({
       loading: true
     })
@@ -65,13 +65,13 @@ class App extends Component {
       })
   }
  
-  capture = () => {
+  capture() {
     const imageSrc = this.webcam.getScreenshot();
     
     this.submitPhoto(imageSrc.slice(23))
   }
 
-  update = () => {
+  update() {
     this.setState({ 
       width: window.innerWidth, 
       height: window.innerHeight
