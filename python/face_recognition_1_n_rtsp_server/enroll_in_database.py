@@ -1,5 +1,22 @@
 import tfsdk
 import os
+import sys
+from imutils import paths
+
+def usage():
+    print("Usage: {} <collection folder name>".format(sys.argv[0]))
+
+if len(sys.argv) != 2:
+    usage()
+    sys.exit(1)
+
+collection_folder = sys.argv[1]
+images = sorted(list(paths.list_images(collection_folder)))
+
+labels = []
+for image in images:
+    labels.append(''.join(os.path.basename(image).split('.')[:-1]))
+
 options = tfsdk.ConfigurationOptions()
 
 
@@ -9,6 +26,8 @@ options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE # Save the templates in an 
 # options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.POSTGRESQL
 
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5 
+options.models_path = "/home/seelaman/Workspace/trueface/trueface.base/3.6_9044/tfsdk_python3.6_v0.23.9044/trueface_sdk/download_models"
+
 # Note, if you do use TFV5, you will need to run the download script in /download_models to obtain the model file
 
 # TODO: If you have a NVIDIA gpu, then enable the enableGPU flag (you will require a GPU specific token for this).
@@ -42,10 +61,11 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
     quit()
 
 # Since our collection is empty, lets populate the collection with some identities
-image_identities = [
-    ("../../images/armstrong/armstrong1.jpg", "Armstrong"),
-    ("../../images/obama/obama1.jpg", "Obama")
-]
+#image_identities = [
+#    ("../../images/armstrong/armstrong1.jpg", "Armstrong"),
+#    ("../../images/obama/obama1.jpg", "Obama")
+#]
+image_identities = zip(images, labels)
 
 for path, identity in image_identities:
     print("Processing image:", path, "with identity:", identity)
