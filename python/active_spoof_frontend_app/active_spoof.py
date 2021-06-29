@@ -3,6 +3,8 @@ import cv2
 import os
 from colorama import Fore
 from colorama import Style
+from pynput import keyboard
+
 
 
 def show_frame(frame):
@@ -35,15 +37,29 @@ def draw_far_ellipse(frame, color):
         color, 
         2)
 
-def draw_text(frame, text, color):
+def draw_text(frame, text, color, location=(40, 40)):
     cv2.putText(frame, text, 
-        (40,40), 
+        location, 
         font, 
         font_scale,
         color,
         text_width,
         cv2.LINE_AA)
 
+# Event listener for the spacebar
+g_spacebar_pressed = False
+
+def on_press(key):
+    if key == keyboard.Key.esc:
+        return False  # stop listener
+    if key == keyboard.Key.space:
+         global g_spacebar_pressed
+         if not g_spacebar_pressed:
+            g_spacebar_pressed = True
+
+listener = keyboard.Listener(
+    on_press=on_press)
+listener.start()
 
 
 options = tfsdk.ConfigurationOptions()
@@ -130,7 +146,8 @@ while(True):
         draw_near_ellipse(frame, (0, 255, 0))
         draw_text(frame, "Press space to capture image" , (0, 255, 0))
 
-        if cv2.waitKey(10) & 0xFF == 32:
+        if g_spacebar_pressed == True:
+            g_spacebar_pressed = False
             # Obtain the face landmarks
             ret, far_landmarks = sdk.get_face_landmarks(fb)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
@@ -184,7 +201,8 @@ while(True):
         draw_far_ellipse(frame, (0, 255, 0))
         draw_text(frame, "Press space to capture image" , (0, 255, 0))
 
-        if cv2.waitKey(10) & 0xFF == 32:
+        if g_spacebar_pressed == True:
+            g_spacebar_pressed = False
             # Obtain the face landmarks
             ret, near_landmarks = sdk.get_face_landmarks(fb)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
@@ -206,7 +224,31 @@ while(True):
 
         if state == 2:
             # Run the active spoof detection
-            print("State = 2")
+            ret, spoof_score, spoof_label = sdk.detect_active_spoof(near_landmarks, far_landmarks)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print(f"{Fore.RED}Unable to run active spoof, try again!{Style.RESET_ALL}")
+                state = 0
+                continue;
+
+            state = 3
+
+    if state == 3:
+        if spoof_label == tfsdk.SPOOFLABEL.FAKE:
+            draw_text(frame, "Spoof attempt detected!", (0, 0, 255))
+        else:
+            # Run face recognition to ensure the images are of the same identity
+            ret, match_prob, sim_score = sdk.get_similarity(near_faceprint, far_faceprint)
+            if sim_score < 0.3:
+                draw_text(frame, "Images are not of the same identity!", (0, 0, 255))
+            else:
+                draw_text(frame, "Real image detected!" , (0, 255, 0))
+
+
+        draw_text(frame, "Press the space bar to restart", (255, 0, 0), (40, 80))
+        if g_spacebar_pressed == True:
+            g_spacebar_pressed = False
+            state = 0
+
 
             
 
