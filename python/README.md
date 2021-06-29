@@ -14,3 +14,4 @@ If using the GPU library, you must add the directory where the GPU library `libt
 
 ## Sample Apps
 - [Face Recognition RTSP Server](./face_recognition_1_n_rtsp_server)
+- [Active Spoof Frontend App](./active_spoof_frontend_app)
