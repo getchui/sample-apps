@@ -19,6 +19,11 @@ Using the GPU enabled SDK will improve inference speed.
 Once both images have been captured, active spoof detection is run and the results are displayed on the screen.
 - By advised, the first time you capture an image it will appear to freeze briefly. This is expected and is due to lazy initialization of the SDK (when it appears to freeze, the face recognition model is being decrypted and read from disk into memory).
 
+## Demo
+The following demo shows the sample app being run with a real image, and also with a spoof attempt image.
+
+
+
 ## Running the demo
 - `python3 active_spoof.py`
 - Follow the instructions drawn on the video.
