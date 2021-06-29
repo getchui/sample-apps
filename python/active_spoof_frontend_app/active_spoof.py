@@ -241,7 +241,7 @@ while(True):
             if sim_score < 0.3:
                 draw_text(frame, "Images are not of the same identity!", (0, 0, 255))
             else:
-                draw_text(frame, "Real image detected!" , (0, 255, 0))
+                draw_text(frame, "Real face detected!" , (0, 255, 0))
 
 
         draw_text(frame, "Press the space bar to restart", (255, 0, 0), (40, 80))
