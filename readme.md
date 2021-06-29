@@ -34,6 +34,15 @@ For support, please visit https://trueface.freshdesk.com/
 ### Head Orientation
 ![alt text](./cpp_sdk/head_orientation/demo_gifs/demo1.gif)
 
+### Active Spoof Detection
+
+
+https://user-images.githubusercontent.com/17056751/123879359-a6aee900-d8f5-11eb-936c-9669d3213a4b.mp4
+
+
+
+https://user-images.githubusercontent.com/17056751/123879374-ac0c3380-d8f5-11eb-8d68-e126a9d44c70.mp4
+
 ### Temperature Detection
 ![alt text](./EBT/temperature_detection_frontend/demo/demo.gif)
 
