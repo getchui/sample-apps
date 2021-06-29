@@ -4,6 +4,48 @@ import os
 from colorama import Fore
 from colorama import Style
 
+
+def show_frame(frame):
+    cv2.imshow('frame', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        return True
+    return False
+        
+def draw_near_ellipse(frame, color):
+        center_x = frame.shape[1]//2
+        center_y = frame.shape[0]//2
+        length = frame.shape[0]//4
+        width = length*2//3
+        cv2.ellipse(frame, 
+            (center_x, center_y), 
+            (width, length), 
+            0, 0, 360, 
+            color, 
+            2)
+
+def draw_far_ellipse(frame, color):
+    center_x = frame.shape[1]//2
+    center_y = frame.shape[0]//2
+    length = frame.shape[0]//2
+    width = length*2//3
+    cv2.ellipse(frame, 
+        (center_x, center_y), 
+        (width, length), 
+        0, 0, 360, 
+        color, 
+        2)
+
+def draw_text(frame, text, color):
+    cv2.putText(frame, text, 
+        (40,40), 
+        font, 
+        font_scale,
+        color,
+        text_width,
+        cv2.LINE_AA)
+
+
+
 options = tfsdk.ConfigurationOptions()
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5 # We will use TFV5 to verify that both images are from the same person
 
@@ -26,6 +68,12 @@ if (cap.isOpened()== False):
     print(f"{Fore.RED}Error opening video stream{Style.RESET_ALL}")
     os._exit(1)
 
+state = 0
+
+font = cv2.FONT_HERSHEY_SIMPLEX 
+font_scale = 1
+text_width = 2
+text_color = (255, 255, 100)
 
 while(True):
     # Grab frame from camera
@@ -33,33 +81,137 @@ while(True):
     if ret == False:
         continue
 
+    # Flip image horizontally
+    frame = cv2.flip(frame, 1)
 
-    center_x = frame.shape[1]//2
-    center_y = frame.shape[0]//2
-    length = frame.shape[0]//4
-    width = length*2//3
-    cv2.ellipse(frame, 
-        (center_x, center_y), 
-        (width, length), 
-        0, 0, 360, 
-        (0,255,0), 
-        1)
+    # Set the image using the frame buffer. OpenCV stores images in BGR format
+    res = sdk.set_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}Unable to set frame{Style.RESET_ALL}")
+        if show_frame(frame):
+            break;
+        continue
 
+    # Next, we must obtain the image properties
+    # These properties are used by the check_spoof_image_face_size() function
+    image_props = sdk.get_image_properties()    
 
-    center_x = frame.shape[1]//2
-    center_y = frame.shape[0]//2
-    length = frame.shape[0]//2
-    width = length*2//3
-    cv2.ellipse(frame, 
-        (center_x, center_y), 
-        (width, length), 
-        0, 0, 360, 
-        (0,255,0), 
-        text_width)
+    if state == 0:
+        draw_near_ellipse(frame, (0, 0, 255))
+
+        # Need to capture far image
+        found, fb = sdk.detect_largest_face()
+        if found == False:
+            # Unable to detect face in image
+            if show_frame(frame):
+                break
+            continue
+
+        ret = sdk.check_spoof_image_face_size(fb, image_props, tfsdk.ACTIVESPOOFSTAGE.FAR)
+
+        if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
+            draw_text(frame, "Move closer", (0, 0, 255))
+            if show_frame(frame):
+                break
+            continue
+
+        elif ret == tfsdk.ERRORCODE.FACE_TOO_CLOSE:
+            draw_text(frame, "Move farther", (0, 0, 255))
+            if show_frame(frame):
+                break;
+            continue
+
+        elif ret != tfsdk.ERRORCODE.NO_ERROR:
+            print(f"{Fore.RED}Unable to run check_spoof_image_face_size() function{Style.RESET_ALL}")
+            if show_frame(frame):
+                break;
+            continue
+
+        draw_near_ellipse(frame, (0, 255, 0))
+        draw_text(frame, "Press space to capture image" , (0, 255, 0))
+
+        if cv2.waitKey(10) & 0xFF == 32:
+            # Obtain the face landmarks
+            ret, far_landmarks = sdk.get_face_landmarks(fb)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print(f"{Fore.RED}Unable to get face landmarks{Style.RESET_ALL}")
+                if show_frame(frame) == True:
+                    break;
+                continue
+
+            # Also generate a face recognition template so that we can both images are of the same identity
+            ret, far_faceprint = sdk.get_face_feature_vector(fb)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print(f"{Fore.RED}There was an error generate the face feautre vector{Style.RESET_ALL}")
+                if show_frame(frame) == True:
+                    break;
+                continue
+
+            # At this point, we can increment the state counter
+            state = 1
+
+    if state == 1:
+        draw_far_ellipse(frame, (0, 0, 255))
+
+        # Need to capture near image
+        found, fb = sdk.detect_largest_face()
+        if found == False:
+            # Unable to detect face in image
+            if show_frame(frame):
+                break
+            continue
+
+        ret = sdk.check_spoof_image_face_size(fb, image_props, tfsdk.ACTIVESPOOFSTAGE.NEAR)
+
+        if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
+            draw_text(frame, "Move closer", (0, 0, 255))
+            if show_frame(frame):
+                break
+            continue
+
+        elif ret == tfsdk.ERRORCODE.FACE_TOO_CLOSE:
+            draw_text(frame, "Move farther", (0, 0, 255))
+            if show_frame(frame):
+                break;
+            continue
+
+        elif ret != tfsdk.ERRORCODE.NO_ERROR:
+            print(f"{Fore.RED}Unable to run check_spoof_image_face_size() function{Style.RESET_ALL}")
+            if show_frame(frame):
+                break;
+            continue
+
+        draw_far_ellipse(frame, (0, 255, 0))
+        draw_text(frame, "Press space to capture image" , (0, 255, 0))
+
+        if cv2.waitKey(10) & 0xFF == 32:
+            # Obtain the face landmarks
+            ret, near_landmarks = sdk.get_face_landmarks(fb)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print(f"{Fore.RED}Unable to get face landmarks{Style.RESET_ALL}")
+                if show_frame(frame) == True:
+                    break;
+                continue
+
+            # Also generate a face recognition template so that we can both images are of the same identity
+            ret, near_faceprint = sdk.get_face_feature_vector(fb)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print(f"{Fore.RED}There was an error generate the face feautre vector{Style.RESET_ALL}")
+                if show_frame(frame) == True:
+                    break;
+                continue
+
+            # Increment the state
+            state = 2
+
+        if state == 2:
+            # Run the active spoof detection
+            print("State = 2")
+
+            
 
     # Display the resulting frame
-    cv2.imshow('frame', img)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if show_frame(frame):
         break
 
 # When everything done, release the capture
