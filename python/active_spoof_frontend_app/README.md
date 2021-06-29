@@ -22,6 +22,11 @@ Once both images have been captured, active spoof detection is run and the resul
 ## Demo
 The following demo shows the sample app being run with a real image, and also with a spoof attempt image.
 
+https://user-images.githubusercontent.com/17056751/123879359-a6aee900-d8f5-11eb-936c-9669d3213a4b.mp4
+
+
+
+https://user-images.githubusercontent.com/17056751/123879374-ac0c3380-d8f5-11eb-8d68-e126a9d44c70.mp4
 
 
 
