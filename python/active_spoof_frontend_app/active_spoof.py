@@ -99,9 +99,10 @@ while(True):
 
     # Flip image horizontally
     frame = cv2.flip(frame, 1)
+    frame_copy = frame.clone()
 
     # Set the image using the frame buffer. OpenCV stores images in BGR format
-    res = sdk.set_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
+    res = sdk.set_image(frame_copy, frame_copy.shape[1], frame_copy.shape[0], tfsdk.COLORCODE.bgr)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set frame{Style.RESET_ALL}")
         if show_frame(frame):
