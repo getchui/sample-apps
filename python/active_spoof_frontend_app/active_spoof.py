@@ -65,8 +65,10 @@ listener.start()
 options = tfsdk.ConfigurationOptions()
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5 # We will use TFV5 to verify that both images are from the same person
 
-options.enable_GPU = True # Use GPU inference to improve speed
+# options.enable_GPU = True # Use GPU inference to improve speed
 # You will require the GPU SDK and GPU token for this.
+
+options.fd_filter = tfsdk.FACEDETECTIONFILTER.HIGH_PRECISION # Use high precision filter to remove any low quality faces which will have inaccurate landmarks.
 
 sdk = tfsdk.SDK(options)
 
