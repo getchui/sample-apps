@@ -6,13 +6,13 @@
   "dependencies": {
     "axios": "^0.21.1",
     "less": "^4.1.1",
-    "less-watch-compiler": "^1.15.2",
+    "less-watch-compiler": "^1.16.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-loading": "^2.0.3",
     "react-scripts": "^4.0.3",
     "react-webcam": "^5.2.4",
-    "typescript": "^4.3.3"
+    "typescript": "^4.3.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -36,7 +36,7 @@
     ]
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.27.0"
+    "@typescript-eslint/eslint-plugin": "^4.28.2",
+    "@typescript-eslint/parser": "^4.28.2"
   }
 }
