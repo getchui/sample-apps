@@ -5,7 +5,12 @@ from colorama import Fore
 from colorama import Style
 from pynput import keyboard
 
+def draw_rectangle(frame, bounding_box, color):
 
+    # Draw the rectangle on the frame
+    cv2.rectangle(frame,
+                  (int(bounding_box.top_left.x), int(bounding_box.top_left.y)),
+                  (int(bounding_box.bottom_right.x), int(bounding_box.bottom_right.y)), color, 3)
 
 def show_frame(frame):
     cv2.imshow('frame', frame)
@@ -130,12 +135,14 @@ while(True):
 
         if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
             draw_text(frame, "Move closer", (0, 0, 255))
+            draw_rectangle(frame, fb, (0, 0, 255))
             if show_frame(frame):
                 break
             continue
 
         elif ret == tfsdk.ERRORCODE.FACE_TOO_CLOSE:
             draw_text(frame, "Move farther", (0, 0, 255))
+            draw_rectangle(frame, fb, (0, 0, 255))
             if show_frame(frame):
                 break;
             continue
@@ -147,6 +154,7 @@ while(True):
             continue
 
         draw_near_ellipse(frame, (0, 255, 0))
+        draw_rectangle(frame, fb, (0, 255, 0))
         draw_text(frame, "Press space to capture image" , (0, 255, 0))
 
         if g_spacebar_pressed == True:
@@ -185,12 +193,14 @@ while(True):
 
         if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
             draw_text(frame, "Move closer", (0, 0, 255))
+            draw_rectangle(frame, fb, (0, 0, 255))
             if show_frame(frame):
                 break
             continue
 
         elif ret == tfsdk.ERRORCODE.FACE_TOO_CLOSE:
             draw_text(frame, "Move farther", (0, 0, 255))
+            draw_rectangle(frame, fb, (0, 0, 255))
             if show_frame(frame):
                 break;
             continue
@@ -202,6 +212,7 @@ while(True):
             continue
 
         draw_far_ellipse(frame, (0, 255, 0))
+        draw_rectangle(frame, fb, (0, 255, 0))
         draw_text(frame, "Press space to capture image" , (0, 255, 0))
 
         if g_spacebar_pressed == True:
