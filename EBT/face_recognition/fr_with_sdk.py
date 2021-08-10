@@ -167,9 +167,9 @@ class Controller:
         # Some identities to populate into our collection
         # TODO: Can add images of yourself here
         image_identities = [
-            ("../../cpp_sdk/images/armstrong/armstrong1.jpg", "Armstrong"),
-            ("../../cpp_sdk/images/armstrong/armstrong2.jpg", "Armstrong"), # Can add the same identity more than once
-            ("../../cpp_sdk/images/obama/obama1.jpg", "Obama")
+            ("../../images/armstrong/armstrong1.jpg", "Armstrong"),
+            ("../../images/armstrong/armstrong2.jpg", "Armstrong"), # Can add the same identity more than once
+            ("../../images/obama/obama1.jpg", "Obama")
         ]
 
         # Generate templates, enroll in our collection
@@ -228,7 +228,7 @@ class Controller:
                 continue
 
             # Enroll the feature vector into the collection
-            res, UUID = sdk.enroll_template(faceprint, identity)
+            res, UUID = sdk.enroll_faceprint(faceprint, identity)
             if (res != tfsdk.ERRORCODE.NO_ERROR):
                 print("Unable to enroll feature vector")
                 continue
