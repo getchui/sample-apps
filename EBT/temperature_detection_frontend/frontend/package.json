@@ -4,7 +4,7 @@
   "private": true,
   "proxy": "http://localhost:5000",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "clsx": "^1.1.1",
     "less": "^3.9.0",
     "less-watch-compiler": "^1.13.0",
