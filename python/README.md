@@ -15,3 +15,6 @@ If using the GPU library, you must add the directory where the GPU library `libt
 ## Sample Apps
 - [Face Recognition RTSP Server](./face_recognition_1_n_rtsp_server)
 - [Active Spoof Frontend App](./active_spoof_frontend_app)
+
+## Basic Sample Code
+* The [./python_dist_bundle](./python_dist_bundle) contains the sample code which comes bundles as part of the SDK download.

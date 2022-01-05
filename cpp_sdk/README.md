@@ -19,3 +19,6 @@ The model files can be downloaded by running the scripts in the `download_models
 * [Facial Recognition - 1:N Identification with Thread Pool (CPU)](./facial_recognition/1N_threadpool_cpu/)
 * [Facial Recognition - 1:1 Identification with Blur](./facial_recognition/blur/)
 * [Head Orientation](./head_orientation/)
+
+## Basic Sample Code and Benchmarks
+* The [./cpp_dist_bundle](./cpp_dist_bundle) contains the sample code and benchmarking scripts which comes bundles as part of the SDK download.
