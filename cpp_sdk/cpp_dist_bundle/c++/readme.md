@@ -24,7 +24,7 @@ If building on Windows, you will need to run the following commands:
 
 At this point, you are ready to run the sample apps. 
 Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
-The model files can be downloaded by running `../download_models/download_all_models.sh`. If you download the model files to a directory other than the build directory, you must specify the path to the directory using the `Trueface::ConfigurationOptions.modelsPath` configuration option. 
+The model files can be downloaded by running `../../download_models/download_all_models.sh`. If you download the model files to a directory other than the build directory, you must specify the path to the directory using the `Trueface::ConfigurationOptions.modelsPath` configuration option. 
 
 ## Note
 - When compiling your application, be sure to use the `-Ofast` compiler flag. 
