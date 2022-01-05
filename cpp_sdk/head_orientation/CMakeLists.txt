@@ -14,8 +14,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(TRUEFACE_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}/../trueface_sdk")
 
-include_directories(${TRUEFACE_SDK_DIR})
-link_directories(${TRUEFACE_SDK_DIR})
+include_directories(${TRUEFACE_SDK_DIR}/include)
+link_directories(${TRUEFACE_SDK_DIR}/lib)
 
 if(DEFINED ENV{OpenCV_PATH})
     find_package( OpenCV REQUIRED PATHS $ENV{OpenCV_PATH})
