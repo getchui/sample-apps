@@ -9,7 +9,7 @@ If any of the identities match those in the collection, the identity and boundin
 The video stream is then displayed in real time.  
 
 ### Demo
-![alt text](https://storage.googleapis.com/sample-apps-resources/sample-apps-gifs/facial_recognition/1N/demo1.gif)
+![alt text](./demo_gifs/demo1.gif)
 
 ![alt text](./demo_gifs/demo2.gif)
 
