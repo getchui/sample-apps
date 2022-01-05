@@ -14,8 +14,8 @@ endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(TRUEFACE_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}/../trueface_sdk")
-include_directories(${TRUEFACE_SDK_DIR})
-link_directories(${TRUEFACE_SDK_DIR})
+include_directories(${TRUEFACE_SDK_DIR}/include)
+link_directories(${TRUEFACE_SDK_DIR}/lib)
 
 add_executable(run_benchmarks benchmark.cpp)
 add_executable(run_benchmarks_1N_identification benchmark_1N_identification.cpp)
