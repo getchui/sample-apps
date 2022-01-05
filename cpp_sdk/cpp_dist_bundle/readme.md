@@ -1,7 +1,7 @@
 # Trueface SDK
 
 ## Overview
-The sdk library and the header files `tf_sdk.h` and `tf_data_types.h` can be found in `trueface_sdk/`.
+The sdk library and the header files `tf_sdk.h` and `tf_data_types.h` can be found in `./trueface_sdk/`.
 
 ## C++ Sample Code
 Navigate to `c++/` and consult the readme file for build instructions.
@@ -32,3 +32,10 @@ ROC curves are useful when choosing an operating threshold for face recognition 
 
 ## FAQ
 A list of frequently asked questions with answers can be found [here](https://reference.trueface.ai/cpp/master/latest/faq.html)
+
+## Running Sample Code from Github Repo
+This sample code comes shipped as part of the SDK download bundle. 
+If you are instead running this sample code by cloning the Trueface sample apps github repo [here](https://github.com/getchui/sample-apps), you will need to make a few modifications to get things working:
+
+* Place the Trueface libraries in `./trueface_sdk/libs` and the Trueface header files in `./trueface_sdk/include`.
+* Obtain the scripts for downloading the model files from the SDK download bundle.
