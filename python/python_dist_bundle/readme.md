@@ -104,3 +104,10 @@ Batching is used to increase throughput on GPUs.
   In order to run this sample code, you must have `cupy` installed.
 
 - `batch_enroll_in_database.py` demonstrates how to generate feature vectors in batch and enroll them into a collection. This example is perfect for processing large numbers of images offline.
+
+## Running Sample Code from Github Repo
+This sample code comes shipped as part of the SDK download bundle. 
+If you are instead running this sample code by cloning the Trueface sample apps github repo [here](https://github.com/getchui/sample-apps), you will need to make a few modifications to get things working:
+
+* Download the python bindings library and supporting Trueface libraries and place them in this directory.
+* Obtain the scripts for downloading the model files from the SDK download bundle.
