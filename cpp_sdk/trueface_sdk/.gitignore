@@ -1,3 +1,2 @@
-libtf.a
-tf_data_types.h
-tf_sdk.h
+lib
+include
