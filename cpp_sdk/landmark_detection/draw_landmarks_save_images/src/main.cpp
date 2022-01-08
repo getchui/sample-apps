@@ -30,7 +30,7 @@ int main() {
     Trueface::SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
-    const auto isValid = tfSdk.setLicense("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHBpcnlfdGltZV9zdGFtcCI6MTY0MDE2MDAwMCwibmFtZSI6ImMtc2RrIiwiZW1haWwiOiIiLCJleHBpcnlfZGF0ZSI6IjIwMjEtMTItMjJUMDg6MDA6MDAuMDAwWiIsInR5cGUiOiJvZmZsaW5lIiwiZnIiOiIiLCJhdHRyaWJ1dGVzIjoiIiwiZW1vdGlvbiI6IiIsInRocmVhdF9kZXRlY3Rpb24iOiIiLCJhbHByIjoiIiwibWFjaGluZXMiOiIxIiwicGFja2FnZV9pZCI6IiIsInRrZXkiOiJuZXciLCJieXBhc3NfZ3B1X3V1aWQiOiJ0cnVlIiwiZ3B1X3V1aWQiOm51bGwsImxvY2tfdG9faGFyZHdhcmUiOmZhbHNlLCJoYXJkd2FyZV9JRCI6IiIsImxvY2tfdG9faGFyZHdhcmVfRUJUIjpmYWxzZSwiZGlzYWJsZV9tYXNrIjpmYWxzZSwiZGlzYWJsZV9GUiI6ZmFsc2UsImdhbGxlcnlfc2l6ZSI6bnVsbH0.d1HehpFBd8_6Vw3wsMWyHJqFj_acuG9_Lxm25RA7Nhg");
+    const auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
     if (!isValid) {
         std::cout << "Error: the provided license is invalid\n";
         return -1;
