@@ -94,7 +94,7 @@ int main() {
     }
 
     // Load the non glasses image and detect largest face.
-    std::cout << "Image with glasses" << std::endl;
+    std::cout << "\nImage with glasses:" << std::endl;
     errorCode = tfSdk.setImage("../../images/headshot.jpg");
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout<<"Error: could not load the image"<<std::endl;

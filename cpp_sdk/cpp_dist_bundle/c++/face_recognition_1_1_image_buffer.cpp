@@ -112,8 +112,8 @@ int main() {
         return 1;
     }
 
-    std::cout <<  "Similarity score of same identity images: " <<similarityScore<< std::endl;
-    std::cout <<  "Match probability of same identity images: " <<matchProbability<< std::endl;
+    std::cout <<  "Similarity score of same identity images: " << similarityScore << std::endl;
+    std::cout <<  "Match probability of same identity images: " << matchProbability << "\n" << std::endl;
 
     // Load the image of a different identity and extract the feature vector.
     rgb_image = stbi_load("../../images/tom_cruise_1.jpg", &width, &height, &channels, 3);
@@ -139,8 +139,8 @@ int main() {
         return 1;
     }
 
-    std::cout <<  "Similarity score of two different identities: " <<similarityScore<< std::endl;
-    std::cout <<  "Match probability of two different identities: " <<matchProbability<< std::endl;
+    std::cout <<  "Similarity score of two different identities: " << similarityScore << std::endl;
+    std::cout <<  "Match probability of two different identities: " << matchProbability << std::endl;
 
     return 0;
 }

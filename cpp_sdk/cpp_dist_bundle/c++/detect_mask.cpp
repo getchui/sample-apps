@@ -94,7 +94,7 @@ int main() {
     }
 
     // Load the non mask image and detect largest face.
-    std::cout << "Image without mask" << std::endl;
+    std::cout << "\nImage without mask:" << std::endl;
     errorCode = tfSdk.setImage("../../images/headshot.jpg");
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout<<"Error: could not load the image"<<std::endl;

@@ -70,7 +70,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "Running spoof detection with real image" << std::endl;
+    std::cout << "Running spoof detection with real image..." << std::endl;
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found = false;
     errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
@@ -97,7 +97,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "Running spoof detection with fake image" << std::endl;
+    std::cout << "\nRunning spoof detection with fake image..." << std::endl;
     errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
     if (found){
         errorCode = tfSdk.detectSpoof(faceBoxAndLandmarks, result, spoofScore);

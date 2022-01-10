@@ -101,7 +101,7 @@ int main() {
     }
 
     std::cout<< "Similarity score of same identity images: " << similarityScore << std::endl;
-    std::cout<< "Match probability of same identity images: " << matchProbability << std::endl;
+    std::cout<< "Match probability of same identity images: " << matchProbability  << "\n" << std::endl;
 
     // Load the image of a different identity and extract the feature vector.
     errorCode = tfSdk.setImage("../../images/tom_cruise_1.jpg");
