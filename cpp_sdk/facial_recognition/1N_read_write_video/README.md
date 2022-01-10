@@ -20,7 +20,7 @@ The video stream is then displayed and written to disk.
 Must have OpenCV installed with the `Video I/O` module built. 
 
 ### Build Instructions
-* Place Trueface include files and `libtf.a` in `../../trueface_sdk/`
+* Place Trueface header files in `../../trueface_sdk/include/` and trueface libraries in `../../trueface_sdk/lib/`
 * Download the appropriate face recognition model using the download scripts which come bundled with the SDK. 
 * replace `<LICENSE_CODE>` with your license code in `src/main.cpp`
 * `mkdir build && cd build`

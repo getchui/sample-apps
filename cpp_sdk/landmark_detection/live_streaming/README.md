@@ -12,7 +12,7 @@ The landmarks and bounding boxes are drawn on the video obtained from the users 
 Must have OpenCV installed with the `Video I/O` module built. 
 
 ### Build Instructions
-* Place Trueface include files and `libtf.a` in `../trueface_sdk/`
+* Place Trueface header files in `../../trueface_sdk/include/` and trueface libraries in `../../trueface_sdk/lib/`
 * replace `<LICENSE_CODE>` with your license code in `src/main.cpp`
 * `mkdir build && cd build`
 * `cmake ..`
