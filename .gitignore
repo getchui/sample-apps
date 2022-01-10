@@ -18,3 +18,5 @@ spoofv4
 *.enc
 download_models
 *.db
+
+.env
