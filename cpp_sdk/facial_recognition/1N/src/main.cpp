@@ -289,19 +289,20 @@ int main() {
         tfSdk.batchIdentifyTopCandidate(faceprints, candidates, found, threshold);
 
         // If the identity was found, draw the identity label
-        // If the identity was not found, blur the face
-
         for (size_t i = 0; i < found.size(); ++i) {
             const auto& bbox = bboxVec[i];
             const auto& candidate = candidates[i];
 
+            cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
+            cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
+            cv::Scalar color (0, 255, 0);
             if (found[i]) {
                 // If the similarity is greater than our threshold, then we have a match
-                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
-                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
-                cv::Scalar color (0, 255, 0);
-                cv::rectangle(frame, topLeft, bottomRight, color, 2);
                 setLabel(frame, candidate.identity, topLeft, color);
+                cv::rectangle(frame, topLeft, bottomRight, color, 2);
+            } else {
+                color = cv::Scalar(0, 0, 255);
+                cv::rectangle(frame, topLeft, bottomRight, color, 2);
             }
         }
 
