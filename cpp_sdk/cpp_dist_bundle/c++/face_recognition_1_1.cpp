@@ -32,7 +32,7 @@ int main() {
     // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
     // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
     // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
-    Trueface::InitializeModule initializeModule;
+    InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.faceRecognizer = true;
     options.initializeModule = initializeModule;
