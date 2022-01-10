@@ -9,14 +9,15 @@
 
 typedef std::chrono::high_resolution_clock Clock;
 
+using namespace Trueface;
 
 int main() {
     // TODO: Replace with your license
     const std::string license = "${LICENSE_CODE}";
 
-    Trueface::ConfigurationOptions options;
-    options.frModel = Trueface::FacialRecognitionModel::TFV5;
-    options.dbms = Trueface::DatabaseManagementSystem::NONE;
+    ConfigurationOptions options;
+    options.frModel = FacialRecognitionModel::TFV5;
+    options.dbms = DatabaseManagementSystem::NONE;
 
     // TODO modify the following option to test with / without vector compression
     options.frVectorCompression = true;
@@ -26,7 +27,7 @@ int main() {
     }
 
 
-    Trueface::SDK sdk(options);
+    SDK sdk(options);
     bool valid = sdk.setLicense(license);
     if (!valid) {
         std::cout << "License not valid" << std::endl;
@@ -41,22 +42,22 @@ int main() {
             {"../images/headshot.jpg", "anon"}
     };
 
-    std::vector<std::pair<std::string, Trueface::Faceprint>> dataVec;
+    std::vector<std::pair<std::string, Faceprint>> dataVec;
 
     // Generate a template for each of the images
     std::cout << "\nGenerating templates" << std::endl;
     for (const auto& imagePair: imagePairList) {
         auto ret = sdk.setImage(imagePair.first);
-        if (ret != Trueface::ErrorCode::NO_ERROR) {
+        if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to set image: " << imagePair.first << std::endl;
             return -1;
         }
 
-        Trueface::Faceprint faceprint;
+        Faceprint faceprint;
         bool foundFace;
         ret = sdk.getLargestFaceFeatureVector(faceprint, foundFace);
 
-        if (ret != Trueface::ErrorCode::NO_ERROR || !foundFace) {
+        if (ret != ErrorCode::NO_ERROR || !foundFace) {
             std::cout << "Unable to detect face and extract features" << std::endl;
             return -1;
         }
@@ -66,28 +67,28 @@ int main() {
 
     // Prepare the probe vector and the match vector
     auto ret = sdk.setImage("../../images/brad_pitt_1.jpg");
-    if (ret != Trueface::ErrorCode::NO_ERROR) {
+    if (ret != ErrorCode::NO_ERROR) {
         std::cout << "Unable to set image" << std::endl;
         return -1;
     }
 
     bool foundFace;
-    Trueface::Faceprint probe;
+    Faceprint probe;
     ret = sdk.getLargestFaceFeatureVector(probe, foundFace);
-    if (ret != Trueface::ErrorCode::NO_ERROR || !foundFace) {
+    if (ret != ErrorCode::NO_ERROR || !foundFace) {
         std::cout << "Unable to detect face and extract features" << std::endl;
         return -1;
     }
 
     ret = sdk.setImage("../../images/brad_pitt_2.jpg");
-    if (ret != Trueface::ErrorCode::NO_ERROR) {
+    if (ret != ErrorCode::NO_ERROR) {
         std::cout << "Unable to set image" << std::endl;
         return -1;
     }
 
-    Trueface::Faceprint matchTemplate;
+    Faceprint matchTemplate;
     ret = sdk.getLargestFaceFeatureVector(matchTemplate, foundFace);
-    if (ret != Trueface::ErrorCode::NO_ERROR || !foundFace) {
+    if (ret != ErrorCode::NO_ERROR || !foundFace) {
         std::cout << "Unable to detect face and extract features" << std::endl;
         return -1;
     }
@@ -104,9 +105,9 @@ int main() {
     for (const auto& collectionSize: collectionSizes) {
         std::cout << "Populating collection with " << collectionSize << " templates" << std::endl;
 
-        // We are using the Trueface::DatabaseManagementSystem::NONE so the collection will not persist
+        // We are using the DatabaseManagementSystem::NONE so the collection will not persist
         ret = sdk.createLoadCollection("temp_collection");
-        if (ret != Trueface::ErrorCode::NO_ERROR) {
+        if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Error creating collection" << std::endl;
             return -1;
         }
@@ -120,7 +121,7 @@ int main() {
 
             // Enroll the template and the identity
             ret = sdk.enrollFaceprint(data.second, data.first, UUID);
-            if (ret != Trueface::ErrorCode::NO_ERROR) {
+            if (ret != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to enroll template" << std::endl;
                 return -1;
             }
@@ -129,7 +130,7 @@ int main() {
         // Finally enroll the match template
         std::string UUID;
         ret = sdk.enrollFaceprint(matchTemplate, "Brad Pitt", UUID);
-        if (ret != Trueface::ErrorCode::NO_ERROR) {
+        if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to enroll template" << std::endl;
             return -1;
         }
@@ -140,7 +141,7 @@ int main() {
             numIterations = 100;
         }
 
-        Trueface::Candidate candidate;
+        Candidate candidate;
         bool found;
 
         auto t1 = Clock::now();
@@ -158,12 +159,12 @@ int main() {
                   << std::to_string(numIterations) << " iterations)" << std::endl;
 
         // Now run batch identification
-        std::vector<Trueface::Faceprint> probeFaceprints;
+        std::vector<Faceprint> probeFaceprints;
         for (size_t i = 0; i < 100; ++i) {
             probeFaceprints.push_back(probe);
         }
 
-        std::vector<Trueface::Candidate> candidates;
+        std::vector<Candidate> candidates;
         std::vector<bool> foundCandidates;
 
         numIterations /= 10;

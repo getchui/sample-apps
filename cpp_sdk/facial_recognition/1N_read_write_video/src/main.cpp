@@ -13,6 +13,8 @@
 #include "tf_sdk.h"
 #include "tf_data_types.h"
 
+using namespace Trueface;
+
 // Utility function for drawing the label on our image
 void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin, const cv::Scalar& color) {
     cv::Point origin(oldOrigin.x - 2, oldOrigin.y - 10);
@@ -33,15 +35,59 @@ int main() {
     // https://docs.trueface.ai/ROC-Curves-d47d2730cf0a44afacb39aae0ed1b45a
     const float threshold = 0.3;
 
-    // TODO: If you have a NVIDIA gpu, then enable the enableGPU flag (you will require a GPU specific token for this).
-    Trueface::ConfigurationOptions options;
-    options.frModel = Trueface::FacialRecognitionModel::TFV5; 
+    // Start by specifying the configuration options to be used.
+    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
+    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    ConfigurationOptions options;
+    // The face recognition model to use. Use the most accurate face recognition model.
+    options.frModel = FacialRecognitionModel::TFV5;
+    // The object detection model to use.
+    options.objModel = ObjectDetectionModel::ACCURATE;
+    // The face detection filter.
+    options.fdFilter = FaceDetectionFilter::BALANCED;
+    // Smallest face height in pixels for the face detector.
+    options.smallestFaceHeight = 40;
+    // The path specifying the directory where the model files have been downloaded
+    options.modelsPath = "./";
+    // Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
+    options.frVectorCompression = false;
+    // Database management system for storage of biometric templates for 1 to N identification.
+    options.dbms = DatabaseManagementSystem::SQLITE;
 
-    // Note, if you do use TFV5, you will need to run the download script in /download_models to obtain the model file
+    // Choose to encrypt the database
+    EncryptDatabase encryptDatabase;
+    encryptDatabase.enableEncryption = false; // TODO: To encrypt the database change this to true
+    encryptDatabase.key = "TODO: Your encryption key here";
+    options.encryptDatabase = encryptDatabase;
 
-    options.dbms = Trueface::DatabaseManagementSystem::NONE; // The data will not persist after the app terminates using this backend option.
-    options.smallestFaceHeight = 40; // https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface20ConfigurationOptions18smallestFaceHeightE
-    Trueface::SDK tfSdk(options);
+    // Initialize module in SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
+    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
+    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
+    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    InitializeModule initializeModule;
+    initializeModule.faceDetector = true;
+    initializeModule.faceRecognizer = true;
+    options.initializeModule = initializeModule;
+
+    // Options for enabling GPU
+    // We will disable GPU inference, but you can easily enable it by modifying the following options
+    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    GPUModuleOptions gpuOptions;
+    gpuOptions.enableGPU = false; // TODO: Change this to true to enable GPU inference.
+    gpuOptions.maxBatchSize = 4;
+    gpuOptions.optBatchSize = 1;
+    gpuOptions.maxWorkspaceSizeMb = 2000;
+    gpuOptions.deviceIndex = 0;
+    gpuOptions.precision = Precision::FP16;
+
+    options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
+    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+
+    // Alternatively, can also do the following to enable GPU inference for all supported modules:
+//    options.gpuOptions = true;
+
+    SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
     auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
@@ -51,10 +97,10 @@ int main() {
     }
 
     // Create a new database
-    // This step is not required if using Trueface::DatabaseManagementSystem::NONE
+    // This step is not required if using DatabaseManagementSystem::NONE
     const std::string databaseName = "myDatabase.db";
     auto errorCode = tfSdk.createDatabaseConnection(databaseName);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to create database\n";
         return -1;
     }
@@ -63,23 +109,23 @@ int main() {
     const std::string collectioName = "myCollection";
     errorCode = tfSdk.createLoadCollection(collectioName);
 
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to create collection\n";
         return -1;
     }
 
     // Load the image / images we want to enroll
     errorCode = tfSdk.setImage("../../../../images/obama/obama1.jpg");
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to read image\n";
         return -1;
     }
 
     // Detect the face in the image
-    Trueface::FaceBoxAndLandmarks faceBoxAndLandmarks;
+    FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool faceDetected;
     errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, faceDetected);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "There was an error with the call to detectLargestFace\n";
         return -1;
     }
@@ -101,14 +147,14 @@ int main() {
     // Get the aligned face chip so that we can compute the image quality
     uint8_t alignedImage[37632];
     errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, alignedImage);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "There was an error extracting the aligned face\n";
         return -1;
     }
 
     float quality;
     errorCode = tfSdk.estimateFaceImageQuality(alignedImage, quality);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute image quality\n";
         return -1;
     }
@@ -125,7 +171,7 @@ int main() {
     // To see the effect of yaw and pitch on the match score, refer to: https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
     float yaw, pitch, roll;
     errorCode = tfSdk.estimateHeadOrientation(faceBoxAndLandmarks, yaw, pitch, roll);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute head orientation\n";
         return -1;
     }
@@ -135,9 +181,9 @@ int main() {
     // TODO: Can filter out images with extreme yaw and pitch here
 
     // Generate the enrollment template
-    Trueface::Faceprint enrollmentFaceprint;
+    Faceprint enrollmentFaceprint;
     errorCode = tfSdk.getFaceFeatureVector(alignedImage, enrollmentFaceprint);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
     }
@@ -146,7 +192,7 @@ int main() {
     // Any data that is added to the collection will persist after the application is terminated because of the DatabaseManagementSystem we chose.
     std::string UUID;
     errorCode = tfSdk.enrollFaceprint(enrollmentFaceprint, "Obama", UUID);
-    if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+    if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: Unable to enroll template\n";
         return -1;
     }
@@ -170,30 +216,30 @@ int main() {
         }
 
         // Set the image using the capture frame buffer
-        errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, Trueface::ColorCode::bgr);
-        if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, ColorCode::bgr);
+        if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
         }
 
         // Get all the bounding boxes
-        std::vector<Trueface::FaceBoxAndLandmarks> bboxVec;
+        std::vector<FaceBoxAndLandmarks> bboxVec;
         tfSdk.detectFaces(bboxVec);
 
         // For each bounding box, get the face feature vector
-        std::vector<Trueface::Faceprint> faceprints;
+        std::vector<Faceprint> faceprints;
         faceprints.reserve(bboxVec.size());
 
         for (const auto &bbox: bboxVec) {
             // Get the face feature vector
-            Trueface::Faceprint tmpFaceprint;
+            Faceprint tmpFaceprint;
             tfSdk.getFaceFeatureVector(bbox, tmpFaceprint);
             faceprints.emplace_back(std::move(tmpFaceprint));
         }
 
         // Run batch identification on the faceprints
         std::vector<bool> found;
-        std::vector<Trueface::Candidate> candidates;
+        std::vector<Candidate> candidates;
         tfSdk.batchIdentifyTopCandidate(faceprints, candidates, found, threshold);
 
         // If the identity was found, draw the identity label

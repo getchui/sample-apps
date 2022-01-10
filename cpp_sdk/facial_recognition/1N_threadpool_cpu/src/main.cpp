@@ -14,6 +14,8 @@
 #include "tf_sdk.h"
 #include "tf_data_types.h"
 
+using namespace Trueface;
+
 bool g_run = true;
 std::mutex g_mtx;
 std::condition_variable g_conditionVariable;
@@ -30,13 +32,57 @@ class Controller {
 public:
     Controller(const std::string& sdkToken, const std::vector<std::string>& rtspURLs,
                const std::string& databaseConnectionURL, const std::string& collectionName) {
-        // Choose our SDK configuration options
-        Trueface::ConfigurationOptions options;
-        // Since we are running on CPU only, use the lite model
-        options.frModel = Trueface::FacialRecognitionModel::LITE; // If you want better accuracy, use the TFV5 model.
-        // Note, if you do use TFV5, you will need to run the download script in /download_models to obtain the model file
+        // Start by specifying the configuration options to be used.
+        // Can choose to use default configuration options if preferred by calling the default SDK constructor.
+        // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+        ConfigurationOptions options;
+        // The face recognition model to use. Use the most accurate face recognition model.
+        options.frModel = FacialRecognitionModel::LITE_V2;
+        // The object detection model to use.
+        options.objModel = ObjectDetectionModel::ACCURATE;
+        // The face detection filter.
+        options.fdFilter = FaceDetectionFilter::BALANCED;
+        // Smallest face height in pixels for the face detector.
         options.smallestFaceHeight = 40;
-        options.dbms = Trueface::DatabaseManagementSystem::POSTGRESQL;
+        // The path specifying the directory where the model files have been downloaded
+        options.modelsPath = "./";
+        // Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
+        options.frVectorCompression = false;
+        // Database management system for storage of biometric templates for 1 to N identification.
+        options.dbms = DatabaseManagementSystem::POSTGRESQL;
+
+        // Choose to encrypt the database
+        EncryptDatabase encryptDatabase;
+        encryptDatabase.enableEncryption = false; // TODO: To encrypt the database change this to true
+        encryptDatabase.key = "TODO: Your encryption key here";
+        options.encryptDatabase = encryptDatabase;
+
+        // Initialize module in SDK constructor.
+        // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
+        // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
+        // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
+        // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+        InitializeModule initializeModule;
+        initializeModule.faceDetector = true;
+        initializeModule.faceRecognizer = true;
+        options.initializeModule = initializeModule;
+
+        // Options for enabling GPU
+        // We will disable GPU inference, but you can easily enable it by modifying the following options
+        // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+        GPUModuleOptions gpuOptions;
+        gpuOptions.enableGPU = false; // TODO: Change this to true to enable GPU inference.
+        gpuOptions.maxBatchSize = 4;
+        gpuOptions.optBatchSize = 1;
+        gpuOptions.maxWorkspaceSizeMb = 2000;
+        gpuOptions.deviceIndex = 0;
+        gpuOptions.precision = Precision::FP16;
+
+        options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
+        options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+
+        // Alternatively, can also do the following to enable GPU inference for all supported modules:
+//    options.gpuOptions = true;
 
         // Create our logging thread
         m_workerThreads.emplace_back(std::thread(&Controller::logQueueSizes, this));
@@ -159,9 +205,9 @@ private:
 
     // Function for searching for all faces in the frame and pushing the aligned face chips
     // into another queue to be processed for face recognition
-    void detectAndEnqueueFaces(const std::string& sdkToken, const Trueface::ConfigurationOptions& options) {
+    void detectAndEnqueueFaces(const std::string& sdkToken, const ConfigurationOptions& options) {
         // Create and initialize a Trueface SDK
-        Trueface::SDK tfSdk(options);
+        SDK tfSdk(options);
         auto ret = tfSdk.setLicense(sdkToken);
         if (!ret) {
             throw std::runtime_error("Invalid token");
@@ -186,17 +232,17 @@ private:
 
             // Pass the image to the SDK, run face detection
             // OpenCV uses BGR default
-            auto retcode = tfSdk.setImage(image.data, image.cols, image.rows, Trueface::ColorCode::bgr);
-            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+            auto retcode = tfSdk.setImage(image.data, image.cols, image.rows, ColorCode::bgr);
+            if (retcode != ErrorCode::NO_ERROR) {
                 std::cout << "Thread " << std::this_thread::get_id() << ": Unable to set image" << std::endl;
                 continue;
             }
 
             // Detect all the faces in the image
-            std::vector<Trueface::FaceBoxAndLandmarks> faceBoxAndLandmarks;
+            std::vector<FaceBoxAndLandmarks> faceBoxAndLandmarks;
             retcode = tfSdk.detectFaces(faceBoxAndLandmarks);
 
-            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+            if (retcode != ErrorCode::NO_ERROR) {
                 std::cout << "Thread " << std::this_thread::get_id() << ": Error detecting faces" << std::endl;
                 continue;
             }
@@ -207,7 +253,7 @@ private:
                 std::vector<uint8_t> faceImage (112*112*3);
                 retcode = tfSdk.extractAlignedFace(fb, faceImage.data());
 
-                if (retcode != Trueface::ErrorCode::NO_ERROR) {
+                if (retcode != ErrorCode::NO_ERROR) {
                     std::cout << "Thread " << std::this_thread::get_id() << ": Error extracting aligned face" << std::endl;
                     continue;
                 }
@@ -225,9 +271,9 @@ private:
 
     // Function for generating a face recognition template from the face chips.
     // The face templates are then added to a queue to be processed for identification
-    void extractAndEnqueueTemplate(const std::string& sdkToken, const Trueface::ConfigurationOptions& options) {
+    void extractAndEnqueueTemplate(const std::string& sdkToken, const ConfigurationOptions& options) {
         // Create and initialize a Trueface SDK
-        Trueface::SDK tfSdk(options);
+        SDK tfSdk(options);
         auto ret = tfSdk.setLicense(sdkToken);
         if (!ret) {
             throw std::runtime_error("Invalid token");
@@ -251,9 +297,9 @@ private:
             }
 
             // Generate a face recognition template from the face image
-            Trueface::Faceprint faceprint;
+            Faceprint faceprint;
             auto retcode = tfSdk.getFaceFeatureVector(faceImage.data(), faceprint);
-            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+            if (retcode != ErrorCode::NO_ERROR) {
                 std::cout << "Thread " << std::this_thread::get_id() << ": Unable to generate feature vector" << std::endl;
                 continue;
             }
@@ -269,10 +315,10 @@ private:
         std::cout << "Template extraction thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
     }
 
-    void identifyTemplate(const std::string& sdkToken, const Trueface::ConfigurationOptions& options,
+    void identifyTemplate(const std::string& sdkToken, const ConfigurationOptions& options,
                           const std::string& databaseURL, const std::string& collectionName, bool first) {
         // Create and initialize a Trueface SDK
-        Trueface::SDK tfSdk(options);
+        SDK tfSdk(options);
         auto ret = tfSdk.setLicense(sdkToken);
         if (!ret) {
             throw std::runtime_error("Invalid token");
@@ -282,12 +328,12 @@ private:
         // To learn more, read the top of: https://reference.trueface.ai/cpp/dev/latest/usage/identification.html
         if (first) {
             auto retcode = tfSdk.createDatabaseConnection(databaseURL);
-            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+            if (retcode != ErrorCode::NO_ERROR) {
                 throw std::runtime_error("Unable to connect to database");
             }
 
             retcode = tfSdk.createLoadCollection(collectionName);
-            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+            if (retcode != ErrorCode::NO_ERROR) {
                 throw std::runtime_error("Unable to create new collection or load existing collection");
             }
 
@@ -307,7 +353,7 @@ private:
 
         // Main loop
         while(m_run) {
-            Trueface::Faceprint faceprint;
+            Faceprint faceprint;
             // Wait for work
             {
                 std::unique_lock<std::mutex> lock(m_faceprintQueueMtx);
@@ -323,10 +369,10 @@ private:
             }
 
             // Run 1 to N identification
-            Trueface::Candidate candidate;
+            Candidate candidate;
             bool found;
             auto retcode = tfSdk.identifyTopCandidate(faceprint, candidate, found);
-            if (retcode != Trueface::ErrorCode::NO_ERROR) {
+            if (retcode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to run identify top candidate" << std::endl;
             }
 
@@ -343,7 +389,7 @@ private:
     // Shared queues and their mutexes
     std::queue<cv::Mat> m_imageQueue;
     std::queue<std::vector<uint8_t>> m_faceChipQueue;
-    std::queue<Trueface::Faceprint> m_faceprintQueue;
+    std::queue<Faceprint> m_faceprintQueue;
 
     std::mutex m_imageQueueMtx;
     std::mutex m_faceChipQueueMtx;
