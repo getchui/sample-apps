@@ -30,6 +30,12 @@ int main() {
     // Database management system for storage of biometric templates for 1 to N identification.
     options.dbms = DatabaseManagementSystem::SQLITE;
 
+    // Choose to encrypt the database
+    EncryptDatabase encryptDatabase;
+    encryptDatabase.enableEncryption = false; // TODO: To encrypt the database change this to true
+    encryptDatabase.key = "TODO: Your encryption key here";
+    options.encryptDatabase = encryptDatabase;
+
     // Initialize module in SDK constructor.
     // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
     // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
@@ -48,6 +54,8 @@ int main() {
     gpuOptions.maxBatchSize = 4;
     gpuOptions.optBatchSize = 1;
     gpuOptions.maxWorkspaceSizeMb = 2000;
+    gpuOptions.deviceIndex = 0;
+    gpuOptions.precision = Precision::FP16;
 
     options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
     options.gpuOptions.faceDetectorGPUOptions = gpuOptions;

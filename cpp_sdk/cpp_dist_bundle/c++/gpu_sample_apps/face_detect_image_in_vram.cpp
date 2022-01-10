@@ -9,25 +9,62 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/core/cuda.hpp"
 
-using namespace std;
+using namespace Trueface;
 
 int main() {
-    Trueface::ConfigurationOptions options;
-    options.frModel = Trueface::FacialRecognitionModel::TFV5;
-    // Note, you will need to run the download script in /download_models to obtain the model file
-    Trueface::GPUModuleOptions moduleOptions;
-    options.gpuOptions = true;
-    options.gpuOptions.faceDetectorGPUOptions.deviceIndex = 0;
-    options.gpuOptions.faceRecognizerGPUOptions.deviceIndex = 0;
+    // Start by specifying the configuration options to be used.
+    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
+    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    ConfigurationOptions options;
+    // The face recognition model to use. Use the most accurate face recognition model.
+    options.frModel = FacialRecognitionModel::TFV5;
+    // The object detection model to use.
+    options.objModel = ObjectDetectionModel::ACCURATE;
+    // The face detection filter.
+    options.fdFilter = FaceDetectionFilter::BALANCED;
+    // Smallest face height in pixels for the face detector.
+    options.smallestFaceHeight = 40;
+    // The path specifying the directory where the model files have been downloaded
+    options.modelsPath = "./";
+    // Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
+    options.frVectorCompression = false;
+    // Database management system for storage of biometric templates for 1 to N identification.
+    options.dbms = DatabaseManagementSystem::SQLITE;
 
-    // Since we know we will use the face detector and face recognizer,
-    // we can choose to initialize these modules in the SDK constructor instead of using lazy initialization
-    Trueface::InitializeModule initializeModule;
+    // Choose to encrypt the database
+    EncryptDatabase encryptDatabase;
+    encryptDatabase.enableEncryption = false; // TODO: To encrypt the database change this to true
+    encryptDatabase.key = "TODO: Your encryption key here";
+    options.encryptDatabase = encryptDatabase;
+
+    // Initialize module in SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
+    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
+    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
+    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.faceRecognizer = true;
     options.initializeModule = initializeModule;
 
-    Trueface::SDK tfSdk(options);
+    // Options for enabling GPU
+    // We will disable GPU inference, but you can easily enable it by modifying the following options
+    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    GPUModuleOptions gpuOptions;
+    gpuOptions.enableGPU = true;
+    gpuOptions.maxBatchSize = 8;
+    gpuOptions.optBatchSize = 3;
+    gpuOptions.maxWorkspaceSizeMb = 2000;
+    gpuOptions.deviceIndex = 0;
+    gpuOptions.precision = Precision::FP16;
+
+    options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
+    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+
+    // Alternatively, can also do the following to enable GPU inference for all supported modules:
+//    options.gpuOptions = true;
+
+    SDK tfSdk(options);
 
     // TODO: Either input your token in the CMakeLists.txt file, or insert it below directly
     bool valid = tfSdk.setLicense(TRUEFACE_TOKEN);
@@ -37,8 +74,8 @@ int main() {
         return 1;
     }
 
-    vector<Trueface::Faceprint> faceprints1;
-    vector<Trueface::Faceprint> faceprints2;
+    std::vector<Faceprint> faceprints1;
+    std::vector<Faceprint> faceprints2;
 
     {
         // using opencv to load the image in vram
@@ -48,40 +85,40 @@ int main() {
         uchar* ptr = mat.data;
 
         // Set the image using the Trueface SDK directly from VRAM
-        Trueface::ErrorCode errorCode = tfSdk.setImage(ptr, img.cols, img.rows, Trueface::ColorCode::bgr, mat.step);
+        ErrorCode errorCode = tfSdk.setImage(ptr, img.cols, img.rows, ColorCode::bgr, mat.step);
 
-        if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-            std::cout<<"Error: could not load the image"<<std::endl;
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << "Error: could not load the image" << std::endl;
             return 1;
         }
 
         // Run face detection
-        Trueface::FaceBoxAndLandmarks faceBoxAndLandmarks;
+        FaceBoxAndLandmarks faceBoxAndLandmarks;
         bool found = false;
         errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
-        if (!found || errorCode != Trueface::ErrorCode::NO_ERROR) {
-            std::cout<<"Error: could not detect a face"<<std::endl;
+        if (!found || errorCode != ErrorCode::NO_ERROR) {
+            std::cout << "Error: could not detect a face" << std::endl;
             return 1;
         } else {
             std::cout << "Face detected at following coordinates: " << std::endl;
-            cout<<faceBoxAndLandmarks.topLeft.x<<endl;
-            cout<<faceBoxAndLandmarks.topLeft.y<<endl;
-            cout<<faceBoxAndLandmarks.bottomRight.x<<endl;
-            cout<<faceBoxAndLandmarks.bottomRight.y<<endl;
+            std::cout <<faceBoxAndLandmarks.topLeft.x<< std::endl;
+            std::cout <<faceBoxAndLandmarks.topLeft.y<< std::endl;
+            std::cout <<faceBoxAndLandmarks.bottomRight.x<< std::endl;
+            std::cout <<faceBoxAndLandmarks.bottomRight.y<< std::endl;
         }
 
         // Generate a face recognition template for the detected face
         cv::cuda::GpuMat chipGpu(1, 112*112, CV_8UC3);
         errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, chipGpu.data);
-        if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to extract aligned face" << std::endl;
             return 1;
         }
 
-        vector<uint8_t*> alignedFaceImages;
+        std::vector<uint8_t*> alignedFaceImages;
         alignedFaceImages.push_back(chipGpu.data);
         errorCode = tfSdk.getFaceFeatureVectors(alignedFaceImages, faceprints1);
-        if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to generate face feature vector" << std::endl;
             return 1;
         }
@@ -94,41 +131,41 @@ int main() {
         uchar* ptr = mat.data;
 
         // Set the image using the Trueface SDK directly from VRAM
-        Trueface::ErrorCode errorCode = tfSdk.setImage(ptr, img.cols, img.rows, Trueface::ColorCode::bgr, mat.step);
+        ErrorCode errorCode = tfSdk.setImage(ptr, img.cols, img.rows, ColorCode::bgr, mat.step);
 
-        if (errorCode != Trueface::ErrorCode::NO_ERROR) {
-            std::cout<<"Error: could not load the image"<<std::endl;
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << "Error: could not load the image" << std::endl;
             return 1;
         }
 
         // Run face detection
-        Trueface::FaceBoxAndLandmarks faceBoxAndLandmarks;
+        FaceBoxAndLandmarks faceBoxAndLandmarks;
         bool found = false;
         errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
-        if (!found || errorCode != Trueface::ErrorCode::NO_ERROR) {
-            std::cout<<"Error: could not detect a face"<<std::endl;
+        if (!found || errorCode != ErrorCode::NO_ERROR) {
+            std::cout << "Error: could not detect a face" << std::endl;
             return 1;
         } else {
             std::cout << "Face detected at following coordinates: " << std::endl;
-            cout<<faceBoxAndLandmarks.topLeft.x<<endl;
-            cout<<faceBoxAndLandmarks.topLeft.y<<endl;
-            cout<<faceBoxAndLandmarks.bottomRight.x<<endl;
-            cout<<faceBoxAndLandmarks.bottomRight.y<<endl;
+            std::cout <<faceBoxAndLandmarks.topLeft.x<< std::endl;
+            std::cout <<faceBoxAndLandmarks.topLeft.y<< std::endl;
+            std::cout <<faceBoxAndLandmarks.bottomRight.x<< std::endl;
+            std::cout <<faceBoxAndLandmarks.bottomRight.y<< std::endl;
         }
 
         // Generate a face recognition template for the detected face
         cv::cuda::GpuMat chipGpu(1, 112*112, CV_8UC3);
         errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, chipGpu.data);
-        if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to extract aligned face" << std::endl;
             return 1;
         }
 
-        vector<uint8_t*> alignedFaceImages;
+        std::vector<uint8_t*> alignedFaceImages;
         alignedFaceImages.push_back(chipGpu.data);
 
         errorCode = tfSdk.getFaceFeatureVectors(alignedFaceImages, faceprints2);
-        if (errorCode != Trueface::ErrorCode::NO_ERROR) {
+        if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to generate face feature vector" << std::endl;
             return 1;
         }
@@ -136,13 +173,13 @@ int main() {
 
     // Compute the similarity score of the two faces
     float prob, cos;
-    auto res = Trueface::SDK::getSimilarity(faceprints1[0], faceprints2[0], prob, cos);
-    if (res != Trueface::ErrorCode::NO_ERROR) {
+    auto res = SDK::getSimilarity(faceprints1[0], faceprints2[0], prob, cos);
+    if (res != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute sim score" << std::endl;
         return 1;
     }
-    cout<<"Probability: "<< prob <<endl;
-    cout<<"Similarity: "<< cos <<endl;
+    std::cout << "Probability: "<< prob << std::endl;
+    std::cout << "Similarity: "<< cos << std::endl;
 
     return 0;
 }
