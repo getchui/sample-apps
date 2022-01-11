@@ -40,36 +40,56 @@ def draw_rectangle(frame, bounding_box):
         
 
 
+# Start by specifying the configuration options to be used. 
+# Can choose to use the default configuration options if preferred by calling the default SDK constructor.
+# Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
-# Can set configuration options here
-
-# options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.NONE # The data will not persist after the application terminates
-
-# Load the collection from an SQLITE database
+# The face recognition model to use. Use the most accurate model TFV5.
+options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5
+# The object detection model to use.
+options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
+# The face detection filter.
+options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
+# Smallest face height in pixels for the face detector.
+# Can set this to -1 to dynamically change the smallest face height based on the input image size.
+options.smallest_face_height = 40 
+# The path specifying the directory containing the model files which were downloaded.
+options.models_path = "./"
+# Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
+options.fr_vector_compression = False
+# Database management system for the storage of biometric templates for 1 to N identification.
 options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE
 
-# If you previously enrolled the templates into a PostgreSQL database, then use POSTGRESQL instead
-# options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.POSTGRESQL
+# Encrypt the biometric templates stored in the database
+# If encryption is enabled, must provide an encryption key
+options.encrypt_database.enable_encryption = False
+options.encrypt_database.key = "TODO: Your encryption key here"
 
-options.smallest_face_height = 40 # https://reference.trueface.ai/cpp/dev/latest/usage/general.html#_CPPv4N8Trueface20ConfigurationOptions18smallestFaceHeightE
-options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5 
-# Note, if you do use TFV5, you will need to run the download script in /download_models to obtain the model file
+# Initialize module in SDK constructor.
+# By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
+# This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
+# The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
+# Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+options.initialize_module.face_detector = True
+options.initialize_module.face_recognizer = True
 
-# TODO: If you have a NVIDIA gpu, then enable the enableGPU flag (you will require a GPU specific token for this).
+# Options for enabling GPU
+# We will disable GPU inference, but you can easily enable it by modifying the following options
+# Note, you may require a specific GPU enabled token in order to enable GPU inference.
+gpuModuleOptions = tfsdk.GPUModuleOptions()
+gpuModuleOptions.enable_GPU = False # TODO: Change this to true to enable GPU
+gpuModuleOptions.max_batch_size = 4
+gpuModuleOptions.opt_batch_size = 1
+gpuModuleOptions.max_workspace_size = 2000
+gpuModuleOptions.device_index = 0
+gpuModuleOptions.precision = tfsdk.PRECISION.FP16
+
+# Note, you can set separate GPU options for each GPU supported module
+options.GPU_options.face_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
+
+# You can also enable GPU for all supported modules at once through the following syntax
 # options.GPU_options = True
-
-# To enable database encryption...
-# encryptDatabase = tfsdk.EncryptDatabase()
-# encryptDatabase.enable_encryption = True
-# encryptDatabase.key = "TODO: Your encryption key here"
-# options.encrypt_database = encryptDatabase
-
-# Since we know we will use the face detector and face recognizer,
-# we can choose to initialize these modules in the SDK constructor instead of using lazy initialization
-initializeModule = tfsdk.InitializeModule()
-initializeModule.face_detector = True
-initializeModule.face_recognizer = True
-options.initialize_module = initializeModule
 
 sdk = tfsdk.SDK(options)
 
