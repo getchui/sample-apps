@@ -45,7 +45,6 @@ options.initialize_module.face_detector = True
 options.initialize_module.face_recognizer = True
 
 # Options for enabling GPU
-# We will disable GPU inference, but you can easily enable it by modifying the following options
 # Note, you may require a specific GPU enabled token in order to enable GPU inference.
 gpuModuleOptions = tfsdk.GPUModuleOptions()
 gpuModuleOptions.enable_GPU = True
