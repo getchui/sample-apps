@@ -47,7 +47,7 @@ gpuModuleOptions.max_batch_size = 4
 gpuModuleOptions.opt_batch_size = 1
 gpuModuleOptions.max_workspace_size = 2000
 gpuModuleOptions.device_index = 0
-gpuModuleOptions.precsion = tfsdk.PRECISION.FP16
+gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 
 # Note, you can set separate GPU options for each GPU supported module
 options.GPU_options.face_detector_GPU_options = gpuOptions
