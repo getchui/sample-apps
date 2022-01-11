@@ -27,8 +27,8 @@ options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE
 
 # Encrypt the biometric templates stored in the database
 # If encryption is enabled, must provide an encryption key
-options.encryptDatabase.enable_encryption = False
-options.encryptDatabase.key = "TODO: Your encryption key here"
+options.encrypt_database.enable_encryption = False
+options.encrypt_database.key = "TODO: Your encryption key here"
 
 # Initialize module in SDK constructor.
 # By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
