@@ -41,13 +41,13 @@ options.initialize_module.face_recognizer = True
 # Options for enabling GPU
 # We will disable GPU inference, but you can easily enable it by modifying the following options
 # Note, you may require a specific GPU enabled token in order to enable GPU inference.
-gpuOptions = tfsdk.GPUOptions()
-gpuOptions.enable_GPU = False # TODO: Change this to true to enable GPU
-gpuOptions.max_batch_size = 4
-gpuOptions.opt_batch_size = 1
-gpuOptions.max_workspace_size = 2000
-gpuOptions.device_index = 0
-gpuOptions.precsion = tfsdk.PRECISION.FP16
+gpuModuleOptions = tfsdk.GPUModuleOptions()
+gpuModuleOptions.enable_GPU = False # TODO: Change this to true to enable GPU
+gpuModuleOptions.max_batch_size = 4
+gpuModuleOptions.opt_batch_size = 1
+gpuModuleOptions.max_workspace_size = 2000
+gpuModuleOptions.device_index = 0
+gpuModuleOptions.precsion = tfsdk.PRECISION.FP16
 
 # Note, you can set separate GPU options for each GPU supported module
 options.GPU_options.face_detector_GPU_options = gpuOptions
