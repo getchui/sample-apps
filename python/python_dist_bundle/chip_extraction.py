@@ -73,6 +73,7 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 # detect the largest face
 found, face_bounding_box = sdk.detect_largest_face()
 
+
 if found:
     face = sdk.extract_aligned_face(face_bounding_box)
 
@@ -85,3 +86,40 @@ if found:
     cv2.destroyAllWindows()
 else:
     print("No face detected in image")
+
+
+# Will demonstrate how to manually set the landmark locations if you are using a dataset which provides them
+# Doing so can bypass the face detection step and speed things up
+fb = tfsdk.FaceBoxAndLandmarks()
+
+fb.top_left.x = 176.822021
+fb.top_left.y = 160.230774
+fb.bottom_right.x = 413.943542
+fb.bottom_right.y = 483.534943
+
+fb.score = 0.992754
+
+p1 = tfsdk.Point()
+p2 = tfsdk.Point()
+p3 = tfsdk.Point()
+p4 = tfsdk.Point()
+p5 = tfsdk.Point()
+
+p1.x = 224.090729
+p1.y = 286.082031
+
+p2.x = 331.095398
+p2.y = 284.688293
+
+p3.x = 261.967041
+p3.y = 338.466797
+
+p4.x = 230.183548
+p4.y = 399.291016
+
+p5.x = 318.272552
+p5.y = 397.987305
+
+fb.landmarks = [p1, p2, p3, p4, p5]
+
+face = sdk.extract_aligned_face(fb)
