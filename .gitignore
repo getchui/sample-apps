@@ -19,3 +19,4 @@ spoofv4
 download_models
 *.db
 libmxnet.so
+.env
