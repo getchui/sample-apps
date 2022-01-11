@@ -50,8 +50,8 @@ gpuModuleOptions.device_index = 0
 gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 
 # Note, you can set separate GPU options for each GPU supported module
-options.GPU_options.face_detector_GPU_options = gpuOptions
-options.GPU_options.face_recognizer_GPU_options = gpuOptions
+options.GPU_options.face_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
 
 # You can also enable GPU for all supported modules at once through the following syntax
 # options.GPU_options = True
