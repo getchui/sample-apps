@@ -84,6 +84,6 @@ for bounding_box in bounding_boxes:
 
     print(f"Detected: {label_string} with probability: {bounding_box.probability}")
     print(f"Top left: ({bounding_box.top_left.x}, {bounding_box.top_left.y}), width: {bounding_box.width}, height: {bounding_box.height}")
-    print()
+
 
 

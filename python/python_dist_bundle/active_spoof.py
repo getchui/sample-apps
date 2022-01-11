@@ -43,7 +43,7 @@ options.encrypt_database.key = "TODO: Your encryption key here"
 # This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
 # The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
 # Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
-options.initialize_module.active_soof = True
+options.initialize_module.active_spoof = True
 
 # Options for enabling GPU
 # We will disable GPU inference, but you can easily enable it by modifying the following options
@@ -159,7 +159,7 @@ if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}Unable to run active spoof detection for real images!{Style.RESET_ALL}")
     quit()
 
-print("Printing results for real image.")
+print("Printing results for real image:")
 
 if spoof_label == tfsdk.SPOOFLABEL.FAKE:
     print("SPOOF RESULTS: Spoof attempt detected!")
@@ -171,6 +171,7 @@ else:
     else:
         print("SPOOF RESULTS: Real image detected, and both images are of the same identity!")
 
+print("")
 
 # Now for the sake of the demo, let's repeat the entire process but with two face / spoof attempt images
 # We will start with the far shot image
@@ -259,7 +260,7 @@ if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}Unable to run active spoof detection for fake images!{Style.RESET_ALL}")
     quit()
 
-print("Printing results for fake image.")
+print("Printing results for fake image:")
 
 if spoof_label == tfsdk.SPOOFLABEL.FAKE:
     print("SPOOF RESULTS: Spoof attempt detected!")
