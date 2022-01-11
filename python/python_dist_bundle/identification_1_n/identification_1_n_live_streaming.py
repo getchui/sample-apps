@@ -14,29 +14,29 @@ import time
 from colorama import Fore
 from colorama import Style
 
-def draw_label(image, point, label,
+def draw_label(image, point, label, color,
                font=cv2.FONT_HERSHEY_SIMPLEX,
-               font_scale=1.0, thickness=1):
+               font_scale=1.0, thickness=2):
     size = cv2.getTextSize(label, font, font_scale, thickness)[0]
     x_label, y_label = point
     cv2.rectangle(
         image,
         (x_label, y_label - size[1] - 10),
         (x_label + size[0], y_label),
-        (194,134,58),
+        color,
         cv2.FILLED)
 
     cv2.putText(
         image, label.capitalize(), (x_label, y_label - 5), font, font_scale,
-        (255, 255, 255), thickness, cv2.LINE_AA)
+        (0, 0, 0), thickness, cv2.LINE_AA)
 
 
-def draw_rectangle(frame, bounding_box):
+def draw_rectangle(frame, bounding_box, color):
 
     # Draw the rectangle on the frame
     cv2.rectangle(frame,
                   (int(bounding_box.top_left.x), int(bounding_box.top_left.y)),
-                  (int(bounding_box.bottom_right.x), int(bounding_box.bottom_right.y)), (194,134,58), 3)
+                  (int(bounding_box.bottom_right.x), int(bounding_box.bottom_right.y)), color, 3)
         
 
 
@@ -168,16 +168,18 @@ while(True):
             continue
 
         res, match_found, candidate = sdk.identify_top_candidate(faceprint, threshold=0.4)
-        draw_rectangle(frame, facebox)
 
         if (res != tfsdk.ERRORCODE.NO_ERROR or not match_found):
+            draw_rectangle(frame, facebox, (0, 0, 255))
             continue
         else:
+            color = (0, 255, 0)
+            draw_rectangle(frame, facebox, color)
             draw_label(frame,
                        (int(facebox.top_left.x), int(facebox.top_left.y)),
                        "{} {}%".format(
                            candidate.identity,
-                           int(candidate.match_probability*100)))
+                           int(candidate.match_probability*100)), color)
 
 
     cv2.imshow(filename, frame)
