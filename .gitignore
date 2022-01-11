@@ -18,3 +18,4 @@ spoofv4
 *.enc
 download_models
 *.db
+libmxnet.so

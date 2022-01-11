@@ -106,11 +106,9 @@ int main() {
     // Database management system for storage of biometric templates for 1 to N identification.
     options.dbms = DatabaseManagementSystem::SQLITE;
 
-    // Choose to encrypt the database
-    EncryptDatabase encryptDatabase;
-    encryptDatabase.enableEncryption = false; // TODO: To encrypt the database change this to true
-    encryptDatabase.key = "TODO: Your encryption key here";
-    options.encryptDatabase = encryptDatabase;
+    // If encryption is enabled, must provide an encryption key
+    options.encryptDatabase.enableEncryption = false;
+    options.encryptDatabase.key = "TODO: Your encryption key here";
 
     // Initialize module in SDK constructor.
     // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).

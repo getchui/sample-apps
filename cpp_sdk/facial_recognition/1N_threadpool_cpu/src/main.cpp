@@ -51,7 +51,7 @@ public:
         // Database management system for storage of biometric templates for 1 to N identification.
         options.dbms = DatabaseManagementSystem::POSTGRESQL;
 
-        // Choose to encrypt the database
+        // Encrypt the biometric templates stored in the database
         EncryptDatabase encryptDatabase;
         encryptDatabase.enableEncryption = false; // TODO: To encrypt the database change this to true
         encryptDatabase.key = "TODO: Your encryption key here";
