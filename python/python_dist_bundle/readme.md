@@ -2,25 +2,28 @@
 
 ## Prerequisites
 
+In order to run the sample apps, you must place the python bindings library in the same directory as the python script. 
+Alternatively, you can add the path to the directory containing the python bindings library to your `PYTHONPATH` environment variable.
+You may also need to add this directory to your `LD_LIBRARY_PATH` environment variable to ensure the supporting shared libraries are found.
+You can add to an environment variable as follows: `export PYTHONPATH=$PYTHONPATH:/path/to/directory/containing/tfsdk...`.
+
 The following dependencies may need to be installed for some sample apps:
 - `pip install numpy`
 - `pip install colorama`
 - `pip install opencv-python`
 - `pip install cupy` (required for `face_recognition_vram.py` sample app)
 
-In order to run the sample apps, you must place the python bindings library in the same directory as the python script. 
-Alternatively, you can add the path to the directory containing the python bindings library to your `PYTHONPATH` environment variable.
-You may also need to add this directory to your `LD_LIBRARY_PATH` environment variable to ensure the supporting shared libraries are found.
 
 ## Running The Sample Code
 
 Start by exporting your provided token as an envionrmnet variable with the key `TRUEFACE_TOKEN`. 
 ex. `export TRUEFACE_TOKEN=<YOUR_TOKEN_HERE>`
 
-The sample code can be run by calling `python3 sample_code_name.py`.
 Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
 The model files can be downloaded by running `./download_models/download_all_models.sh`. 
 If you download the model files to a directory other than the run directory, you must specify the path to the directory using the `tfsdk.ConfigurationOptions.models_path` configuration option.
+
+The sample code can be run by calling `python3 sample_code_name.py`.
 
 If the python interpreter is unable to find `tfsdk`, ensure the version of the library
 you are using matches your python version (including minor version) exactly.
