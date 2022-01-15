@@ -29,6 +29,7 @@ int main() {
 
     int32_t batchSize = 4;
     gpuOptions.maxBatchSize = batchSize;
+    gpuOptions.optBatchSize = batchSize;
 
     if (gpuOptions.enableGPU) {
         std::cout << "Using GPU for inference" << std::endl;
