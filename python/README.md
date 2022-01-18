@@ -7,7 +7,7 @@
   ex. `export TRUEFACE_TOKEN=<YOUR_TOKEN_HERE>`
 * Download the appropriate version of the python bindings SDK for your platform and python version.
 Next, add the directory where the python bindings library resides to your `PYTHONPATH` environment variable.
-If using the GPU library, you must add the directory where the GPU library `libtf.so` resides to your `LD_LIBRARY_PATH` environment variable.
+If using the GPU SDK, you will need to add the directory containing `libmxnet.so` to your `LD_LIBRARY_PATH` environment variable to ensure the supporting shared libraries are found.
 You can add to an environment variable as follows: `export PYTHONPATH=$PYTHONPATH:/path/to/directory/containing/tfsdk...`.
 * Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
   The model files can be downloaded by running the scripts found in the `download_models/` directory which comes packaged as part of the SDK download bundle.

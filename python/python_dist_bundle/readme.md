@@ -4,7 +4,7 @@
 
 In order to run the sample apps, you must place the python bindings library in the same directory as the python script. 
 Alternatively, you can add the path to the directory containing the python bindings library to your `PYTHONPATH` environment variable.
-You may also need to add this directory to your `LD_LIBRARY_PATH` environment variable to ensure the supporting shared libraries are found.
+If using the GPU SDK, you will need to add the directory containing `libmxnet.so` to your `LD_LIBRARY_PATH` environment variable to ensure the supporting shared libraries are found.
 You can add to an environment variable as follows: `export PYTHONPATH=$PYTHONPATH:/path/to/directory/containing/tfsdk...`.
 
 The following dependencies may need to be installed for some sample apps:
