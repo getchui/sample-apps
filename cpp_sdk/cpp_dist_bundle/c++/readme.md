@@ -3,6 +3,9 @@
 ## Prerequisites
 You must have CMake 3.15 installed on your system as well as a C++ compiler (ex. gcc, clang, MSVC).
 
+If you are are using the GPU SDK, be sure to read [this guide](https://reference.trueface.ai/cpp/dev/latest/index.html#gpu-sdk-dependencies) on installing GPU dependencies. 
+
+
 ## Build Instructions
 Open the `CMakeLists.txt` file and edit this line here: `add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")`.
 Replace `YOUR_TOKEN_HERE` with the license token you were provided with. If you have not yet received a token, contact sales@trueface.ai. 
