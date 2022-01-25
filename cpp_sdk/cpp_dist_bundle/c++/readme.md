@@ -17,7 +17,7 @@ Next, run the following commands:
 - `cmake ..`
 - `make -j $(nproc)`
 
-If building on Windows, you will need to run the following commands:
+If building on Windows, be sure to first read our guide [here](https://reference.trueface.ai/cpp/dev/latest/index.html#windows-sdk). Next, you will need to run the following commands:
 - `mkdir build`
 - `cd build`
 - `cmake -A x64 ..`
