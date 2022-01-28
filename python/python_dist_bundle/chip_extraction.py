@@ -4,6 +4,7 @@ import tfsdk
 import os
 from colorama import Fore
 from colorama import Style
+import cv2
 
 # Start by specifying the configuration options to be used. 
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
@@ -79,7 +80,6 @@ if found:
 
     # the extracted image is the RGB color format
     # opencv expects BGR
-    import cv2
     face_bgr = cv2.cvtColor(face, cv2.COLOR_RGB2BGR)
     cv2.imshow('Aligned face chip', face_bgr)
     cv2.waitKey(0)
