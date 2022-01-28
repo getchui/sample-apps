@@ -72,7 +72,6 @@ Passing multiple frames in succession to the blink detector can be used to build
 
 ### Spoof Detection
 - `spoof_detection.cpp` demonstrates how to identify presentation attacks, such as someone holding their phone or a physical picture up to the camera. 
-Note, the spoof detection API is currently deprecated.
 
 ### Mask Detection
 - `detect_mask.cpp` demonstrates how to run mask detection on an image. Mask is detected when a user is wearing a face mask.

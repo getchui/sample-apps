@@ -52,7 +52,6 @@ Any sample app ending in `_live_streaming.py` requires you to have a camera (phy
 ### Spoof Detection
 - `detect_spoof.py` demonstrates how to run spoof detection on an image. 
   Spoof is detected when a user is trying to impersonate an identity, for example by holding a phone with a face image up to the camera.
-  Note, the spoof detection API is currently deprecated.
 
 ### Face Recognition - 1 to 1 Identification
 - `face_recognition.py` demonstrates the usage of our face recognition API for 1 to 1 matching. 
