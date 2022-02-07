@@ -155,7 +155,7 @@ int main() {
     }
 
     std::cout <<  "Similarity score of same identity images: " << similarityScore << std::endl;
-    std::cout <<  "Match probability of same identity images: " << matchProbability << "\n" << std::endl;
+    std::cout <<  "Match probability of same identity images: " << matchProbability * 100 << "%\n" << std::endl;
 
     // Compute the similarity between the images of different identities.
     errorCode = SDK::getSimilarity(faceprint1, faceprint3, matchProbability, similarityScore);
@@ -166,7 +166,7 @@ int main() {
     }
 
     std::cout <<  "Similarity score of two different identities: " << similarityScore << std::endl;
-    std::cout <<  "Match probability of two different identities: " << matchProbability << std::endl;
+    std::cout <<  "Match probability of two different identities: " << matchProbability * 100 << "%" << std::endl;
 
     return 0;
 }
