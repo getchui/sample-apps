@@ -75,101 +75,108 @@ int main() {
     // Start by analyzing real images
     {
         // Load the far image. The face must be about 18 inches from the camera.
-        ErrorCode errorCode = tfSdk.setImage("../../images/far_shot_real_person.jpg");
+        TFImage img;
+        ErrorCode errorCode = tfSdk.preprocessImage("../../images/far_shot_real_person.jpg", img);
         if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not load the image" << std::endl;
+            std::cout << errorCode << std::endl;
             return 1;
         }
-
-        // Next, we need to get the image properties.
-        // These properties are used by the checkSpoofImageFaceSize() function.
-
-        ImageProperties imageProperties;
-        tfSdk.getImageProperties(imageProperties);
 
         // Next, we need to detect if there is a face in the image
         bool found;
         FaceBoxAndLandmarks fb;
 
-        auto ret = tfSdk.detectLargestFace(fb, found);
-        if (!found || ret != ErrorCode::NO_ERROR) {
+        auto ret = tfSdk.detectLargestFace(img, fb, found);
+        if (ret != ErrorCode::NO_ERROR) {
+            std::cout << errorCode << std::endl;
+            return 1;
+        }
+
+        if (!found) {
             std::cout << "No face found in real image, far shot" << std::endl;
-            return 0;
+            return 1;
         }
 
         // Now, we need to check that the image meets our size criteria.
         // Be sure to check the return value from this function
-        ret = tfSdk.checkSpoofImageFaceSize(fb, imageProperties, ActiveSpoofStage::FAR);
+        ret = tfSdk.checkSpoofImageFaceSize(img, fb, ActiveSpoofStage::FAR);
         if (ret == ErrorCode::FACE_TOO_FAR) {
             std::cout << "Real face, far shot: Face too far!" << std::endl;
-            return 0;
+            return 1;
         } else if (ret == ErrorCode::FACE_TOO_CLOSE) {
             std::cout << "Real face, far shot: Face too close!" << std::endl;
-            return 0;
+            return 1;
         } else if (ret != ErrorCode::NO_ERROR) {
             std::cout << "There was an error with real face, far shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         // Now, we need to compute the 106 facial landmarks for the face
         Landmarks farFaceLandmarks{};
-        ret = tfSdk.getFaceLandmarks(fb, farFaceLandmarks);
+        ret = tfSdk.getFaceLandmarks(img, fb, farFaceLandmarks);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute facial landmarks for real face, far shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         // Finally, we can compute a face recognition template for the face,
         // and later use it to ensure the two active spoof images are from the same identity.
         Faceprint farFaceprint;
-        ret = tfSdk.getFaceFeatureVector(fb, farFaceprint);
+        ret = tfSdk.getFaceFeatureVector(img, fb, farFaceprint);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "There was an error generating the faceprint for real face, far shot!" << std::endl;
-            return 0;
+            return 1;
         }
 
         // Now at this point we can repeat all the above steps, but now for the near shot face image.
 
-        errorCode = tfSdk.setImage("../../images/near_shot_real_person.jpg");
+        errorCode = tfSdk.preprocessImage("../../images/near_shot_real_person.jpg", img);
         if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not load the image" << std::endl;
+            std::cout << errorCode << std::endl;
             return 1;
         }
 
-        tfSdk.getImageProperties(imageProperties);
-
-        ret = tfSdk.detectLargestFace(fb, found);
-        if (!found || ret != ErrorCode::NO_ERROR) {
-            std::cout << "No face found in real image, near shot" << std::endl;
-            return 0;
+        ret = tfSdk.detectLargestFace(img, fb, found);
+        if (ret != ErrorCode::NO_ERROR) {
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
-        ret = tfSdk.checkSpoofImageFaceSize(fb, imageProperties,
-                                            ActiveSpoofStage::NEAR); // Be sure to specify ActiveSpoofStage::NEAR this time.
+        if (!found) {
+            std::cout << "No face found in real image, far shot" << std::endl;
+            return 1;
+        }
+
+        ret = tfSdk.checkSpoofImageFaceSize(img, fb,ActiveSpoofStage::NEAR); // Be sure to specify ActiveSpoofStage::NEAR this time.
         if (ret == ErrorCode::FACE_TOO_FAR) {
             std::cout << "Real face, near shot: Face too far!" << std::endl;
-            return 0;
+            return 1;
         } else if (ret == ErrorCode::FACE_TOO_CLOSE) {
             std::cout << "Real face, near shot: Face too close!" << std::endl;
-            return 0;
+            return 1;
         } else if (ret != ErrorCode::NO_ERROR) {
-            std::cout << "There was an error with real face, near shot!" << std::endl;
-            return 0;
+            std::cout << "There was an error with real face, far near!" << std::endl;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         // Now, we need to compute the 106 facial landmarks for the face
         Landmarks nearFaceLandmarks{};
-        ret = tfSdk.getFaceLandmarks(fb, nearFaceLandmarks);
+        ret = tfSdk.getFaceLandmarks(img, fb, nearFaceLandmarks);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute facial landmarks for real face, near shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         Faceprint nearFaceprint;
-        ret = tfSdk.getFaceFeatureVector(fb, nearFaceprint);
+        ret = tfSdk.getFaceFeatureVector(img, fb, nearFaceprint);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "There was an error generating the faceprint for real face, near shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         // Finally, we can run the spoof function
@@ -179,7 +186,8 @@ int main() {
         ret = tfSdk.detectActiveSpoof(nearFaceLandmarks, farFaceLandmarks, spoofScore, spoofLabel);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute active spoof!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         std::cout << "Printing results for real image: " << std::endl;
@@ -202,101 +210,109 @@ int main() {
 
     {
         // Load the far image. The face must be about 18 inches from the camera.
-        ErrorCode errorCode = tfSdk.setImage("../../images/far_shot_fake_person.jpg");
+        TFImage img;
+        ErrorCode errorCode = tfSdk.preprocessImage("../../images/far_shot_fake_person.jpg", img);
         if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not load the image" << std::endl;
+            std::cout << errorCode << std::endl;
             return 1;
         }
-
-        // Next, we need to get the image properties.
-        // These properties are used by the checkSpoofImageFaceSize() function.
-
-        ImageProperties imageProperties;
-        tfSdk.getImageProperties(imageProperties);
 
         // Next, we need to detect if there is a face in the image
         bool found;
         FaceBoxAndLandmarks fb;
 
-        auto ret = tfSdk.detectLargestFace(fb, found);
-        if (!found || ret != ErrorCode::NO_ERROR) {
-            std::cout << "No face found in fake image, far shot" << std::endl;
-            return 0;
+        auto ret = tfSdk.detectLargestFace(img, fb, found);
+        if (ret != ErrorCode::NO_ERROR) {
+            std::cout << errorCode << std::endl;
+            return 1;
+        }
+
+        if (!found) {
+            std::cout << "No face found in real image, far shot" << std::endl;
+            return 1;
         }
 
         // Now, we need to check that the image meets our size criteria.
         // Be sure to check the return value from this function
-        ret = tfSdk.checkSpoofImageFaceSize(fb, imageProperties, ActiveSpoofStage::FAR);
+        ret = tfSdk.checkSpoofImageFaceSize(img, fb, ActiveSpoofStage::FAR);
         if (ret == ErrorCode::FACE_TOO_FAR) {
             std::cout << "Fake face, far shot: Face too far!" << std::endl;
-            return 0;
+            return 1;
         } else if (ret == ErrorCode::FACE_TOO_CLOSE) {
             std::cout << "Fake face, far shot: Face too close!" << std::endl;
-            return 0;
+            return 1;
         } else if (ret != ErrorCode::NO_ERROR) {
             std::cout << "There was an error with fake face, far shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         // Now, we need to compute the 106 facial landmarks for the face
         Landmarks farFaceLandmarks{};
-        ret = tfSdk.getFaceLandmarks(fb, farFaceLandmarks);
+        ret = tfSdk.getFaceLandmarks(img, fb, farFaceLandmarks);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute facial landmarks for fake face, far shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         // Finally, we can compute a face recognition template for the face,
         // and later use it to ensure the two active spoof images are from the same identity.
         Faceprint farFaceprint;
-        ret = tfSdk.getFaceFeatureVector(fb, farFaceprint);
+        ret = tfSdk.getFaceFeatureVector(img, fb, farFaceprint);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "There was an error generating the faceprint for fake face, far shot!" << std::endl;
-            return 0;
-        }
-
-        // Now at this point we can repeat all the above steps, but now for the near shot face image.
-
-        errorCode = tfSdk.setImage("../../images/near_shot_fake_person.jpg");
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not load the image" << std::endl;
+            std::cout << errorCode << std::endl;
             return 1;
         }
 
-        tfSdk.getImageProperties(imageProperties);
-
-        ret = tfSdk.detectLargestFace(fb, found);
-        if (!found || ret != ErrorCode::NO_ERROR) {
-            std::cout << "No face found in fake image, near shot" << std::endl;
-            return 0;
+        // Now at this point we can repeat all the above steps, but now for the near shot face image.
+        errorCode = tfSdk.preprocessImage("../../images/near_shot_fake_person.jpg", img);
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
-        ret = tfSdk.checkSpoofImageFaceSize(fb, imageProperties,
-                                            ActiveSpoofStage::NEAR); // Be sure to specify ActiveSpoofStage::NEAR this time.
+        ret = tfSdk.detectLargestFace(img, fb, found);
+        if (ret != ErrorCode::NO_ERROR) {
+            std::cout << errorCode << std::endl;
+            return 1;
+        }
+
+        if (!found) {
+            std::cout << "No face found in real image, far shot" << std::endl;
+            return 1;
+        }
+
+        ret = tfSdk.checkSpoofImageFaceSize(img, fb, ActiveSpoofStage::NEAR); // Be sure to specify ActiveSpoofStage::NEAR this time.
+
         if (ret == ErrorCode::FACE_TOO_FAR) {
             std::cout << "Fake face, near shot: Face too far!" << std::endl;
-            return 0;
+            return 1;
         } else if (ret == ErrorCode::FACE_TOO_CLOSE) {
             std::cout << "Fake face, near shot: Face too close!" << std::endl;
-            return 0;
+            return 1;
         } else if (ret != ErrorCode::NO_ERROR) {
             std::cout << "There was an error with fake face, near shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         // Now, we need to compute the 106 facial landmarks for the face
         Landmarks nearFaceLandmarks{};
-        ret = tfSdk.getFaceLandmarks(fb, nearFaceLandmarks);
+        ret = tfSdk.getFaceLandmarks(img, fb, nearFaceLandmarks);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute facial landmarks for fake face, near shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         Faceprint nearFaceprint;
-        ret = tfSdk.getFaceFeatureVector(fb, nearFaceprint);
+        ret = tfSdk.getFaceFeatureVector(img, fb, nearFaceprint);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "There was an error generating the faceprint for fake face, near shot!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         // Finally, we can run the spoof function
@@ -306,7 +322,8 @@ int main() {
         ret = tfSdk.detectActiveSpoof(nearFaceLandmarks, farFaceLandmarks, spoofScore, spoofLabel);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute active spoof!" << std::endl;
-            return 0;
+            std::cout << errorCode << std::endl;
+            return 1;
         }
 
         std::cout << "Printing results for fake image: " << std::endl;
@@ -324,6 +341,4 @@ int main() {
             }
         }
     }
-
-
 }
