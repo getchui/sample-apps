@@ -68,16 +68,21 @@ int main() {
     }
 
     // Load the image of the person on a bike
-    ErrorCode errorCode = tfSdk.setImage("../../images/person_on_bike.jpg");
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../../images/person_on_bike.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: could not load the image" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
     std::vector<BoundingBox> boundingBoxes;
 
     // Run object detection
-    tfSdk.detectObjects(boundingBoxes);
+    errorCode = tfSdk.detectObjects(img, boundingBoxes);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
 
     for (auto bbox : boundingBoxes) {
         // Convert the label to a string
