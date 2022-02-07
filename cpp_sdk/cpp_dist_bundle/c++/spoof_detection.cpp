@@ -69,24 +69,35 @@ int main() {
     }
 
     // Load the real image
-    ErrorCode errorCode = tfSdk.setImage("../../images/real.jpg");
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../../images/real.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: could not load the image" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
     std::cout << "Running spoof detection with real image..." << std::endl;
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found = false;
-    errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    if (!found) {
+        std::cout << "Unable to find face in image 1" << std::endl;
+        return 1;
+    }
+
     SpoofLabel result;
     float spoofScore;
-    if (found){
-        errorCode = tfSdk.detectSpoof(faceBoxAndLandmarks, result, spoofScore);
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not run spoof detection" << std::endl;
-            return 1;
-        }
+
+    errorCode = tfSdk.detectSpoof(img, faceBoxAndLandmarks, result, spoofScore);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not run spoof detection" << std::endl;
+        std::cout << errorCode << std::endl;
+        return 1;
     }
 
     if (result == SpoofLabel::REAL) {
@@ -96,20 +107,28 @@ int main() {
     }
 
     // Load the fake image
-    errorCode = tfSdk.setImage("../../images/fake.jpg");
+    errorCode = tfSdk.preprocessImage("../../images/fake.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: could not load the image" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
     std::cout << "\nRunning spoof detection with fake image..." << std::endl;
-    errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
-    if (found){
-        errorCode = tfSdk.detectSpoof(faceBoxAndLandmarks, result, spoofScore);
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not run spoof detection" << std::endl;
-            return 1;
-        }
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    if (!found) {
+        std::cout << "Unable to find face in image 2" << std::endl;
+    }
+    errorCode = tfSdk.detectSpoof(img, faceBoxAndLandmarks, result, spoofScore);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not run spoof detection" << std::endl;
+        std::cout << errorCode << std::endl;
+        return 1;
     }
 
     if (result == SpoofLabel::REAL) {
