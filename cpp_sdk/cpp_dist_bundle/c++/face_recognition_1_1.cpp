@@ -68,36 +68,63 @@ int main() {
         return 1;
     }
 
-    // Load the first image and extract the feature vector.
-    auto errorCode = tfSdk.setImage("../../images/brad_pitt_1.jpg");
+    // Load all our images at once
+    TFImage img1, img2, img3;
+    auto errorCode = tfSdk.preprocessImage("../../images/brad_pitt_1.jpg", img1);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: could not load the image" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
-    Faceprint faceprint1;
+    errorCode = tfSdk.preprocessImage("../../images/brad_pitt_2.jpg", img2);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    errorCode = tfSdk.preprocessImage("../../images/tom_cruise_1.jpg", img3);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    // Generate the face recognition feature vectors
+    Faceprint faceprint1, faceprint2, faceprint3;
     bool foundFace;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint1, foundFace);
-    if (errorCode != ErrorCode::NO_ERROR || !foundFace) {
-        std::cout << "Error: Unable to detect face in image" << std::endl;
-        return 1;
-    }
-
-    // Load the second image and extract the feature vector.
-    errorCode = tfSdk.setImage("../../images/brad_pitt_2.jpg");
+    errorCode = tfSdk.getLargestFaceFeatureVector(img1, faceprint1, foundFace);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: could not load the image 2" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
-    Faceprint faceprint2;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint2, foundFace);
-    if (errorCode != ErrorCode::NO_ERROR || !foundFace) {
-        std::cout << "Error: Unable to detect face in image" << std::endl;
+    if (!foundFace) {
+        std::cout << "Unable to find face in image" << std::endl;
         return 1;
     }
 
-    // Compute the similarity between the two face images.
+    errorCode = tfSdk.getLargestFaceFeatureVector(img2, faceprint2, foundFace);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    if (!foundFace) {
+        std::cout << "Unable to find face in image" << std::endl;
+        return 1;
+    }
+
+    errorCode = tfSdk.getLargestFaceFeatureVector(img3, faceprint3, foundFace);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    if (!foundFace) {
+        std::cout << "Unable to find face in image" << std::endl;
+        return 1;
+    }
+
+    // Compute the similarity between the images of the same identity.
     float similarityScore;
     float matchProbability;
     errorCode = SDK::getSimilarity(faceprint1, faceprint2, matchProbability, similarityScore);
@@ -107,21 +134,7 @@ int main() {
     }
 
     std::cout<< "Similarity score of same identity images: " << similarityScore << std::endl;
-    std::cout<< "Match probability of same identity images: " << matchProbability  << "\n" << std::endl;
-
-    // Load the image of a different identity and extract the feature vector.
-    errorCode = tfSdk.setImage("../../images/tom_cruise_1.jpg");
-    if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: could not load the image 2" << std::endl;
-        return 1;
-    }
-
-    Faceprint faceprint3;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint3, foundFace);
-    if (errorCode != ErrorCode::NO_ERROR || !foundFace) {
-        std::cout << "Error: Unable to detect face in image" << std::endl;
-        return 1;
-    }
+    std::cout<< "Match probability of same identity images: " << matchProbability * 100 << "% \n" << std::endl;
 
     // Compute the similarity between the images of different identities.
     errorCode = SDK::getSimilarity(faceprint1, faceprint3, matchProbability, similarityScore);
@@ -131,7 +144,7 @@ int main() {
     }
 
     std::cout << "Similarity score of two different identities: " << similarityScore << std::endl;
-    std::cout << "Match probability of two different identities: " << matchProbability << std::endl;
+    std::cout << "Match probability of two different identities: " << matchProbability * 100 << "%" << std::endl;
 
     return 0;
 }
