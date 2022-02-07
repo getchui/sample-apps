@@ -84,6 +84,7 @@ int main() {
 
     if (retcode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to create database connection\n";
+        std::cout << retcode << std::endl;
         return -1;
     }
 
@@ -91,13 +92,15 @@ int main() {
     retcode = tfSdk.createLoadCollection(collectionName);
     if (retcode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to create or load collection\n";
+        std::cout << retcode << std::endl;
         return -1;
     }
 
     // Use image of Brad Pitt as probe image
-    retcode = tfSdk.setImage("../../images/brad_pitt_1.jpg");
+    TFImage img;
+    retcode = tfSdk.preprocessImage("../../images/brad_pitt_1.jpg", img);
     if (retcode != ErrorCode::NO_ERROR) {
-        std::cout << "Unable to set the image\n";
+        std::cout << retcode << std::endl;
         return -1;
     }
 
@@ -106,9 +109,14 @@ int main() {
     // Only the enrollment templates must be high quality.
     Faceprint probeFaceprint;
     bool foundFace;
-    retcode = tfSdk.getLargestFaceFeatureVector(probeFaceprint, foundFace);
-    if (retcode != ErrorCode::NO_ERROR || !foundFace) {
-        std::cout << "Unable to generate template or find face in image\n";
+    retcode = tfSdk.getLargestFaceFeatureVector(img, probeFaceprint, foundFace);
+    if (retcode != ErrorCode::NO_ERROR) {
+        std::cout << retcode << std::endl;
+        return -1;
+    }
+
+    if (!foundFace) {
+        std::cout << "Unable to find face in image\n";
         return -1;
     }
 
@@ -123,6 +131,7 @@ int main() {
 
     if (retcode != ErrorCode::NO_ERROR) {
         std::cout << "There was an error with the call to identify" << std::endl;
+        std::cout << retcode << std::endl;
         return -1;
     }
 
@@ -133,7 +142,7 @@ int main() {
 
     std::cout << "Identity found: " << candidate.identity << std::endl;
     std::cout << "Match Similarity: " << candidate.similarityMeasure << std::endl;
-    std::cout << "Match Probability: " << candidate.matchProbability << std::endl;
+    std::cout << "Match Probability: " << candidate.matchProbability * 100 << "%" << std::endl;
 
     return 0;
 }
