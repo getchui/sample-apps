@@ -86,6 +86,7 @@ int main() {
 
     if (retcode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to create database connection\n";
+        std::cout << retcode << std::endl;
         return -1;
     }
 
@@ -93,6 +94,7 @@ int main() {
     retcode = tfSdk.createLoadCollection(collectionName);
     if (retcode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to create or load collection\n";
+        std::cout << retcode << std::endl;
         return -1;
     }
 
@@ -106,18 +108,20 @@ int main() {
     for (const auto& identity: identitiesVec) {
         std::cout << "Processing image: " << identity.first << " with identity: " << identity.second << std::endl;
         // Start by setting the image
-        retcode = tfSdk.setImage(identity.first);
+        TFImage img;
+        retcode = tfSdk.preprocessImage(identity.first, img);
         if (retcode != ErrorCode::NO_ERROR) {
-            std::cout << "Unable to set the image\n";
+            std::cout << retcode << std::endl;
             return -1;
         }
 
         // Detect the largest face in the image
         FaceBoxAndLandmarks faceBoxAndLandmarks;
         bool faceDetected;
-        auto errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, faceDetected);
+        auto errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, faceDetected);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error with the call to detectLargestFace\n";
+            std::cout << errorCode << std::endl;
             continue;
         }
 
@@ -140,9 +144,10 @@ int main() {
 
         // Get the aligned face chip so that we can compute the image quality
         uint8_t alignedImage[37632];
-        errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, alignedImage);
+        errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, alignedImage);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error extracting the aligned face\n";
+            std::cout << errorCode << std::endl;
             continue;
         }
 
@@ -150,6 +155,7 @@ int main() {
         errorCode = tfSdk.estimateFaceImageQuality(alignedImage, quality);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute image quality\n";
+            std::cout << errorCode << std::endl;
             continue;
         }
 
@@ -164,9 +170,10 @@ int main() {
         // We can check the orientation of the head and ensure that it is facing forward
         // To see the effect of yaw and pitch on the match score, refer to: https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
         float yaw, pitch, roll;
-        errorCode = tfSdk.estimateHeadOrientation(faceBoxAndLandmarks, yaw, pitch, roll);
+        errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, yaw, pitch, roll);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute head orientation\n";
+            std::cout << errorCode << std::endl;
             return -1;
         }
 
@@ -188,9 +195,10 @@ int main() {
 
         // Finally, ensure the user is not wearing a mask
         MaskLabel masklabel;
-        errorCode = tfSdk.detectMask(faceBoxAndLandmarks, masklabel);
+        errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, masklabel);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Error: Unable to compute mask score" << std::endl;
+            std::cout << errorCode << std::endl;
             return -1;
         }
 
@@ -204,14 +212,16 @@ int main() {
         errorCode = tfSdk.getFaceFeatureVector(alignedImage, enrollmentFaceprint);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Error: Unable to generate template\n";
+            std::cout << errorCode << std::endl;
             continue;
         }
 
         // Enroll the template into the collection
         std::string UUID;
-        retcode = tfSdk.enrollFaceprint(enrollmentFaceprint, identity.second, UUID);
-        if (retcode != ErrorCode::NO_ERROR) {
+        errorCode = tfSdk.enrollFaceprint(enrollmentFaceprint, identity.second, UUID);
+        if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to enroll template\n";
+            std::cout << errorCode << std::endl;
             continue;
         }
 
@@ -227,6 +237,7 @@ int main() {
     retcode = tfSdk.getCollectionNames(collectionNames);
     if (retcode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to get collection names!" << std::endl;
+        std::cout << retcode << std::endl;
         return -1;
     }
 
@@ -236,6 +247,7 @@ int main() {
         retcode = tfSdk.getCollectionMetadata(collectionName, metadata);
         if (retcode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to get collection metadata!" << std::endl;
+            std::cout << retcode << std::endl;
             return -1;
         }
 
@@ -250,6 +262,7 @@ int main() {
         retcode = tfSdk.getCollectionIdentities(collectionName, identities);
         if (retcode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to get collection identities!" << std::endl;
+            std::cout << retcode << std::endl;
             return -1;
         }
 
