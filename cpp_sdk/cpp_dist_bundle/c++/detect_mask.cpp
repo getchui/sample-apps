@@ -63,33 +63,40 @@ int main() {
     bool valid = tfSdk.setLicense(TRUEFACE_TOKEN);
 
     if (!valid) {
-        std::cout<<"Error: the provided license is invalid."<<std::endl;
+        std::cout<< "Error: the provided license is invalid." <<std::endl;
         return 1;
     }
 
     // Load the mask image and detect largest face.
     std::cout << "Image with mask" << std::endl;
-    ErrorCode errorCode = tfSdk.setImage("../../images/mask.jpg");
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../../images/mask.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: could not load the image"<<std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found = false;
-    errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
 
-    if (!found || errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: face not found";
+    if (errorCode != ErrorCode::NO_ERROR) {
+         std::cout << errorCode << std::endl;
+         return 1;
+    }
+
+    if (!found) {
+        std::cout << "Unable to find face in image 1" << std::endl;
         return 1;
     }
 
     // Run mask detection
     MaskLabel maskLabel;
-    errorCode = tfSdk.detectMask(faceBoxAndLandmarks, maskLabel);
+    errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, maskLabel);
 
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout<<"Error: could not run mask detection"<<std::endl;
+
         return 1;
     }
 
@@ -101,24 +108,31 @@ int main() {
 
     // Load the non mask image and detect largest face.
     std::cout << "\nImage without mask:" << std::endl;
-    errorCode = tfSdk.setImage("../../images/headshot.jpg");
+    errorCode = tfSdk.preprocessImage("../../images/headshot.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: could not load the image"<<std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
-    errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
 
-    if (!found || errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: face not found";
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
         return 1;
     }
+
+    if (!found) {
+        std::cout << "Unable to detect face in image 2" << std::endl;
+        return 1;
+    }
+
 
     // Run mask detection
-    errorCode = tfSdk.detectMask(faceBoxAndLandmarks, maskLabel);
+    errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, maskLabel);
 
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout<<"Error: could not run mask detection"<<std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
