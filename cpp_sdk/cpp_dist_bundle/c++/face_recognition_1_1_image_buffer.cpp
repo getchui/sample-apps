@@ -75,72 +75,92 @@ int main() {
     int width, height, channels;
     uint8_t* rgb_image = stbi_load("../../images/brad_pitt_1.jpg", &width, &height, &channels, 3);
 
-    // Pass the image array to Trueface SDK.
-    ErrorCode errorCode = tfSdk.setImage(rgb_image, width, height, ColorCode::rgb);
+    // Preprocess the first image
+    TFImage img1, img2, img3;
+    auto errorCode = tfSdk.preprocessImage(rgb_image, width, height, ColorCode::rgb, img1);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout <<  "Error: could not load the image" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
-
-    bool foundFace;
-    Faceprint faceprint1;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint1, foundFace);
-    if (errorCode != ErrorCode::NO_ERROR || !foundFace) {
-        std::cout <<  "Error: Unable to detect face in image" << std::endl;
-        return 0;
-    }
-    // Release the allocated image array after the feature vector has been extracted.
+    // Calling preprocessImage creates a copy of the data, therefore we can deallocate the input buffer
     stbi_image_free(rgb_image);
 
-    // Load the second image and extract the feature vector.
+
+    // Load the second image
     rgb_image = stbi_load("../../images/brad_pitt_2.jpg", &width, &height, &channels, 3);
-
-    errorCode = tfSdk.setImage(rgb_image, width, height, ColorCode::rgb);
+    errorCode = tfSdk.preprocessImage(rgb_image, width, height, ColorCode::rgb, img2);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout <<  "Error: could not load the image 2" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
-    Faceprint faceprint2;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint2, foundFace);
-    if (errorCode != ErrorCode::NO_ERROR || !foundFace) {
-        std::cout <<  "Error: Unable to detect face in image" << std::endl;
-        return 0;
-    }
-    // Release the allocated image array after the feature vector has been extracted.
+    // Calling preprocessImage creates a copy of the data, therefore we can deallocate the input buffer
     stbi_image_free(rgb_image);
 
-    // Compute the similarity between the two face images.
+    // Can instead use preprocessRgbImage to load the image, if the image is already in rgb format.
+    rgb_image = stbi_load("../../images/tom_cruise_1.jpg", &width, &height, &channels, 3);
+    errorCode = tfSdk.preprocessRgbImage(rgb_image, width, height, img3);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    // Note, when calling this version of the function, the data is not copied, but referenced.
+    // We therefore cannot deallocate the buffer until we are done using it.
+
+    // Generate the face recognition feature vectors for the three images.
+    bool foundFace;
+    Faceprint faceprint1, faceprint2, faceprint3;
+    errorCode = tfSdk.getLargestFaceFeatureVector(img1, faceprint1, foundFace);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+    if (!foundFace) {
+        std::cout << "Unable to find face in image" << std::endl;
+        return 1;
+    }
+
+    errorCode = tfSdk.getLargestFaceFeatureVector(img2, faceprint2, foundFace);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+    if (!foundFace) {
+        std::cout << "Unable to find face in image" << std::endl;
+        return 1;
+    }
+
+    errorCode = tfSdk.getLargestFaceFeatureVector(img3, faceprint3, foundFace);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    if (!foundFace) {
+        std::cout << "Unable to find face in image" << std::endl;
+        return 1;
+    }
+
+    // Now that we are done with the image which was loaded using preprocessRgbBuffer, we can deallocate the buffer.
+    stbi_image_free(rgb_image);
+
+    // Compute the similarity between the two images of the same face
     float similarityScore;
     float matchProbability;
     errorCode = SDK::getSimilarity(faceprint1, faceprint2, matchProbability, similarityScore);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute similarity score" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
     std::cout <<  "Similarity score of same identity images: " << similarityScore << std::endl;
     std::cout <<  "Match probability of same identity images: " << matchProbability << "\n" << std::endl;
 
-    // Load the image of a different identity and extract the feature vector.
-    rgb_image = stbi_load("../../images/tom_cruise_1.jpg", &width, &height, &channels, 3);
-
-    errorCode = tfSdk.setImage(rgb_image, width, height, ColorCode::rgb);
-    if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout <<  "Error: could not load the image 2" << std::endl;
-        return 1;
-    }
-    Faceprint faceprint3;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint3, foundFace);
-    if (errorCode != ErrorCode::NO_ERROR || !foundFace) {
-        std::cout <<  "Error: Unable to detect face in image" << std::endl;
-        return 0;
-    }
-    // Release the allocated image array after the feature vector has been extracted.
-    stbi_image_free(rgb_image);
-
     // Compute the similarity between the images of different identities.
     errorCode = SDK::getSimilarity(faceprint1, faceprint3, matchProbability, similarityScore);
     if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
         std::cout << "Unable to compute similarity score" << std::endl;
         return 1;
     }
