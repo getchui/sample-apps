@@ -68,28 +68,34 @@ int main() {
 
     // Load the glasses image and detect largest face.
     std::cout << "Image with glasses:" << std::endl;
-    ErrorCode errorCode = tfSdk.setImage("../../images/glasses.jpg");
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../../images/glasses.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: could not load the image"<<std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found = false;
-    errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
 
-    if (!found || errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: face not found";
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
         return 1;
+    }
+
+    if (!found) {
+        std::cout << "Unable to detect face in image 1" << std::endl;
     }
 
     // Run glasses detection
     GlassesLabel glassesLabel;
     float glassesScore;
-    errorCode = tfSdk.detectGlasses(faceBoxAndLandmarks, glassesLabel, glassesScore);
+    errorCode = tfSdk.detectGlasses(img, faceBoxAndLandmarks, glassesLabel, glassesScore);
 
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout<<"Error: could not run glasses detection"<<std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
@@ -101,24 +107,29 @@ int main() {
 
     // Load the non glasses image and detect largest face.
     std::cout << "\nImage with glasses:" << std::endl;
-    errorCode = tfSdk.setImage("../../images/headshot.jpg");
+    errorCode = tfSdk.preprocessImage("../../images/headshot.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: could not load the image"<<std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
-    errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
 
-    if (!found || errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: face not found";
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
         return 1;
+    }
+
+    if (!found) {
+        std::cout << "Unable to detect face in image 2" << std::endl;
     }
 
     // Run glasses detection
-    errorCode = tfSdk.detectGlasses(faceBoxAndLandmarks, glassesLabel, glassesScore);
+    errorCode = tfSdk.detectGlasses(img, faceBoxAndLandmarks, glassesLabel, glassesScore);
 
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout<<"Error: could not run glasses detection"<<std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
