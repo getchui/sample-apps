@@ -68,9 +68,10 @@ int main() {
     }
 
     // Load the image with the eyes open
-    ErrorCode errorCode = tfSdk.setImage("../../images/open_eyes.jpg");
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../../images/open_eyes.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: could not load the image" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
@@ -80,22 +81,27 @@ int main() {
     bool found;
     FaceBoxAndLandmarks fb;
 
-    errorCode = tfSdk.detectLargestFace(fb, found);
-    if (!found || errorCode != ErrorCode::NO_ERROR) {
+    errorCode = tfSdk.detectLargestFace(img, fb, found);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    if (!found) {
         std::cout << "Unable to detect face in image 1" << std::endl;
-        return 0;
+        return 1;
     }
 
     // Compute if the detected face has eyes open or closed
-
     BlinkState blinkState;
-    errorCode = tfSdk.detectBlink(fb, blinkState);
+    errorCode = tfSdk.detectBlink(img, fb, blinkState);
     if (errorCode == ErrorCode::EXTREME_FACE_ANGLE) {
         std::cout << "The face angle is too extreme! Please ensure face image is forward facing!" << std::endl;
-        return 0;
+        return 1;
     } else if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute blink!" << std::endl;
-        return 0;
+        std::cout << errorCode << std::endl;
+        return 1;
     }
 
     // At this point, we can use the members of BlinkState along with our own threshold to determine if the eyes are open or closed
@@ -115,27 +121,32 @@ int main() {
     std::cout << "\nRunning blink detection with closed eye image" << std::endl;
 
     // Load the image with the eyes closed
-    errorCode = tfSdk.setImage("../../images/closed_eyes.jpg");
+    errorCode = tfSdk.preprocessImage("../../images/closed_eyes.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: could not load the image" << std::endl;
+        std::cout << errorCode << std::endl;
         return 1;
     }
 
-    errorCode = tfSdk.detectLargestFace(fb, found);
-    if (!found || errorCode != ErrorCode::NO_ERROR) {
+    errorCode = tfSdk.detectLargestFace(img, fb, found);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return 1;
+    }
+
+    if (!found) {
         std::cout << "Unable to detect face in image 2" << std::endl;
-        return 0;
+        return 1;
     }
 
     // Compute if the detected face has eyes open or closed
-
-    errorCode = tfSdk.detectBlink(fb, blinkState);
+    errorCode = tfSdk.detectBlink(img, fb, blinkState);
     if (errorCode == ErrorCode::EXTREME_FACE_ANGLE) {
         std::cout << "The face angle is too extreme! Please ensure face image is forward facing!" << std::endl;
-        return 0;
+        return 1;
     } else if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute blink!" << std::endl;
-        return 0;
+        std::cout << errorCode << std::endl;
+        return 1;
     }
 
     // At this point, we can use the members of BlinkState along with our own threshold to determine if the eyes are open or closed
