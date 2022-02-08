@@ -75,109 +75,76 @@ int main() {
     std::vector<Faceprint> faceprints1;
     std::vector<Faceprint> faceprints2;
 
-    {
+    std::vector<std::string> imagePaths = {
+            "../../images/brad_pitt_1.jpg",
+            "../../images/brad_pitt_2.jpg"
+    };
+
+    std::vector<cv::cuda::GpuMat> alignedFaceImages;
+
+    for (const auto& imagePath: imagePaths) {
         // using opencv to load the image in vram
-        cv::Mat img = cv::imread("../../images/brad_pitt_1.jpg");
+        cv::Mat img = cv::imread(imagePath);
         cv::cuda::GpuMat mat;
         mat.upload(img);
         uchar* ptr = mat.data;
 
         // Set the image using the Trueface SDK directly from VRAM
-        ErrorCode errorCode = tfSdk.setImage(ptr, img.cols, img.rows, ColorCode::bgr, mat.step);
+        TFImage gpuImg;
+        ErrorCode errorCode = tfSdk.preprocessImage(ptr, img.cols, img.rows, ColorCode::bgr, gpuImg, mat.step);
 
         if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not load the image" << std::endl;
-            return 1;
+            std::cout << errorCode << std::endl;
+            return -1;
         }
 
-        // Run face detection
-        FaceBoxAndLandmarks faceBoxAndLandmarks;
-        bool found = false;
-        errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
-        if (!found || errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not detect a face" << std::endl;
-            return 1;
-        } else {
-            std::cout << "Face detected at following coordinates: " << std::endl;
-            std::cout <<faceBoxAndLandmarks.topLeft.x<< std::endl;
-            std::cout <<faceBoxAndLandmarks.topLeft.y<< std::endl;
-            std::cout <<faceBoxAndLandmarks.bottomRight.x<< std::endl;
-            std::cout <<faceBoxAndLandmarks.bottomRight.y<< std::endl;
+        // Detect the largest face, and then extract the aligned face, all while in GPU memory.
+        FaceBoxAndLandmarks fb;
+        bool found;
+        errorCode = tfSdk.detectLargestFace(gpuImg, fb, found);
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << errorCode << std::endl;
+            return -1;
         }
 
-        // Generate a face recognition template for the detected face
+        if (!found) {
+            std::cout << "Unable to find face in image" << std::endl;
+            return -1;
+        }
+
         cv::cuda::GpuMat chipGpu(1, 112*112, CV_8UC3);
-        errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, chipGpu.data);
+        errorCode = tfSdk.extractAlignedFace(gpuImg, fb, chipGpu.data);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to extract aligned face" << std::endl;
             return 1;
         }
 
-        std::vector<uint8_t*> alignedFaceImages;
-        alignedFaceImages.push_back(chipGpu.data);
-        errorCode = tfSdk.getFaceFeatureVectors(alignedFaceImages, faceprints1);
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Unable to generate face feature vector" << std::endl;
-            return 1;
-        }
+        alignedFaceImages.push_back(chipGpu);
     }
-    {
-        // using opencv to load the image in vram
-        cv::Mat img = cv::imread("../../images/brad_pitt_2.jpg");
-        cv::cuda::GpuMat mat;
-        mat.upload(img);
-        uchar* ptr = mat.data;
 
-        // Set the image using the Trueface SDK directly from VRAM
-        ErrorCode errorCode = tfSdk.setImage(ptr, img.cols, img.rows, ColorCode::bgr, mat.step);
+    // Extract the feature vectors in batch
+    std::vector<uint8_t*> alignedFaceChips;
+    for (const auto& faceImage: alignedFaceImages) {
+        alignedFaceChips.push_back(faceImage.data);
+    }
 
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not load the image" << std::endl;
-            return 1;
-        }
+    std::vector<Faceprint> faceprints;
 
-        // Run face detection
-        FaceBoxAndLandmarks faceBoxAndLandmarks;
-        bool found = false;
-        errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
-        if (!found || errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Error: could not detect a face" << std::endl;
-            return 1;
-        } else {
-            std::cout << "Face detected at following coordinates: " << std::endl;
-            std::cout <<faceBoxAndLandmarks.topLeft.x<< std::endl;
-            std::cout <<faceBoxAndLandmarks.topLeft.y<< std::endl;
-            std::cout <<faceBoxAndLandmarks.bottomRight.x<< std::endl;
-            std::cout <<faceBoxAndLandmarks.bottomRight.y<< std::endl;
-        }
-
-        // Generate a face recognition template for the detected face
-        cv::cuda::GpuMat chipGpu(1, 112*112, CV_8UC3);
-        errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, chipGpu.data);
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Unable to extract aligned face" << std::endl;
-            return 1;
-        }
-
-        std::vector<uint8_t*> alignedFaceImages;
-        alignedFaceImages.push_back(chipGpu.data);
-
-        errorCode = tfSdk.getFaceFeatureVectors(alignedFaceImages, faceprints2);
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Unable to generate face feature vector" << std::endl;
-            return 1;
-        }
+    auto errorcode = tfSdk.getFaceFeatureVectors(alignedFaceChips, faceprints);
+    if (errorcode != ErrorCode::NO_ERROR) {
+        std::cout << errorcode << std::endl;
+        return -1;
     }
 
     // Compute the similarity score of the two faces
     float prob, cos;
-    auto res = SDK::getSimilarity(faceprints1[0], faceprints2[0], prob, cos);
+    auto res = SDK::getSimilarity(faceprints[0], faceprints[1], prob, cos);
     if (res != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute sim score" << std::endl;
         return 1;
     }
-    std::cout << "Probability: "<< prob << std::endl;
-    std::cout << "Similarity: "<< cos << std::endl;
 
+    std::cout << "Probability: "<< prob * 100 << "%" << std::endl;
+    std::cout << "Similarity: "<< cos << std::endl;
     return 0;
 }
