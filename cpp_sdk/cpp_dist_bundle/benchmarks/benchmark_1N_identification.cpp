@@ -47,7 +47,8 @@ int main() {
     // Generate a template for each of the images
     std::cout << "\nGenerating templates" << std::endl;
     for (const auto& imagePair: imagePairList) {
-        auto ret = sdk.setImage(imagePair.first);
+        TFImage img;
+        auto ret = sdk.preprocessImage(imagePair.first, img);
         if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to set image: " << imagePair.first << std::endl;
             return -1;
@@ -55,7 +56,7 @@ int main() {
 
         Faceprint faceprint;
         bool foundFace;
-        ret = sdk.getLargestFaceFeatureVector(faceprint, foundFace);
+        ret = sdk.getLargestFaceFeatureVector(img, faceprint, foundFace);
 
         if (ret != ErrorCode::NO_ERROR || !foundFace) {
             std::cout << "Unable to detect face and extract features" << std::endl;
@@ -66,7 +67,8 @@ int main() {
     }
 
     // Prepare the probe vector and the match vector
-    auto ret = sdk.setImage("../../images/brad_pitt_1.jpg");
+    TFImage img;
+    auto ret = sdk.preprocessImage("../../images/brad_pitt_1.jpg", img);
     if (ret != ErrorCode::NO_ERROR) {
         std::cout << "Unable to set image" << std::endl;
         return -1;
@@ -74,20 +76,20 @@ int main() {
 
     bool foundFace;
     Faceprint probe;
-    ret = sdk.getLargestFaceFeatureVector(probe, foundFace);
+    ret = sdk.getLargestFaceFeatureVector(img, probe, foundFace);
     if (ret != ErrorCode::NO_ERROR || !foundFace) {
         std::cout << "Unable to detect face and extract features" << std::endl;
         return -1;
     }
 
-    ret = sdk.setImage("../../images/brad_pitt_2.jpg");
+    ret = sdk.preprocessImage("../../images/brad_pitt_2.jpg", img);
     if (ret != ErrorCode::NO_ERROR) {
         std::cout << "Unable to set image" << std::endl;
         return -1;
     }
 
     Faceprint matchTemplate;
-    ret = sdk.getLargestFaceFeatureVector(matchTemplate, foundFace);
+    ret = sdk.getLargestFaceFeatureVector(img, matchTemplate, foundFace);
     if (ret != ErrorCode::NO_ERROR || !foundFace) {
         std::cout << "Unable to detect face and extract features" << std::endl;
         return -1;

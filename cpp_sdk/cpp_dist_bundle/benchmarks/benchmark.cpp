@@ -95,7 +95,8 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
     }
 
     // Load the image
-    ErrorCode errorCode = tfSdk.setImage("../images/headshot.jpg");
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: could not load the image" << std::endl;
         return;
@@ -104,10 +105,10 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
     // Obtain the aligned chip
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found;
-    tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
+    tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
 
     uint8_t faceBuffer[112*112*3];
-    tfSdk.extractAlignedFace(faceBoxAndLandmarks, faceBuffer);
+    tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, faceBuffer);
 
     std::vector<uint8_t*> alignedFaceImages;
     for (size_t i = 0; i < batchSize; ++i) {
@@ -148,7 +149,8 @@ void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions
     }
 
     // Load the image
-    ErrorCode errorCode = tfSdk.setImage("../images/bike.jpg");
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/bike.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: could not load the image" << std::endl;
         return;
@@ -160,7 +162,7 @@ void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions
     // Time the creation of the feature vector
     auto t1 = Clock::now();
     for (size_t i = 0; i < numIterations; ++i) {
-        tfSdk.detectObjects(boundingBoxes);
+        tfSdk.detectObjects(img, boundingBoxes);
 
     }
     auto t2 = Clock::now();
@@ -191,7 +193,8 @@ void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleO
     }
 
     // Load the image
-    ErrorCode errorCode = tfSdk.setImage("../images/headshot.jpg");
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: could not load the image" << std::endl;
         return;
@@ -204,7 +207,7 @@ void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleO
     // Time the creation of the feature vector
     auto t1 = Clock::now();
     for (size_t i = 0; i < numIterations; ++i) {
-        tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
+        tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
     }
     auto t2 = Clock::now();
     double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
