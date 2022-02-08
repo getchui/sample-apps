@@ -368,7 +368,7 @@ private:
                 // A match was found
                 // TODO: Do something with match information, run callback function, etc
                 // For the sake of the demo, we will just log it to the console
-                std::cout << "Match found: " << candidate.identity << " with " << candidate.matchProbability << " probability" << std::endl;
+                std::cout << "Match found: " << candidate.identity << " with " << candidate.matchProbability * 100 << "% probability" << std::endl;
             }
         }
         std::cout << "Identify thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
