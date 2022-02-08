@@ -136,7 +136,8 @@ int main() {
         }
 
         // Set the image using the capture frame buffer
-        auto errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, ColorCode::bgr);
+        TFImage img;
+        auto errorCode = tfSdk.preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
@@ -144,7 +145,7 @@ int main() {
 
         // Get the landmark locations
         std::vector<FaceBoxAndLandmarks> landmarksVec;
-        tfSdk.detectFaces(landmarksVec);
+        tfSdk.detectFaces(img, landmarksVec);
 
         // Display the landmark locations and bounding box on the image
         for (const auto& faceBoxAndLandmarks: landmarksVec) {
@@ -154,7 +155,15 @@ int main() {
             cv::Point bottomRight(faceBoxAndLandmarks.bottomRight.x, faceBoxAndLandmarks.bottomRight.y);
             cv::rectangle(frame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2);
 
-            // Draw the facial landmarks
+            Landmarks landmarks;
+            errorCode = tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+            // Draw the 106 face landmarks
+            for (const auto& landmark: landmarks) {
+                cv::Point p(landmark.x, landmark.y);
+                cv::circle(frame, p, 2, cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
+            }
+
+            // Draw the 5 facial landmarks
             // the facial landmark points: left eye, right eye, nose, left mouth corner, right mouth corner
             for (const auto& landmark: faceBoxAndLandmarks.landmarks) {
                 cv::Point p(landmark.x, landmark.y);
