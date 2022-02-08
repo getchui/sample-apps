@@ -68,6 +68,8 @@ listener.start()
 
 
 options = tfsdk.ConfigurationOptions()
+options.initialize_module.active_spoof = True
+options.initialize_module.face_recognizer = True
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5 # We will use TFV5 to verify that both images are from the same person
 
 # options.enable_GPU = True # Use GPU inference to improve speed
@@ -109,29 +111,25 @@ while(True):
     frame_copy = frame.copy()
 
     # Set the image using the frame buffer. OpenCV stores images in BGR format
-    res = sdk.set_image(frame_copy, frame_copy.shape[1], frame_copy.shape[0], tfsdk.COLORCODE.bgr)
+    res, img = sdk.preprocess_image(frame_copy, frame_copy.shape[1], frame_copy.shape[0], tfsdk.COLORCODE.bgr)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set frame{Style.RESET_ALL}")
         if show_frame(frame):
             break;
         continue
 
-    # Next, we must obtain the image properties
-    # These properties are used by the check_spoof_image_face_size() function
-    image_props = sdk.get_image_properties()    
-
     if state == 0:
         draw_near_ellipse(frame, (0, 0, 255))
 
         # Need to capture far image
-        found, fb = sdk.detect_largest_face()
+        found, fb = sdk.detect_largest_face(img)
         if found == False:
             # Unable to detect face in image
             if show_frame(frame):
                 break
             continue
 
-        ret = sdk.check_spoof_image_face_size(fb, image_props, tfsdk.ACTIVESPOOFSTAGE.FAR)
+        ret = sdk.check_spoof_image_face_size(img, fb, tfsdk.ACTIVESPOOFSTAGE.FAR)
 
         if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
             draw_text(frame, "Move closer", (0, 0, 255))
@@ -160,7 +158,7 @@ while(True):
         if g_spacebar_pressed == True:
             g_spacebar_pressed = False
             # Obtain the face landmarks
-            ret, far_landmarks = sdk.get_face_landmarks(fb)
+            ret, far_landmarks = sdk.get_face_landmarks(img,fb)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print(f"{Fore.RED}Unable to get face landmarks{Style.RESET_ALL}")
                 if show_frame(frame) == True:
@@ -168,7 +166,7 @@ while(True):
                 continue
 
             # Also generate a face recognition template so that we can both images are of the same identity
-            ret, far_faceprint = sdk.get_face_feature_vector(fb)
+            ret, far_faceprint = sdk.get_face_feature_vector(img, fb)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print(f"{Fore.RED}There was an error generate the face feautre vector{Style.RESET_ALL}")
                 if show_frame(frame) == True:
@@ -182,14 +180,14 @@ while(True):
         draw_far_ellipse(frame, (0, 0, 255))
 
         # Need to capture near image
-        found, fb = sdk.detect_largest_face()
+        found, fb = sdk.detect_largest_face(img)
         if found == False:
             # Unable to detect face in image
             if show_frame(frame):
                 break
             continue
 
-        ret = sdk.check_spoof_image_face_size(fb, image_props, tfsdk.ACTIVESPOOFSTAGE.NEAR)
+        ret = sdk.check_spoof_image_face_size(img, fb, tfsdk.ACTIVESPOOFSTAGE.NEAR)
 
         if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
             draw_text(frame, "Move closer", (0, 0, 255))
@@ -218,7 +216,7 @@ while(True):
         if g_spacebar_pressed == True:
             g_spacebar_pressed = False
             # Obtain the face landmarks
-            ret, near_landmarks = sdk.get_face_landmarks(fb)
+            ret, near_landmarks = sdk.get_face_landmarks(img, fb)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print(f"{Fore.RED}Unable to get face landmarks{Style.RESET_ALL}")
                 if show_frame(frame) == True:
@@ -226,7 +224,7 @@ while(True):
                 continue
 
             # Also generate a face recognition template so that we can both images are of the same identity
-            ret, near_faceprint = sdk.get_face_feature_vector(fb)
+            ret, near_faceprint = sdk.get_face_feature_vector(img, fb)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print(f"{Fore.RED}There was an error generate the face feautre vector{Style.RESET_ALL}")
                 if show_frame(frame) == True:
