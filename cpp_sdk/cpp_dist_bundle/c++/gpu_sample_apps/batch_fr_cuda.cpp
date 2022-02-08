@@ -73,23 +73,31 @@ int main() {
 
     // Run face detection on the 3 images in serial, then add the face chips the vector which we allocated.
     for (int i=0; i<3; i++) {
-        ErrorCode errorCode = tfSdk.setImage("../../images/brad_pitt_"+std::to_string(i+1)+".jpg");
+        TFImage img;
+        ErrorCode errorCode = tfSdk.preprocessImage("../../images/brad_pitt_"+std::to_string(i+1)+".jpg", img);
         if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout<<"Error: could not load the image"<<std::endl;
+            std::cout << errorCode << std::endl;
             return 1;
         }
 
         FaceBoxAndLandmarks faceBoxAndLandmarks;
         bool found = false;
-        errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, found);
-        if (!found || errorCode != ErrorCode::NO_ERROR) {
-            std::cout<<"Error: could not detect a face"<<std::endl;
+        errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << errorCode << std::endl;
             return 1;
         }
 
-        errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, &(faceChips[i][0][0][0]));
+        if (!found) {
+            std::cout << "Unable to find face in image" << std::endl;
+            return 1;
+        }
+
+        errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, &(faceChips[i][0][0][0]));
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to extract aligned face chip" << std::endl;
+            std::cout << errorCode << std::endl;
             return 1;
         }
         vecFaceChips.push_back(&(faceChips[i][0][0][0]));
@@ -113,16 +121,16 @@ int main() {
         std::cout << "Unable to compute sim score" << std::endl;
         return 1;
     }
-    std::cout<<"1st face - 2nd face, match probability: "<<probability
-             <<" cosine similarity: "<<similarity<<std::endl;     
+    std::cout<<"1st face - 2nd face, match probability: "<<probability * 100
+             <<"%,  cosine similarity: "<<similarity<<std::endl;
 
     res = SDK::getSimilarity(faceprints[1], faceprints[2], probability, similarity);
     if (res != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute sim score" << std::endl;
         return 1;
     }
-    std::cout<<"2nd face - 3rd face, match probability: "<<probability
-             <<" cosine similarity: "<<similarity<<std::endl;     
+    std::cout<<"2nd face - 3rd face, match probability: "<<probability * 100
+             <<"%, cosine similarity: "<<similarity<<std::endl;
 
 
     return 0;
