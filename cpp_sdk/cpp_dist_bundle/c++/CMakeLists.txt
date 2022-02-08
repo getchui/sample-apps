@@ -96,6 +96,6 @@ if (BUILD_GPU_OPENCV AND NOT WIN32 AND NOT APPLE)
     find_package(OpenCV REQUIRED)
 
     # Face Detection, images in VRAM
-    add_executable(face_detect_image_in_vram gpu_sample_apps/face_detect_image_in_vram.cpp)
-    target_link_libraries(face_detect_image_in_vram ${LINKER_LIBS} ${OpenCV_LIBS})
+    add_executable(face_recognition_image_in_vram gpu_sample_apps/face_recognition_image_in_vram.cpp)
+    target_link_libraries(face_recognition_image_in_vram ${LINKER_LIBS} ${OpenCV_LIBS})
 endif()

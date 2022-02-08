@@ -86,7 +86,7 @@ Passing multiple frames in succession to the blink detector can be used to build
 - `gpu_sample_apps/batch_fr_cuda.cpp` demonstrates how to generate face recognition templates in batch when using the GPU library.
 Batching is used to increase throughput on GPUs. 
 
-- `gpu_sample_apps/face_detect_image_in_vram.cpp` demonstrates how the GPU SDK can be used to detect the largest face in an image already loaded in the graphics card's memory.
+- `gpu_sample_apps/face_recognition_image_in_vram.cpp` demonstrates how the GPU SDK can be used to run face detection and face recognition with an image already loaded in the graphics card's memory.
   In order to run this sample code, you must have OpenCV with CUDA installed on your system.
   You can build and install this by navigating to the `3rd_party_libs` directory and running `build_opencv.sh` which will build and install OpenCV CUDA with the required Contrib modules.
 
