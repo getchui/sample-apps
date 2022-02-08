@@ -84,7 +84,7 @@ int main() {
     }
 
     // Can modify this path to point to another directory with images
-    const std::string imageDirPath = "/home/cyrus/work/repos/tensorrt_inference/RetinaFace/samples";
+    const std::string imageDirPath = "../../../../images";
     const auto imageList = getFilesInDir(imageDirPath);
 
     int imageNum = 0;
@@ -99,7 +99,8 @@ int main() {
         }
 
         // OpenCV loads images as BGR
-        auto errorCode = tfSdk.setImage(image.data, image.cols, image.rows, ColorCode::bgr);
+        TFImage img;
+        auto errorCode = tfSdk.preprocessImage(image.data, image.cols, image.rows, ColorCode::bgr, img);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
@@ -107,7 +108,7 @@ int main() {
 
         // Get the landmark locations
         std::vector<FaceBoxAndLandmarks> landmarksVec;
-        tfSdk.detectFaces(landmarksVec);
+        tfSdk.detectFaces(img, landmarksVec);
 
         if (landmarksVec.empty()) {
             std::cout << "Unable to detect face in image: " << imagePath << '\n';
