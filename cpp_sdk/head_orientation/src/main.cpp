@@ -154,7 +154,8 @@ int main() {
         }
 
         // Set the image using the capture frame buffer
-        auto errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, ColorCode::bgr);
+        TFImage img;
+        auto errorCode = tfSdk.preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
@@ -163,14 +164,14 @@ int main() {
         // Get the landmarks for the largest face
         bool found;
         FaceBoxAndLandmarks landmarks;
-        tfSdk.detectLargestFace(landmarks, found);
+        tfSdk.detectLargestFace(img, landmarks, found);
 
         // Use the landmark locations to obtain the yaw, pitch, and roll
         if (found) {
 
             // Compute the yaw, pitch, roll
             float yaw, pitch, roll;
-            auto retCode = tfSdk.estimateHeadOrientation(landmarks, yaw, pitch, roll);
+            auto retCode = tfSdk.estimateHeadOrientation(img, landmarks, yaw, pitch, roll);
             if (retCode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to compute orientation\n";
                 continue;
