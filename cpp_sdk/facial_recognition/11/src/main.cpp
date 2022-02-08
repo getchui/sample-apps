@@ -67,7 +67,8 @@ int main() {
     }
 
     // Load the first image of Obama
-    auto errorCode = tfSdk.setImage("../../../../images/obama/obama1.jpg");
+    TFImage img;
+    auto errorCode = tfSdk.preprocessImage("../../../../images/obama/obama1.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to read image\n";
         return -1;
@@ -76,14 +77,14 @@ int main() {
     // Generate a template from the first image
     Faceprint faceprint1;
     bool found;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint1, found);
+    errorCode = tfSdk.getLargestFaceFeatureVector(img, faceprint1, found);
     if (errorCode != ErrorCode::NO_ERROR || !found) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
     }
 
     // Load the second image of obama
-    errorCode = tfSdk.setImage("../../../../images/obama/obama2.jpg");
+    errorCode = tfSdk.preprocessImage("../../../../images/obama/obama2.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: uanble to read image\n";
         return -1;
@@ -91,7 +92,7 @@ int main() {
 
     // Generate a template from the second image
     Faceprint faceprint2;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint2, found);
+    errorCode = tfSdk.getLargestFaceFeatureVector(img, faceprint2, found);
     if (errorCode != ErrorCode::NO_ERROR || !found) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
@@ -108,7 +109,7 @@ int main() {
     std::cout << "Similarity between two Obama images: " << matchProbabilitiy << "\n";
 
     // Load image of armstrong
-    errorCode = tfSdk.setImage("../../../../images/armstrong/armstrong1.jpg");
+    errorCode = tfSdk.preprocessImage("../../../../images/armstrong/armstrong1.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: uanble to read image\n";
         return -1;
@@ -116,7 +117,7 @@ int main() {
 
     // Generate a template from the second third
     Faceprint faceprint3;
-    errorCode = tfSdk.getLargestFaceFeatureVector(faceprint3, found);
+    errorCode = tfSdk.getLargestFaceFeatureVector(img, faceprint3, found);
     if (errorCode != ErrorCode::NO_ERROR || !found) {
         std::cout << "Error: Unable to generate template\n";
         return -1;
