@@ -113,7 +113,8 @@ int main() {
     }
 
     // Load the image / images we want to enroll
-    errorCode = tfSdk.setImage("../../../../images/obama/obama1.jpg");
+    TFImage img;
+    errorCode = tfSdk.preprocessImage("../../../../images/obama/obama1.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: unable to read image\n";
         return -1;
@@ -122,7 +123,7 @@ int main() {
     // Detect the face in the image
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool faceDetected;
-    errorCode = tfSdk.detectLargestFace(faceBoxAndLandmarks, faceDetected);
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, faceDetected);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "There was an error with the call to detectLargestFace\n";
         return -1;
@@ -144,7 +145,7 @@ int main() {
 
     // Get the aligned face chip so that we can compute the image quality
     uint8_t alignedImage[37632];
-    errorCode = tfSdk.extractAlignedFace(faceBoxAndLandmarks, alignedImage);
+    errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, alignedImage);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "There was an error extracting the aligned face\n";
         return -1;
@@ -168,7 +169,7 @@ int main() {
     // As a final check, we can check the orientation of the head and ensure that it is facing forward
     // To see the effect of yaw and pitch on the match score, refer to: https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
     float yaw, pitch, roll;
-    errorCode = tfSdk.estimateHeadOrientation(faceBoxAndLandmarks, yaw, pitch, roll);
+    errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, yaw, pitch, roll);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute head orientation\n";
         return -1;
@@ -214,7 +215,7 @@ int main() {
         }
 
         // Set the image using the capture frame buffer
-        errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, ColorCode::bgr);
+        errorCode = tfSdk.preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
@@ -222,7 +223,7 @@ int main() {
 
         // Get all the bounding boxes
         std::vector<FaceBoxAndLandmarks> bboxVec;
-        tfSdk.detectFaces(bboxVec);
+        tfSdk.detectFaces(img, bboxVec);
 
         // For each bounding box, get the face feature vector
         std::vector<Faceprint> faceprints;
@@ -231,7 +232,7 @@ int main() {
         for (const auto &bbox: bboxVec) {
             // Get the face feature vector
             Faceprint tmpFaceprint;
-            tfSdk.getFaceFeatureVector(bbox, tmpFaceprint);
+            tfSdk.getFaceFeatureVector(img, bbox, tmpFaceprint);
             faceprints.emplace_back(std::move(tmpFaceprint));
         }
 
