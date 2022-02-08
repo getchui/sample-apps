@@ -84,6 +84,14 @@ public:
         // Alternatively, can also do the following to enable GPU inference for all supported modules:
 //    options.gpuOptions = true;
 
+        // Create the SDK instance
+        m_sdkPtr = std::make_unique<SDK>(options);
+
+        auto valid = m_sdkPtr->setLicense(sdkToken);
+        if (!valid) {
+            throw std::runtime_error("Token is not valid!");
+        }
+
         // Create our logging thread
         m_workerThreads.emplace_back(std::thread(&Controller::logQueueSizes, this));
 
@@ -96,21 +104,21 @@ public:
         // Create our face detection worker threads
         size_t numFaceDetectionWorkerThreads = 2;
         for (size_t i = 0; i < numFaceDetectionWorkerThreads; ++i) {
-            std::thread t(&Controller::detectAndEnqueueFaces, this, sdkToken, options);
+            std::thread t(&Controller::detectAndEnqueueFaces, this);
             m_workerThreads.emplace_back(std::move(t));
         }
 
         // Create template extraction worker threads
         size_t numTemplateExtractionWorkerThreads = 3;
         for (size_t i = 0; i < numTemplateExtractionWorkerThreads; ++i) {
-            std::thread t(&Controller::extractAndEnqueueTemplate, this, sdkToken, options);
+            std::thread t(&Controller::extractAndEnqueueTemplate, this);
             m_workerThreads.emplace_back(std::move(t));
         }
 
         // Create identification worker thread
         size_t numIdentificationWorkerThreads = 1;
         for (size_t i = 0; i < numIdentificationWorkerThreads; ++i) {
-            std::thread t (&Controller::identifyTemplate, this, sdkToken, options, databaseConnectionURL, collectionName, i == 0);
+            std::thread t (&Controller::identifyTemplate, this, databaseConnectionURL, collectionName, i == 0);
             m_workerThreads.emplace_back(std::move(t));
         }
     }
@@ -165,7 +173,7 @@ private:
         }
     }
 
-    // Function for connecting to an RTSP stream and enrolling frames into a queue.
+    // Function for connecting to an RTSP stream and enrolling preproessed frames into a queue.
     // Assuming our cameras stream at 30FPS, we will only process every 6th frame
     // to process at 5FPS because any higher and we end up processing very similar frames
     // and doing unnecessary work.
@@ -191,10 +199,19 @@ private:
                 continue;
             }
 
+            // Preprocess the frame
+            TFImage img;
+            auto errorcode = m_sdkPtr->preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
+            if (errorcode != ErrorCode::NO_ERROR) {
+                std::cout << "Thread " << std::this_thread::get_id() << ": There was an error preprocessing the frame" << std::endl;
+                std::cout << errorcode << std::endl;
+                continue;
+            }
+
             // Push a frame to the queue, notify thread pool that there is work
             {
                 std::lock_guard<std::mutex> lock(m_imageQueueMtx);
-                m_imageQueue.push(std::move(frame));
+                m_imageQueue.push(img);
             }
 
             m_imageQueueCondVar.notify_one();
@@ -205,17 +222,10 @@ private:
 
     // Function for searching for all faces in the frame and pushing the aligned face chips
     // into another queue to be processed for face recognition
-    void detectAndEnqueueFaces(const std::string& sdkToken, const ConfigurationOptions& options) {
-        // Create and initialize a Trueface SDK
-        SDK tfSdk(options);
-        auto ret = tfSdk.setLicense(sdkToken);
-        if (!ret) {
-            throw std::runtime_error("Invalid token");
-        }
-
+    void detectAndEnqueueFaces() {
         // Main loop
         while(m_run) {
-            cv::Mat image;
+            TFImage img;
             // Wait for work
             {
                 std::unique_lock<std::mutex> lock(m_imageQueueMtx);
@@ -226,21 +236,13 @@ private:
                     break;
                 }
 
-                image = m_imageQueue.front();
+                img = m_imageQueue.front();
                 m_imageQueue.pop();
             }
 
             // Pass the image to the SDK, run face detection
-            // OpenCV uses BGR default
-            auto retcode = tfSdk.setImage(image.data, image.cols, image.rows, ColorCode::bgr);
-            if (retcode != ErrorCode::NO_ERROR) {
-                std::cout << "Thread " << std::this_thread::get_id() << ": Unable to set image" << std::endl;
-                continue;
-            }
-
-            // Detect all the faces in the image
             std::vector<FaceBoxAndLandmarks> faceBoxAndLandmarks;
-            retcode = tfSdk.detectFaces(faceBoxAndLandmarks);
+            auto retcode = m_sdkPtr->detectFaces(img, faceBoxAndLandmarks);
 
             if (retcode != ErrorCode::NO_ERROR) {
                 std::cout << "Thread " << std::this_thread::get_id() << ": Error detecting faces" << std::endl;
@@ -251,7 +253,7 @@ private:
             // Each face chip is 112x112 pixels in size, so we must allocate 112x112x3 bytes
             for (const auto& fb: faceBoxAndLandmarks) {
                 std::vector<uint8_t> faceImage (112*112*3);
-                retcode = tfSdk.extractAlignedFace(fb, faceImage.data());
+                retcode = m_sdkPtr->extractAlignedFace(img, fb, faceImage.data());
 
                 if (retcode != ErrorCode::NO_ERROR) {
                     std::cout << "Thread " << std::this_thread::get_id() << ": Error extracting aligned face" << std::endl;
@@ -271,14 +273,7 @@ private:
 
     // Function for generating a face recognition template from the face chips.
     // The face templates are then added to a queue to be processed for identification
-    void extractAndEnqueueTemplate(const std::string& sdkToken, const ConfigurationOptions& options) {
-        // Create and initialize a Trueface SDK
-        SDK tfSdk(options);
-        auto ret = tfSdk.setLicense(sdkToken);
-        if (!ret) {
-            throw std::runtime_error("Invalid token");
-        }
-
+    void extractAndEnqueueTemplate() {
         // Main loop
         while (m_run) {
             std::vector<uint8_t> faceImage;
@@ -298,7 +293,7 @@ private:
 
             // Generate a face recognition template from the face image
             Faceprint faceprint;
-            auto retcode = tfSdk.getFaceFeatureVector(faceImage.data(), faceprint);
+            auto retcode = m_sdkPtr->getFaceFeatureVector(faceImage.data(), faceprint);
             if (retcode != ErrorCode::NO_ERROR) {
                 std::cout << "Thread " << std::this_thread::get_id() << ": Unable to generate feature vector" << std::endl;
                 continue;
@@ -315,24 +310,16 @@ private:
         std::cout << "Template extraction thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
     }
 
-    void identifyTemplate(const std::string& sdkToken, const ConfigurationOptions& options,
-                          const std::string& databaseURL, const std::string& collectionName, bool first) {
-        // Create and initialize a Trueface SDK
-        SDK tfSdk(options);
-        auto ret = tfSdk.setLicense(sdkToken);
-        if (!ret) {
-            throw std::runtime_error("Invalid token");
-        }
-
+    void identifyTemplate(const std::string& databaseURL, const std::string& collectionName, bool first) {
         // As long as all instances of the SDK are in the same process, then only one instance needs to connect to the database
         // To learn more, read the top of: https://reference.trueface.ai/cpp/dev/latest/usage/identification.html
         if (first) {
-            auto retcode = tfSdk.createDatabaseConnection(databaseURL);
+            auto retcode = m_sdkPtr->createDatabaseConnection(databaseURL);
             if (retcode != ErrorCode::NO_ERROR) {
                 throw std::runtime_error("Unable to connect to database");
             }
 
-            retcode = tfSdk.createLoadCollection(collectionName);
+            retcode = m_sdkPtr->createLoadCollection(collectionName);
             if (retcode != ErrorCode::NO_ERROR) {
                 throw std::runtime_error("Unable to create new collection or load existing collection");
             }
@@ -371,9 +358,10 @@ private:
             // Run 1 to N identification
             Candidate candidate;
             bool found;
-            auto retcode = tfSdk.identifyTopCandidate(faceprint, candidate, found);
+            auto retcode = m_sdkPtr->identifyTopCandidate(faceprint, candidate, found);
             if (retcode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to run identify top candidate" << std::endl;
+                continue;
             }
 
             if (found) {
@@ -386,8 +374,11 @@ private:
         std::cout << "Identify thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
     }
 
+    // Single SDK instance to be used by various threads
+    std::unique_ptr<SDK> m_sdkPtr = nullptr;
+
     // Shared queues and their mutexes
-    std::queue<cv::Mat> m_imageQueue;
+    std::queue<TFImage> m_imageQueue;
     std::queue<std::vector<uint8_t>> m_faceChipQueue;
     std::queue<Faceprint> m_faceprintQueue;
 
