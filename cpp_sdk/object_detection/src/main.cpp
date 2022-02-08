@@ -151,7 +151,8 @@ int main() {
         }
 
         // Set the image using the capture frame buffer
-        auto errorCode = tfSdk.setImage(frame.data, frame.cols, frame.rows, ColorCode::bgr);
+        TFImage img;
+        auto errorCode = tfSdk.preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
@@ -159,7 +160,7 @@ int main() {
 
         // Detect the objects in the frame
         std::vector<BoundingBox> bboxVec;
-        tfSdk.detectObjects(bboxVec);
+        tfSdk.detectObjects(img, bboxVec);
 
         // Display the bounding boxes and labels for the detected objects
         for (const auto& bbox: bboxVec) {
