@@ -74,19 +74,14 @@ if (is_valid == False):
 
 # Start by analyzing the real images
 # We will start with the far shot image
-res = sdk.set_image("../images/far_shot_real_person.jpg")
+res, img = sdk.preprocess_image("../images/far_shot_real_person.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set real image, far shot{Style.RESET_ALL}")
     quit()
 
 
-# Next, we must obtain the image properties
-# These properties are used by the check_spoof_image_face_size() function
-image_props = sdk.get_image_properties()
-
-
 # Next, must detect if there is a face in the image
-found, fb = sdk.detect_largest_face()
+found, fb = sdk.detect_largest_face(img)
 if found == False:
     print(f"{Fore.RED}Unable to find face in real image, far shot{Style.RESET_ALL}")
     quit()
@@ -94,7 +89,7 @@ if found == False:
 # Now, we must ensure that the face meets the size criteria
 # Be sure to check the return value of this function
 
-ret = sdk.check_spoof_image_face_size(fb, image_props, tfsdk.ACTIVESPOOFSTAGE.FAR)
+ret = sdk.check_spoof_image_face_size(img, fb, tfsdk.ACTIVESPOOFSTAGE.FAR)
 if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
     print(f"{Fore.RED}The face is too far in the real image, far face{Style.RESET_ALL}")
     quit()
@@ -106,33 +101,31 @@ elif ret != tfsdk.ERRORCODE.NO_ERROR:
     quit()
 
 # Next, we need to obtain the 106 facial landmarks for the face. 
-ret, far_landmarks = sdk.get_face_landmarks(fb)
+ret, far_landmarks = sdk.get_face_landmarks(img,fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error obtaining the facial landmarks for the real image, far face{Style.RESET_ALL}")
     quit()    
 
 # Finally, we can compute a face recognition template for the face, 
 # and later use it to ensure the two active spoof images are from the same identity.
-ret, far_faceprint = sdk.get_face_feature_vector(fb)
+ret, far_faceprint = sdk.get_face_feature_vector(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error generating the feature vector for the real image, far face{Style.RESET_ALL}")
     quit()
 
 
 # Now at this point, we can repeat all the above steps, but for the near image now. 
-res = sdk.set_image("../images/near_shot_real_person.jpg")
+res, img = sdk.preprocess_image("../images/near_shot_real_person.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set real image, near shot{Style.RESET_ALL}")
     quit()
 
-image_props = sdk.get_image_properties()
-
-found, fb = sdk.detect_largest_face()
+found, fb = sdk.detect_largest_face(img)
 if found == False:
     print(f"{Fore.RED}Unable to find face in real image, near shot{Style.RESET_ALL}")
     quit()
 
-ret = sdk.check_spoof_image_face_size(fb, image_props, tfsdk.ACTIVESPOOFSTAGE.NEAR) # Be sure to specify near image this time.
+ret = sdk.check_spoof_image_face_size(img, fb, tfsdk.ACTIVESPOOFSTAGE.NEAR) # Be sure to specify near image this time.
 if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
     print(f"{Fore.RED}The face is too far in the real image, near face{Style.RESET_ALL}")
     quit()
@@ -143,12 +136,12 @@ elif ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error with the real image, near face{Style.RESET_ALL}")
     quit()
 
-ret, near_landmarks = sdk.get_face_landmarks(fb)
+ret, near_landmarks = sdk.get_face_landmarks(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error obtaining the facial landmarks for the real image, near face{Style.RESET_ALL}")
     quit()    
 
-ret, near_faceprint = sdk.get_face_feature_vector(fb)
+ret, near_faceprint = sdk.get_face_feature_vector(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error generating the feature vector for the real image, near face{Style.RESET_ALL}")
     quit()
@@ -175,19 +168,14 @@ print("")
 
 # Now for the sake of the demo, let's repeat the entire process but with two face / spoof attempt images
 # We will start with the far shot image
-res = sdk.set_image("../images/far_shot_fake_person.jpg")
+res, img = sdk.preprocess_image("../images/far_shot_fake_person.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set fake image, far shot{Style.RESET_ALL}")
     quit()
 
 
-# Next, we must obtain the image properties
-# These properties are used by the check_spoof_image_face_size() function
-image_props = sdk.get_image_properties()
-
-
 # Next, must detect if there is a face in the image
-found, fb = sdk.detect_largest_face()
+found, fb = sdk.detect_largest_face(img)
 if found == False:
     print(f"{Fore.RED}Unable to find face in fake image, far shot{Style.RESET_ALL}")
     quit()
@@ -195,7 +183,7 @@ if found == False:
 # Now, we must ensure that the face meets the size criteria
 # Be sure to check the return value of this function
 
-ret = sdk.check_spoof_image_face_size(fb, image_props, tfsdk.ACTIVESPOOFSTAGE.FAR)
+ret = sdk.check_spoof_image_face_size(img, fb, tfsdk.ACTIVESPOOFSTAGE.FAR)
 if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
     print(f"{Fore.RED}The face is too far in the fake image, far face{Style.RESET_ALL}")
     quit()
@@ -207,33 +195,31 @@ elif ret != tfsdk.ERRORCODE.NO_ERROR:
     quit()
 
 # Next, we need to obtain the 106 facial landmarks for the face. 
-ret, far_landmarks = sdk.get_face_landmarks(fb)
+ret, far_landmarks = sdk.get_face_landmarks(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error obtaining the facial landmarks for the fake image, far face{Style.RESET_ALL}")
     quit()    
 
 # Finally, we can compute a face recognition template for the face, 
 # and later use it to ensure the two active spoof images are from the same identity.
-ret, far_faceprint = sdk.get_face_feature_vector(fb)
+ret, far_faceprint = sdk.get_face_feature_vector(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error generating the feature vector for the fake image, far face{Style.RESET_ALL}")
     quit()
 
 
 # Now at this point, we can repeat all the above steps, but for the near image now. 
-res = sdk.set_image("../images/near_shot_fake_person.jpg")
+res, img = sdk.preprocess_image("../images/near_shot_fake_person.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set real image, near shot{Style.RESET_ALL}")
     quit()
 
-image_props = sdk.get_image_properties()
-
-found, fb = sdk.detect_largest_face()
+found, fb = sdk.detect_largest_face(img)
 if found == False:
     print(f"{Fore.RED}Unable to find face in fake image, near shot{Style.RESET_ALL}")
     quit()
 
-ret = sdk.check_spoof_image_face_size(fb, image_props, tfsdk.ACTIVESPOOFSTAGE.NEAR) # Be sure to specify near image this time.
+ret = sdk.check_spoof_image_face_size(img, fb, tfsdk.ACTIVESPOOFSTAGE.NEAR) # Be sure to specify near image this time.
 if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
     print(f"{Fore.RED}The face is too far in the fake image, near face{Style.RESET_ALL}")
     quit()
@@ -244,12 +230,12 @@ elif ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error with the fake image, near face{Style.RESET_ALL}")
     quit()
 
-ret, near_landmarks = sdk.get_face_landmarks(fb)
+ret, near_landmarks = sdk.get_face_landmarks(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error obtaining the facial landmarks for the fake image, near face{Style.RESET_ALL}")
     quit()    
 
-ret, near_faceprint = sdk.get_face_feature_vector(fb)
+ret, near_faceprint = sdk.get_face_feature_vector(img,fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error generating the feature vector for the fake image, near face{Style.RESET_ALL}")
     quit()
