@@ -86,21 +86,21 @@ face_chips = []
 
 # First need to run face detection and generate face chips sequentially.
 for image in images:
-    res = sdk.set_image(image)
+    res, img = sdk.preprocess_image(image)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set image: {image}{Style.RESET_ALL}")
         quit()
 
 
      # Detect the largest face in the image
-    found, face_bounding_box = sdk.detect_largest_face()
+    found, face_bounding_box = sdk.detect_largest_face(img)
 
     if not found:
         print(f"{Fore.RED}Could not find face in image!{Style.RESET_ALL}")
         quit()
         
 
-    face_chip = sdk.extract_aligned_face(face_bounding_box)
+    face_chip = sdk.extract_aligned_face(img, face_bounding_box)
     face_chips.append(face_chip)    
 
 
