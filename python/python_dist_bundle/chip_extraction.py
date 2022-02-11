@@ -66,17 +66,17 @@ if (is_valid == False):
     quit()
 
 # Load the input image
-res = sdk.set_image("../images/brad_pitt_1.jpg")
+res, img = sdk.preprocess_image("../images/brad_pitt_1.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
 # detect the largest face
-found, face_bounding_box = sdk.detect_largest_face()
+found, face_bounding_box = sdk.detect_largest_face(img)
 
 
 if found:
-    face = sdk.extract_aligned_face(face_bounding_box)
+    face = sdk.extract_aligned_face(img, face_bounding_box)
 
     # the extracted image is the RGB color format
     # opencv expects BGR

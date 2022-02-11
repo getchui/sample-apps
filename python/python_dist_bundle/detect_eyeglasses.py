@@ -65,17 +65,17 @@ if (is_valid == False):
     quit()
 
 # Load the image with glasses
-res = sdk.set_image("../images/glasses.jpg")
+res, img = sdk.preprocess_image("../images/glasses.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
 
 # detect the largest face
-found, face_bounding_box = sdk.detect_largest_face()
+found, face_bounding_box = sdk.detect_largest_face(img)
 if found:
     # Run glasses detection
-    res, glasses_label, glasses_score = sdk.detect_glasses(face_bounding_box)
+    res, glasses_label, glasses_score = sdk.detect_glasses(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to run glasses detection with image 1{Style.RESET_ALL}")
         quit()
@@ -87,16 +87,16 @@ else:
     print("No face detected in image")
 
 # Load the non glasses face image
-res = sdk.set_image("../images/headshot.jpg")
+res, img = sdk.preprocess_image("../images/headshot.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 2{Style.RESET_ALL}")
     quit()
 
 # detect the largest face
-found, face_bounding_box = sdk.detect_largest_face()
+found, face_bounding_box = sdk.detect_largest_face(img)
 if found:
     # Run glasses detection
-    res, glasses_label, glasses_score = sdk.detect_glasses(face_bounding_box)
+    res, glasses_label, glasses_score = sdk.detect_glasses(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to run glasses detection with image 2{Style.RESET_ALL}")
         quit()
