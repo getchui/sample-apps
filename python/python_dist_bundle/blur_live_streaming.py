@@ -83,13 +83,13 @@ while(True):
         continue
 
     # Set the image using the frame buffer. OpenCV stores images in BGR format
-    res = sdk.set_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
+    res, img = sdk.preprocess_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set frame{Style.RESET_ALL}")
         continue
 
     # Run face detection
-    face_box_and_landmarks = sdk.detect_faces()
+    face_box_and_landmarks = sdk.detect_faces(img)
 
     img = frame.copy()
 
