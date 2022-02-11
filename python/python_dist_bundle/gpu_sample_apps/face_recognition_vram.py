@@ -2,8 +2,7 @@
 
 # This sample app demonstrates how to use the SDK with images loaded in GPU memory. 
 # First, cupy is used to load images into GPU memory.
-# Next, the SDK is used to run face detection on those GPU images, after which the face chips are extracted.
-# Finally, we generate face recognition templates for those face chips using batching, then compute the similarity score. 
+# Next, the SDK is used to generate feature vectors for the two images. 
 
 
 import os
@@ -81,54 +80,44 @@ import cupy as cp
 img_gpu_1 = cp.asarray(img_1)
 
 # pass the gpu memory address to the sdk
-res = sdk.set_image(img_gpu_1.data.ptr, img_1.shape[1], img_1.shape[0], tfsdk.COLORCODE.bgr, 0)
+res, img = sdk.preprocess_image(img_gpu_1.data.ptr, img_1.shape[1], img_1.shape[0], tfsdk.COLORCODE.bgr, 0)
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
-# detect the faces in the image without copying the image into the cpu memory
-faces_1 = sdk.detect_faces()
-if not faces_1:
-    print(f"{Fore.RED}Unable to detect any faces in image 1!{Style.RESET_ALL}")
+# generate the face feature vector from the GPU image
+ret, fp1, found = sdk.get_largest_face_feature_vector(img)
+
+if ret != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}There was an error generating the faceprint{Style.RESET_ALL}")
     quit()
 
-# create an array to hold the face chip in the gpu memory
-face_chip_1 = cp.zeros((112,112,3), 'uint8')
+if not found:
+    print(f"{Fore.RED}Unable to find a face in image 1{Style.RESET_ALL}")
+    quit()
 
-# the sdk copies the face chip into the allocated memory
-sdk.extract_aligned_face(face_chip_1.data.ptr, faces_1[0])
 
 # load the image into the graphics card's memory
 img_gpu_2 = cp.asarray(img_2)
 
 # pass the gpu memory address to the sdk
-res = sdk.set_image(img_gpu_2.data.ptr, img_2.shape[1], img_2.shape[0], tfsdk.COLORCODE.bgr, 0)
+res, img = sdk.preprocess_image(img_gpu_2.data.ptr, img_2.shape[1], img_2.shape[0], tfsdk.COLORCODE.bgr, 0)
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 2{Style.RESET_ALL}")
     quit()
 
-# detect the faces in the image without copying the image into the cpu memory
-faces_2 = sdk.detect_faces()
-if not faces_1:
-    print(f"{Fore.RED}Unable to detect any faces in image 2!{Style.RESET_ALL}")
+# generate the face feature vector from the GPU image
+ret, fp2, found = sdk.get_largest_face_feature_vector(img)
+
+if ret != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}There was an error generating the faceprint{Style.RESET_ALL}")
     quit()
 
-face_chip_2 = cp.zeros((112,112,3), 'uint8')
-sdk.extract_aligned_face(face_chip_2.data.ptr, faces_2[0])
-
-
-# check the face chip to see it looks fine
-chip_img_1_cpu = face_chip_1.get()
-cv2.imwrite('/tmp/face_1.jpg', cv2.cvtColor(chip_img_1_cpu, cv2.COLOR_BGR2RGB))
-
-chip_img_2_cpu = face_chip_2.get()
-cv2.imwrite('/tmp/face_2.jpg', cv2.cvtColor(chip_img_2_cpu, cv2.COLOR_BGR2RGB))
-
-# extract faceprints using batching
-face_chips = [face_chip_1.data.ptr, face_chip_2.data.ptr]
-status, faceprints = sdk.get_face_feature_vectors(face_chips)
+if not found:
+    print(f"{Fore.RED}Unable to find a face in image 2{Style.RESET_ALL}")
+    quit()
 
 # compare the two faceprints, this should return a high match probability
-res = faceprints[0].compare(faceprints[1])
-print(res)
-
+ret, prob, sim = sdk.get_similarity(fp1, fp2)
+print("Probability:", prob * 100, "%")
+print("Similarity:", sim)
