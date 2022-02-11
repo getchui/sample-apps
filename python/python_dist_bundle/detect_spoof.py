@@ -65,15 +65,15 @@ if (is_valid == False):
     quit()
 
 # Load the real image
-res = sdk.set_image("../images/real.jpg")
+res, img = sdk.preprocess_image("../images/real.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
 # Run spoof detection
-found, face_bounding_box = sdk.detect_largest_face()
+found, face_bounding_box = sdk.detect_largest_face(img)
 if found:
-    res, spoof_label, spoof_score = sdk.detect_spoof(face_bounding_box)
+    res, spoof_label, spoof_score = sdk.detect_spoof(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to run spoof with image 1{Style.RESET_ALL}")
         quit()
@@ -82,16 +82,16 @@ if found:
 print(f"Real image predicted result: {spoof_label}")
 
 # Load the spoof atempt image
-res = sdk.set_image("../images/fake.jpg")
+res, img = sdk.preprocess_image("../images/fake.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 2{Style.RESET_ALL}")
     quit()
 
 
 # Run spoof detection
-found, face_bounding_box = sdk.detect_largest_face()
+found, face_bounding_box = sdk.detect_largest_face(img)
 if found:
-    res, spoof_label, spoof_score = sdk.detect_spoof(face_bounding_box)
+    res, spoof_label, spoof_score = sdk.detect_spoof(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to run spoof with image 1{Style.RESET_ALL}")
         quit()
