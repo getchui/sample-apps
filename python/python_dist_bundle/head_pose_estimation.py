@@ -65,19 +65,19 @@ if (is_valid == False):
     quit()
 
 # Load the input image
-res = sdk.set_image("../images/brad_pitt_1.jpg")
+res, img = sdk.preprocess_image("../images/brad_pitt_1.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
 # detect the largest face
-found, face_bounding_box = sdk.detect_largest_face()
+found, face_bounding_box = sdk.detect_largest_face(img)
 
 if found == False:
     print(f"{Fore.RED}Unable to detect face{Style.RESET_ALL}")
     quit()
 
-res, yaw, pitch, roll = sdk.estimate_head_orientation(face_bounding_box)
+res, yaw, pitch, roll = sdk.estimate_head_orientation(img, face_bounding_box)
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to compute orientation{Style.RESET_ALL}")
     quit();

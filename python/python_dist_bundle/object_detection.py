@@ -65,13 +65,13 @@ if (is_valid == False):
     quit()
 
 # Load the input image of a person on a bike
-res = sdk.set_image("../images/person_on_bike.jpg")
+res, img = sdk.preprocess_image("../images/person_on_bike.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
 # Run object detection
-bounding_boxes = sdk.detect_objects()
+bounding_boxes = sdk.detect_objects(img)
 if (len(bounding_boxes) == 0) :
     print(f"{Fore.RED}Unable to find any objects in image{Style.RESET_ALL}")
     quit()

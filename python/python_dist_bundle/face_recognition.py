@@ -66,25 +66,25 @@ if (is_valid == False):
     quit()
 
 # Set the first image
-res = sdk.set_image("../images/brad_pitt_1.jpg")
+res, img = sdk.preprocess_image("../images/brad_pitt_1.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
 
 # Extract the feature vector
-res, v1, found = sdk.get_largest_face_feature_vector()
+res, v1, found = sdk.get_largest_face_feature_vector(img)
 if (res != tfsdk.ERRORCODE.NO_ERROR or found == False):
     print(f"{Fore.RED}Unable to generate feature vector 1, no face detected{Style.RESET_ALL}")
     quit()
 
 # Set the second image
-res = sdk.set_image("../images/brad_pitt_2.jpg")
+res, img = sdk.preprocess_image("../images/brad_pitt_2.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 2{Style.RESET_ALL}")
     quit()
 
-res, v2, found = sdk.get_largest_face_feature_vector()
+res, v2, found = sdk.get_largest_face_feature_vector(img)
 if (res != tfsdk.ERRORCODE.NO_ERROR or found == False):
     print(f"{Fore.RED}Unable to generate feature vector 2, no face detected{Style.RESET_ALL}")
     quit()
