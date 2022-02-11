@@ -65,16 +65,16 @@ if (is_valid == False):
     quit()
 
 # Load the image with mask
-res = sdk.set_image("../images/mask.jpg")
+res, img = sdk.preprocess_image("../images/mask.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
 # detect the largest face
-found, face_bounding_box = sdk.detect_largest_face()
+found, face_bounding_box = sdk.detect_largest_face(img)
 if found:
     # Run mask detection
-    res, mask_label = sdk.detect_mask(face_bounding_box)
+    res, mask_label = sdk.detect_mask(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to run mask detection with image 1{Style.RESET_ALL}")
         quit()
@@ -86,16 +86,16 @@ else:
     print("No face detected in image")
 
 # Load the non mask face image
-res = sdk.set_image("../images/headshot.jpg")
+res, img = sdk.preprocess_image("../images/headshot.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 2{Style.RESET_ALL}")
     quit()
 
 # detect the largest face
-found, face_bounding_box = sdk.detect_largest_face()
+found, face_bounding_box = sdk.detect_largest_face(img)
 if found:
     # Run mask detection
-    res, mask_label = sdk.detect_mask(face_bounding_box)
+    res, mask_label = sdk.detect_mask(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to run mask detection with image 2{Style.RESET_ALL}")
         quit()
