@@ -129,22 +129,22 @@ while(True):
         continue
 
     # Set the image using the frame buffer. OpenCV stores images in BGR format
-    res = sdk.set_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
+    res, img = sdk.preprocess_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set frame.{Style.RESET_ALL}")
         continue
 
     # Detect the largest face, then compute the face pose
-    found, faceBoxAndLandmarks = sdk.detect_largest_face()
+    found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
     if found == True:
-        res, yaw, pitch, roll = sdk.estimate_head_orientation(faceBoxAndLandmarks)
+        res, yaw, pitch, roll = sdk.estimate_head_orientation(img,faceBoxAndLandmarks)
         if res == tfsdk.ERRORCODE.NO_ERROR:
             draw_pose_lines(yaw, pitch, roll, frame)
 
     # Run object detection, then run body pose estimation
-    bounding_boxes = sdk.detect_objects()
+    bounding_boxes = sdk.detect_objects(img)
     if (len(bounding_boxes) > 0) :
-        body_landmarks = sdk.estimate_pose(bounding_boxes)
+        body_landmarks = sdk.estimate_pose(img, bounding_boxes)
         if len(body_landmarks) > 0 :
             draw_body_pose(frame, body_landmarks)
 
