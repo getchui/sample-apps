@@ -90,7 +90,7 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
     quit()
 
 # Use a new image of Brad Pitt as the probe
-res = sdk.set_image("../images/brad_pitt_1.jpg")
+res, img = sdk.preprocess_image("../images/brad_pitt_1.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image{Style.RESET_ALL}")
     quit()
@@ -99,7 +99,7 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 # We do not need to check the quality of the probe face templates
 # We mainly want to ensure that the enrollment templates are high quality, 
 # This is less of a concern with probe templates 
-res, v1, found_face = sdk.get_largest_face_feature_vector()
+res, v1, found_face = sdk.get_largest_face_feature_vector(img)
 if (res != tfsdk.ERRORCODE.NO_ERROR or found_face != True):
     print(f"{Fore.RED}No face found in image, unable to generate feature vector{Style.RESET_ALL}")
     quit()

@@ -97,13 +97,13 @@ image_identities = [
 for path, identity in image_identities:
     print("Processing image:", path, "with identity:", identity)
     # Generate a template for each image
-    res = sdk.set_image(path)
+    res, img = sdk.preprocess_image(path)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set image at path: {path}, not enrolling{Style.RESET_ALL}")
         continue
 
     # Detect the largest face in the image
-    found, faceBoxAndLandmarks = sdk.detect_largest_face()
+    found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
     if found == False:
         print(f"{Fore.RED}No face detected in image: {path}, not enrolling{Style.RESET_ALL}")
         continue
@@ -121,7 +121,7 @@ for path, identity in image_identities:
         continue
 
     # Get the aligned chip so we can compute the image quality
-    face = sdk.extract_aligned_face(faceBoxAndLandmarks)
+    face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
 
     # Compute the image quality score
     res, quality = sdk.estimate_face_image_quality(face)
@@ -138,7 +138,7 @@ for path, identity in image_identities:
     # We can check the orientation of the head and ensure that it is facing forward
     # To see the effect of yaw and pitch on match score, refer to: https://reference.trueface.ai/cpp/dev/latest/py/face.html#tfsdk.SDK.estimate_head_orientation
 
-    res, yaw, pitch, roll = sdk.estimate_head_orientation(faceBoxAndLandmarks)
+    res, yaw, pitch, roll = sdk.estimate_head_orientation(img, faceBoxAndLandmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to compute head orientation, not enrolling{Style.RESET_ALL}")
         continue
@@ -155,7 +155,7 @@ for path, identity in image_identities:
         continue
 
     # Finally ensure the user is not wearing a mask
-    error_code, mask_label = sdk.detect_mask(faceBoxAndLandmarks)
+    error_code, mask_label = sdk.detect_mask(img, faceBoxAndLandmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to run mask detection, not enrolling{Style.RESET_ALL}")
         continue

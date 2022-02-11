@@ -141,7 +141,7 @@ while(True):
 
 
     # Set the image using the frame buffer. OpenCV stores images in BGR format
-    res = sdk.set_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
+    res, img = sdk.preprocess_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set frame.{Style.RESET_ALL}")
         cv2.imshow(filename, frame)
@@ -149,7 +149,7 @@ while(True):
             break
         continue
 
-    faceboxes = sdk.detect_faces()
+    faceboxes = sdk.detect_faces(img)
     if not faceboxes or len(faceboxes) == 0:
         cv2.imshow(filename, frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -162,7 +162,7 @@ while(True):
         # We do not need to check the quality of the probe face templates
         # We mainly want to ensure that the enrollment templates are high quality, 
         # This is less of a concern with probe templates 
-        res, faceprint = sdk.get_face_feature_vector(facebox)
+        res, faceprint = sdk.get_face_feature_vector(img, facebox)
         if (res != tfsdk.ERRORCODE.NO_ERROR):
             print("skipping facebox")
             continue
