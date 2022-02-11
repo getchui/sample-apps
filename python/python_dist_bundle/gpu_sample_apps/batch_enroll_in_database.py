@@ -131,19 +131,19 @@ for path in image_paths:
         print("Processing image:", img_num, "/", len(image_paths))
 
     # Detect the largest face, then extract the face chip
-    res = sdk.set_image(path)
+    res, img = sdk.preprocess_image(path)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set image at path: {path}, not enrolling{Style.RESET_ALL}")
         continue
 
     # Detect the largest face in the image
-    found, faceBoxAndLandmarks = sdk.detect_largest_face()
+    found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
     if found == False:
         print(f"{Fore.RED}No face detected in image: {path}, not enrolling{Style.RESET_ALL}")
         continue
 
     # Get the aligned chip
-    face = sdk.extract_aligned_face(faceBoxAndLandmarks)
+    face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
 
     # Add the face chip to our array for processing
     face_chips.append(face)
