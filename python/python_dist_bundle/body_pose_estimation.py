@@ -66,23 +66,23 @@ if (is_valid == False):
 
 
 # Load the input image
-res = sdk.set_image("../images/person_on_bike.jpg")
+res, img = sdk.preprocess_image("../images/person_on_bike.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
     quit()
 
 # Run object detection on the image
-bounding_boxes = sdk.detect_objects()
+bounding_boxes = sdk.detect_objects(img)
 
 if len(bounding_boxes) == 0:
     print(f"{Fore.RED}Unable to detect objects in image{Style.RESET_ALL}")
     quit()
 
 # Do not need to check if the detected object is a person, the estimate_pose function will do that for us
-body_landmarks = sdk.estimate_pose(bounding_boxes)
+body_landmarks = sdk.estimate_pose(img, bounding_boxes)
 
 # Now draw the pose on the image and save the file to disk
-sdk.draw_pose("pose_image", body_landmarks)
+sdk.draw_pose(img, "pose_image", body_landmarks)
 
 
 
