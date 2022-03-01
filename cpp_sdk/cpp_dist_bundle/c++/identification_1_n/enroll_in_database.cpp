@@ -25,7 +25,7 @@ int main() {
     // The face detection filter.
     options.fdFilter = FaceDetectionFilter::BALANCED;
     // Smallest face height in pixels for the face detector.
-    options.smallestFaceHeight = 40;
+    options.smallestFaceHeight = -1;
     // The path specifying the directory where the model files have been downloaded
     options.modelsPath = "./";
     // Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
