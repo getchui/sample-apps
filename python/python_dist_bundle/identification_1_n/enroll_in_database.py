@@ -21,7 +21,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 40 
+options.smallest_face_height = -1 
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = "./"
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
