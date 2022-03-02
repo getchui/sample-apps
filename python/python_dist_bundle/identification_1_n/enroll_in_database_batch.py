@@ -125,18 +125,10 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 
 # Since our collection is empty, lets populate the collection with some identities
 folder_location = sys.argv[1]
-# image_identities = []
 if os.path.isdir(folder_location):
-#     for root, directories, files in os.walk(folder_location):
-#         for img_file in files:
-#             file_path = os.path.join(root, img_file)
-#             identity = os.path.dirname(file_path).split("/")[-1]
-#             image_identities.append((file_path, identity))
-
   images = sorted(list(paths.list_images(folder_location)))
   labels = [os.path.basename(os.path.dirname(image)) for image in images]
   image_identities = list(zip(images, labels))
-  
 else:
   print(f"{Fore.RED}Unable to verify folder{Style.RESET_ALL}")  
   quit() 
