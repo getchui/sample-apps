@@ -25,8 +25,10 @@
 # |
 # Command line format:
 # python enroll_in_database_batch.py root_folder
+
 import tfsdk
 import os
+from imutils import paths
 import math
 import sys
 import subprocess
@@ -52,6 +54,16 @@ options.models_path = "./"
 options.fr_vector_compression = False
 # Database management system for the storage of biometric templates for 1 to N identification.
 options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE
+# If you want to use Postgresql database options, comment the above line and comment out below
+# options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.POSTGRESQL
+is_db_sql = False if options.dbms == tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE else True
+# Please change the following variable to your database parameters
+SDK_DB_NAME = "SDK_DB_NAME"
+SDK_DB_HOST = "LOCALHOST"
+SDK_DB_PORT = 1234
+SDK_DB_PASS = "USERNAME"
+SDK_DB_USER = "PASSWORD"
+db_connection_string = f"host={SDK_DB_HOST} port={SDK_DB_PORT} user={SDK_DB_USER} password={SDK_DB_PASS} dbname={SDK_DB_NAME}"
 
 # Encrypt the biometric templates stored in the database
 # If encryption is enabled, must provide an encryption key
@@ -94,7 +106,7 @@ if (is_valid == False):
     quit()
 
 # Create a new database
-res = sdk.create_database_connection("my_database.db")
+res = sdk.create_database_connection("my_database.db" if not is_db_sql else db_connection_string)
 if (res != tfsdk.ERRORCODE.NO_ERROR):
   print(f"{Fore.RED}Unable to create database connection{Style.RESET_ALL}")
   quit()
@@ -113,15 +125,18 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 
 # Since our collection is empty, lets populate the collection with some identities
 folder_location = sys.argv[1]
-image_identities = []
+# image_identities = []
 if os.path.isdir(folder_location):
-    num_files = int(subprocess.check_output(f"find {folder_location} -type f | wc -l", shell=True))
-    curr = 1
-    for root, directories, files in os.walk(folder_location):
-        for img_file in files:
-            file_path = os.path.join(root, img_file)
-            identity = os.path.dirname(file_path)
-            image_identities.append((file_path, identity))
+#     for root, directories, files in os.walk(folder_location):
+#         for img_file in files:
+#             file_path = os.path.join(root, img_file)
+#             identity = os.path.dirname(file_path).split("/")[-1]
+#             image_identities.append((file_path, identity))
+
+  images = sorted(list(paths.list_images(folder_location)))
+  labels = [os.path.basename(os.path.dirname(image)) for image in images]
+  image_identities = list(zip(images, labels))
+  
 else:
   print(f"{Fore.RED}Unable to verify folder{Style.RESET_ALL}")  
   quit() 
@@ -214,7 +229,7 @@ for path, identity in image_identities:
     print()
 
 # Print all the images that failed enrollment
-print(f"{Fore.RED}Unable to enroll the following images")
+print(f"{Fore.RED}Unable to enroll the following images{Style.RESET_ALL}")
 for failed_img in failed_enrollment:
   print(failed_img)
 
