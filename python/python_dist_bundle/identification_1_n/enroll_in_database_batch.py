@@ -23,8 +23,9 @@
 # |       photo2.jpg
 # |       photo3.jpg
 # |
+# The subfolder names are used as the enrollment identity string for the photos in each subfolder
 # Command line format:
-# python enroll_in_database_batch.py root_folder
+# python enroll_in_database_batch.py root_folder 
 
 import tfsdk
 import os
