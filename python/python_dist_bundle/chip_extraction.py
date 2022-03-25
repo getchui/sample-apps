@@ -122,4 +122,4 @@ p5.y = 397.987305
 
 fb.landmarks = [p1, p2, p3, p4, p5]
 
-face = sdk.extract_aligned_face(fb)
+face = sdk.extract_aligned_face(img, fb)
