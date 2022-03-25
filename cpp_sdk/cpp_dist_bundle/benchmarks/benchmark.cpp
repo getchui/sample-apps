@@ -8,6 +8,7 @@
 #include <cstdlib> 
 
 #include "tf_sdk.h"
+#include <fstream>
 
 using namespace Trueface;
 
@@ -16,11 +17,11 @@ typedef std::chrono::high_resolution_clock Clock;
 void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUModuleOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
 void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
 
 int main() {
     // TODO: Replace with your license
     const std::string license = "${LICENSE_CODE}";
-
     std::cout << "Running speed benchmarks with 1280x720 image\n";
 
     GPUModuleOptions gpuOptions;
@@ -40,6 +41,7 @@ int main() {
         multFactor = 10;
     }
 
+    benchmarkPreprocessImage(license, gpuOptions, 200);
     benchmarkFaceLandmarkDetection(license, gpuOptions);
     if (!gpuOptions.enableGPU) {
         // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE and LITE_V2 models.
@@ -171,6 +173,51 @@ void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions
     std::cout << "Average time object detection (fast mode): " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
 
+}
+
+void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.gpuOptions = gpuOptions.enableGPU;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Read the encoded image into memory
+    std::ifstream file("../images/headshot.jpg", std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<uint8_t> buffer(size);
+    if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+        std::cout << "Unable to load the image" << std::endl;
+        return;
+    }
+
+    // Run once to ensure everything works
+    TFImage img;
+    auto errorcode = tfSdk.preprocessImage(buffer, img);
+    if (errorcode != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to preprocess the image" << std::endl;
+        return;
+    }
+
+    // Time the preprocessImage function
+    auto t1 = Clock::now();
+    for (size_t i = 0; i < numIterations; ++i) {
+        TFImage newImg;
+        tfSdk.preprocessImage(buffer, newImg);
+    }
+    auto t2 = Clock::now();
+    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+    std::cout << "Average time preprocessImage (" << img->getWidth() << "x" << img->getHeight() << "): " <<
+    totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
 }
 
 void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {

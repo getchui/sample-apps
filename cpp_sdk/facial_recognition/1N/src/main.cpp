@@ -167,6 +167,7 @@ int main() {
         return -1;
     }
 
+    // TODO: Enroll pictures that you want to identify here
     // Load the image / images we want to enroll
     TFImage img;
     errorCode = tfSdk.preprocessImage("../../../../images/armstrong/armstrong1.jpg", img);

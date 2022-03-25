@@ -1,11 +1,38 @@
-# Sample code: Generate face recognition templates for images and then enroll them into a collection.
+# Sample code: Batch enroll face recognition templates for images and then enroll them into a collection.
 
-# This sample app demonstrates how you can enroll face recognition templates or Faceprints into a collection on disk.
+# This sample app demonstrates how you can batch enroll a folder of identities' face recognition templates or Faceprints into a collection on disk.
 # First, we create a database and create a new collection within that database.
 # Next, we generate face recognition templates and enroll those templates into the collection.
 # Note, after running this sample app, you can run the identification_1_n sample app.
+# Folder structure format:
+# root_folder
+# |
+# └───person_one_folder
+# |   |
+# |   └───photo1.jpg
+# |       photo2.jpg
+# |
+# └───person_two_folder
+# |   |
+# |   └───photo1.jpg
+# |       photo2.jpg
+# |
+# └───person_three_folder
+# |   |
+# |   └───photo1.jpg
+# |       photo2.jpg
+# |       photo3.jpg
+# |
+# The subfolder names are used as the enrollment identity string for the photos in each subfolder
+# Command line format:
+# python enroll_in_database_batch.py root_folder 
+
 import tfsdk
 import os
+from imutils import paths
+import math
+import sys
+import subprocess
 from colorama import Fore
 from colorama import Style
 
@@ -28,6 +55,16 @@ options.models_path = "./"
 options.fr_vector_compression = False
 # Database management system for the storage of biometric templates for 1 to N identification.
 options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE
+# If you want to use Postgresql database options, comment the above line and comment out below
+# options.dbms = tfsdk.DATABASEMANAGEMENTSYSTEM.POSTGRESQL
+is_db_sql = False if options.dbms == tfsdk.DATABASEMANAGEMENTSYSTEM.SQLITE else True
+# Please change the following variable to your database parameters
+SDK_DB_NAME = "SDK_DB_NAME"
+SDK_DB_HOST = "LOCALHOST"
+SDK_DB_PORT = 1234
+SDK_DB_PASS = "USERNAME"
+SDK_DB_USER = "PASSWORD"
+db_connection_string = f"host={SDK_DB_HOST} port={SDK_DB_PORT} user={SDK_DB_USER} password={SDK_DB_PASS} dbname={SDK_DB_NAME}"
 
 # Encrypt the biometric templates stored in the database
 # If encryption is enabled, must provide an encryption key
@@ -70,7 +107,7 @@ if (is_valid == False):
     quit()
 
 # Create a new database
-res = sdk.create_database_connection("my_database.db")
+res = sdk.create_database_connection("my_database.db" if not is_db_sql else db_connection_string)
 if (res != tfsdk.ERRORCODE.NO_ERROR):
   print(f"{Fore.RED}Unable to create database connection{Style.RESET_ALL}")
   quit()
@@ -88,23 +125,30 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
     quit()
 
 # Since our collection is empty, lets populate the collection with some identities
-image_identities = [
-    ("../images/brad_pitt_2.jpg", "Brad Pitt"),
-    ("../images/brad_pitt_3.jpg", "Brad Pitt"), # Can add the same identity more than once
-    ("../images/tom_cruise_1.jpg", "Tom Cruise")
-]
+folder_location = sys.argv[1]
+if os.path.isdir(folder_location):
+  images = sorted(list(paths.list_images(folder_location)))
+  labels = [os.path.basename(os.path.dirname(image)) for image in images]
+  image_identities = list(zip(images, labels))
+else:
+  print(f"{Fore.RED}Unable to verify folder{Style.RESET_ALL}")  
+  quit() 
+
+failed_enrollment = []
 
 for path, identity in image_identities:
     print("Processing image:", path, "with identity:", identity)
     # Generate a template for each image
     res, img = sdk.preprocess_image(path)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
+        failed_enrollment.append(path)
         print(f"{Fore.RED}Unable to set image at path: {path}, not enrolling{Style.RESET_ALL}")
         continue
 
     # Detect the largest face in the image
     found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
     if found == False:
+        failed_enrollment.append(path)
         print(f"{Fore.RED}No face detected in image: {path}, not enrolling{Style.RESET_ALL}")
         continue
 
@@ -117,29 +161,19 @@ for path, identity in image_identities:
     print(f"Face height: {faceHeight} pixels")
 
     if faceHeight < 100:
+        failed_enrollment.append(path)
         print(f"{Fore.RED}The face is too small in the image for a high quality enrollment, not enrolling{Style.RESET_ALL}")
         continue
 
     # Get the aligned chip so we can compute the image quality
     face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
 
-    # Compute the image quality score
-    res, quality = sdk.estimate_face_image_quality(face)
-    if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}There was an error computing the image quality, not enrolling{Style.RESET_ALL}")
-        continue
-
-    # Ensure the image quality is above a threshold
-    print("Face quality:", quality)
-    if quality < 0.999:
-        print(f"{Fore.RED}The image quality is too poor for enrollment, not enrolling{Style.RESET_ALL}")
-        continue
-
     # We can check the orientation of the head and ensure that it is facing forward
     # To see the effect of yaw and pitch on match score, refer to: https://reference.trueface.ai/cpp/dev/latest/py/face.html#tfsdk.SDK.estimate_head_orientation
 
     res, yaw, pitch, roll = sdk.estimate_head_orientation(img, faceBoxAndLandmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
+        failed_enrollment.append(path)
         print(f"{Fore.RED}Unable to compute head orientation, not enrolling{Style.RESET_ALL}")
         continue
 
@@ -147,32 +181,38 @@ for path, identity in image_identities:
     pitch_deg = pitch * 180 / 3.14
 
     if abs(yaw_deg) > 50:
+        failed_enrollment.append(path)
         print(f"{Fore.RED}Enrollment image has too extreme a yaw, not enrolling{Style.RESET_ALL}")
         continue
 
     if abs(pitch_deg) > 35:
+        failed_enrollment.append(path)
         print(f"{Fore.RED}Enrollment image has too extreme a pitch, not enrolling{Style.RESET_ALL}")
         continue
 
     # Finally ensure the user is not wearing a mask
     error_code, mask_label = sdk.detect_mask(img, faceBoxAndLandmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
+        failed_enrollment.append(path)
         print(f"{Fore.RED}Unable to run mask detection, not enrolling{Style.RESET_ALL}")
         continue
 
     if (mask_label == tfsdk.MASKLABEL.MASK):
+        failed_enrollment.append(path)
         print(f"{Fore.RED}Please choose a image without a mask for enrollment, not enrolling{Style.RESET_ALL}")
         continue
 
     # Now that we have confirmed the images are high quality, generate a template from that image
     res, faceprint = sdk.get_face_feature_vector(face)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
+        failed_enrollment.append(path)
         print(f"{Fore.RED}There was an error generating the faceprint, not enrolling{Style.RESET_ALL}")
         continue
 
     # Enroll the feature vector into the collection
     res, UUID = sdk.enroll_faceprint(faceprint, identity)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
+        failed_enrollment.append(path)
         print(f"{Fore.RED}Unable to enroll feature vector{Style.RESET_ALL}")
         continue
 
@@ -181,6 +221,10 @@ for path, identity in image_identities:
     print("--------------------------------------------")
     print()
 
+# Print all the images that failed enrollment
+print(f"{Fore.RED}Unable to enroll the following images{Style.RESET_ALL}")
+for failed_img in failed_enrollment:
+  print(failed_img)
 
 # For the sake of the demo, print the information about the collection
 res, collection_names = sdk.get_collection_names()
