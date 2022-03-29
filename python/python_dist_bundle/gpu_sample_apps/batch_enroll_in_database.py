@@ -34,7 +34,7 @@ def generate_feature_vectors(face_chips, face_identities):
     face_identities.clear()
 
 # TODO: Choose a batch size based on your GPU memory
-# Consult our benchmarks page: https://docs.trueface.ai/Benchmarks-0b648f5a0cb84badb6425a12697a15e5
+# Consult our benchmarks page: https://docs.trueface.ai/benchmarks
 batch_size = 32
 
 # Start by specifying the configuration options to be used. 

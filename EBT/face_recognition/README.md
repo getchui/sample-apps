@@ -9,9 +9,9 @@ Additionally, both sample apps demonstrate how to use the worker queue pattern.
 
 
 ## API Documentation
-[Documentation](https://docs.trueface.ai/ebt-docs)
+[Documentation](https://docs.trueface.ai/elevated-body-temperature-access-control/ebt-installation-guide-getting-started-and-developer-api-v2)
 
-[Postman Collection](https://docs.trueface.ai/ebt-postman)
+[Postman Collection](https://docs.trueface.ai/elevated-body-temperature-access-control/ebt-postman-collection)
 
 ## Prerequisites
 - You will need to have the EBT application running on your camera.
