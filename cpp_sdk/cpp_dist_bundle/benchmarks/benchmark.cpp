@@ -17,7 +17,10 @@ typedef std::chrono::high_resolution_clock Clock;
 void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUModuleOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
 void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 200);
 
 int main() {
     // TODO: Replace with your license
@@ -43,6 +46,10 @@ int main() {
 
     benchmarkPreprocessImage(license, gpuOptions, 200);
     benchmarkFaceLandmarkDetection(license, gpuOptions);
+    benchmarkDetailedLandmarkDetection(license, gpuOptions);
+    benchmarkMaskDetection(license, gpuOptions);
+    benchmarkHeadOrientation(license, gpuOptions);
+
     if (!gpuOptions.enableGPU) {
         // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE and LITE_V2 models.
         benchmarkFaceRecognition(license, FacialRecognitionModel::LITE, gpuOptions, 1,  200);
@@ -158,7 +165,6 @@ void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions
         return;
     }
 
-    // Discard first inference speed
     std::vector<BoundingBox> boundingBoxes;
 
     // Time the creation of the feature vector
@@ -220,6 +226,161 @@ void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions
     totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
 }
 
+void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.smallestFaceHeight = 40;
+
+    // Since we initialize the module, we do not need to discard the first inference time.
+    InitializeModule initializeModule;
+    initializeModule.landmarkDetector = true;
+    options.initializeModule = initializeModule;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Load the image
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not load the image" << std::endl;
+        return;
+    }
+
+    FaceBoxAndLandmarks faceBoxAndLandmarks;
+    bool found = false;
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+    if (errorCode != ErrorCode::NO_ERROR || !found) {
+        std::cout << "Unable to detect face in image" << std::endl;
+        return;
+    }
+
+    Landmarks landmarks;
+
+    // Time the landmark detection
+    auto t1 = Clock::now();
+    for (size_t i = 0; i < numIterations; ++i) {
+        tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+    }
+    auto t2 = Clock::now();
+    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+    std::cout << "Average time 106 face landmark detection: " << totalTime / numIterations
+              << " ms | " << numIterations << " iterations" << std::endl;
+
+
+}
+
+void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.smallestFaceHeight = 40;
+
+    // Since we initialize the module, we do not need to discard the first inference time.
+    InitializeModule initializeModule;
+    initializeModule.faceDetector = true;
+    options.initializeModule = initializeModule;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Load the image
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not load the image" << std::endl;
+        return;
+    }
+
+    FaceBoxAndLandmarks faceBoxAndLandmarks;
+    bool found = false;
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+    if (errorCode != ErrorCode::NO_ERROR || !found) {
+        std::cout << "Unable to detect face in image" << std::endl;
+        return;
+    }
+
+    float yaw, pitch, roll;
+
+    // Time the head orientation
+    auto t1 = Clock::now();
+    for (size_t i = 0; i < numIterations; ++i) {
+        tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, yaw, pitch, roll);
+    }
+    auto t2 = Clock::now();
+    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+    std::cout << "Average time head orientation: " << totalTime / numIterations
+              << " ms | " << numIterations << " iterations" << std::endl;
+
+
+}
+
+void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.smallestFaceHeight = 40;
+
+    // Since we initialize the module, we do not need to discard the first inference time.
+    InitializeModule initializeModule;
+    initializeModule.faceDetector = true;
+    options.initializeModule = initializeModule;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Load the image
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not load the image" << std::endl;
+        return;
+    }
+
+    FaceBoxAndLandmarks faceBoxAndLandmarks;
+    bool found = false;
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+    if (errorCode != ErrorCode::NO_ERROR || !found) {
+        std::cout << "Unable to detect face in image" << std::endl;
+        return;
+    }
+
+    MaskLabel maskLabel;
+
+    // Time the mask detector
+    auto t1 = Clock::now();
+    for (size_t i = 0; i < numIterations; ++i) {
+        tfSdk.detectMask(img, faceBoxAndLandmarks, maskLabel);
+    }
+    auto t2 = Clock::now();
+    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+    std::cout << "Average time mask detection: " << totalTime / numIterations
+              << " ms | " << numIterations << " iterations" << std::endl;
+
+}
+
 void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
@@ -247,11 +408,10 @@ void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleO
         return;
     }
 
-    // Discard first inference speed
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found = false;
 
-    // Time the creation of the feature vector
+    // Time the face detection
     auto t1 = Clock::now();
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
