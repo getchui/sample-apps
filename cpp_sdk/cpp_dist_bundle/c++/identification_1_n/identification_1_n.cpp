@@ -125,7 +125,7 @@ int main() {
     bool found;
 
     // TODO: Select a threshold for your application using the ROC curves
-    // https://docs.trueface.ai/ROC-Curves-d47d2730cf0a44afacb39aae0ed1b45a
+    // https://docs.trueface.ai/roc-curves
     const float threshold = 0.4;
     retcode = tfSdk.identifyTopCandidate(probeFaceprint, candidate, found, threshold);
 

@@ -22,13 +22,13 @@ These sample apps extend the scope of the sample code and demonstrate more compl
 
 ## Benchmarks
 To run speed benchmarks, navigate to `benchmarks/` and consult the readme file.
-You can find our benchmarks [here](https://docs.trueface.ai/Benchmarks-0b648f5a0cb84badb6425a12697a15e5).
+You can find our benchmarks [here](https://docs.trueface.ai/benchmarks).
 
 ## Minimum & Recommended Hardware Requirements
-Minimum and recommended hardware requirements can be found here [here](https://docs.trueface.ai/Minimum-Recommended-Hardware-Requirements-d7b68458c45b4711b55d013f87d6fbd9).
+Minimum and recommended hardware requirements can be found here [here](https://docs.trueface.ai/minimum-recommended-hardware-requirements).
 
 ## ROC Curves
-ROC curves are useful when choosing an operating threshold for face recognition applications. You can find the ROC curves [here](https://docs.trueface.ai/ROC-Curves-d47d2730cf0a44afacb39aae0ed1b45a).
+ROC curves are useful when choosing an operating threshold for face recognition applications. You can find the ROC curves [here](https://docs.trueface.ai/roc-curves).
 
 ## FAQ
 A list of frequently asked questions with answers can be found [here](https://reference.trueface.ai/cpp/master/latest/faq.html)

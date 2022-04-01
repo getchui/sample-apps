@@ -2,12 +2,12 @@
 
 ## Overview
 This sample app demonstrates how to build a simple frontend app which connects to the Trueface Temperature Detection and Access Control application.
-To learn more, please visit: https://docs.trueface.ai/access-control 
+To learn more, please visit: https://docs.trueface.ai/elevated-body-temperature-access-control 
 
 ## API Documentation
-[Documentation](https://docs.trueface.ai/ebt-docs)
+[Documentation](https://docs.trueface.ai/elevated-body-temperature-access-control/ebt-installation-guide-getting-started-and-developer-api-v2)
 
-[Postman Collection](https://docs.trueface.ai/ebt-postman)
+[Postman Collection](https://docs.trueface.ai/elevated-body-temperature-access-control/ebt-postman-collection)
 
 
 

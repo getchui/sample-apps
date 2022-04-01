@@ -32,7 +32,7 @@ void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin,
 
 int main() {
     // TODO: Select a threshold for your application using the ROC curves
-    // https://docs.trueface.ai/ROC-Curves-d47d2730cf0a44afacb39aae0ed1b45a
+    // https://docs.trueface.ai/roc-curves
     const float threshold = 0.3;
 
     // Start by specifying the configuration options to be used.

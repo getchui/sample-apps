@@ -5,9 +5,9 @@ The two sample apps in this directory demonstrate how to send alerts when the de
 The apps also use facial recognition to ensure we only send one notification per identity with elevated temperature.
 
 ## API Documentation
-[Documentation](https://docs.trueface.ai/ebt-docs)
+[Documentation](https://docs.trueface.ai/elevated-body-temperature-access-control/ebt-installation-guide-getting-started-and-developer-api-v2)
 
-[Postman Collection](https://docs.trueface.ai/ebt-postman)
+[Postman Collection](https://docs.trueface.ai/elevated-body-temperature-access-control/ebt-postman-collection)
 
 ## Prerequisites - Common
 - You will need to have the EBT application running on your camera.
