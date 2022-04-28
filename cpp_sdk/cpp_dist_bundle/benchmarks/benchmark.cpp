@@ -116,12 +116,12 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
     bool found;
     tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
 
-    uint8_t faceBuffer[112*112*3];
-    tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, faceBuffer);
+    TFFacechip facechip;
+    tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
 
-    std::vector<uint8_t*> alignedFaceImages;
+    std::vector<TFFacechip> facechips;
     for (size_t i = 0; i < batchSize; ++i) {
-        alignedFaceImages.push_back(faceBuffer);
+        facechips.push_back(facechip);
     }
 
     std::vector<Faceprint> faceprints;
@@ -129,7 +129,7 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
     // Time the creation of the feature vector
     auto t1 = Clock::now();
     for (size_t i = 0; i < numIterations; ++i) {
-        tfSdk.getFaceFeatureVectors(alignedFaceImages, faceprints);
+        tfSdk.getFaceFeatureVectors(facechips, faceprints);
     }
     auto t2 = Clock::now();
     double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
