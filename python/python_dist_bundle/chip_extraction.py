@@ -78,15 +78,11 @@ found, face_bounding_box = sdk.detect_largest_face(img)
 if found:
     res, face = sdk.extract_aligned_face(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
-    print(f"{Fore.RED}Unable to extract face chip{Style.RESET_ALL}")
-    quit()
+        print(f"{Fore.RED}Unable to extract face chip{Style.RESET_ALL}")
+        quit()
 
-    # the extracted image is the RGB color format
-    # opencv expects BGR
-    face_bgr = cv2.cvtColor(face, cv2.COLOR_RGB2BGR)
-    cv2.imshow('Aligned face chip', face_bgr)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # Save the chip to disk
+    face.save_image("facechip.jpg")
 else:
     print("No face detected in image")
 
