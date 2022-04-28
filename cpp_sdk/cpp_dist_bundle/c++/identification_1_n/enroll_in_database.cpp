@@ -143,8 +143,8 @@ int main() {
         }
 
         // Get the aligned face chip so that we can compute the image quality
-        uint8_t alignedImage[37632];
-        errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, alignedImage);
+        TFFacechip facechip;
+        errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error extracting the aligned face\n";
             std::cout << errorCode << std::endl;
@@ -152,7 +152,7 @@ int main() {
         }
 
         float quality;
-        errorCode = tfSdk.estimateFaceImageQuality(alignedImage, quality);
+        errorCode = tfSdk.estimateFaceImageQuality(facechip, quality);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute image quality\n";
             std::cout << errorCode << std::endl;
@@ -209,7 +209,7 @@ int main() {
 
         // Generate the enrollment template
         Faceprint enrollmentFaceprint;
-        errorCode = tfSdk.getFaceFeatureVector(alignedImage, enrollmentFaceprint);
+        errorCode = tfSdk.getFaceFeatureVector(facechip, enrollmentFaceprint);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Error: Unable to generate template\n";
             std::cout << errorCode << std::endl;

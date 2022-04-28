@@ -13,7 +13,7 @@ project(sample_apps DESCRIPTION "Trueface SDK C++ Sample Apps" LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 # Enable all compiler warnings, use highest level of optimization, build in release mode
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Ofast -DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Ofast -DNDEBUG -Wno-deprecated-declarations")
 
 if (NOT APPLE)
     # Require OpenMP for Linux and Windows builds
