@@ -76,7 +76,10 @@ found, face_bounding_box = sdk.detect_largest_face(img)
 
 
 if found:
-    face = sdk.extract_aligned_face(img, face_bounding_box)
+    res, face = sdk.extract_aligned_face(img, face_bounding_box)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+    print(f"{Fore.RED}Unable to extract face chip{Style.RESET_ALL}")
+    quit()
 
     # the extracted image is the RGB color format
     # opencv expects BGR
@@ -122,4 +125,4 @@ p5.y = 397.987305
 
 fb.landmarks = [p1, p2, p3, p4, p5]
 
-face = sdk.extract_aligned_face(img, fb)
+res, face = sdk.extract_aligned_face(img, fb)

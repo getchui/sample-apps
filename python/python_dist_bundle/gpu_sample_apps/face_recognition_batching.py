@@ -100,7 +100,11 @@ for image in images:
         quit()
         
 
-    face_chip = sdk.extract_aligned_face(img, face_bounding_box)
+    res, face_chip = sdk.extract_aligned_face(img, face_bounding_box)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}Unable to extract aligned face{Style.RESET_ALL}")
+        quit()
+
     face_chips.append(face_chip)    
 
 

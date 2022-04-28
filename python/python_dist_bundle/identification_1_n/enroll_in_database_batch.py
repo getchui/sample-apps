@@ -166,7 +166,10 @@ for path, identity in image_identities:
         continue
 
     # Get the aligned chip so we can compute the image quality
-    face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+    res, face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}Unable to extract face chip{Style.RESET_ALL}")
+        quit()
 
     # We can check the orientation of the head and ensure that it is facing forward
     # To see the effect of yaw and pitch on match score, refer to: https://reference.trueface.ai/cpp/dev/latest/py/face.html#tfsdk.SDK.estimate_head_orientation
