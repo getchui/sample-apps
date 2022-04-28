@@ -5,7 +5,7 @@ project(
         LANGUAGES CXX
         )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Ofast")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Ofast -Wno-deprecated-declarations")
 # Require OpenMP for Linux and windows builds
 if (UNIX AND NOT APPLE OR WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")

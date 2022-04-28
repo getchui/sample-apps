@@ -67,9 +67,8 @@ int main() {
         return 1;
     }
 
-    // Allocate a buffer to hold the face chips
-    std::vector<uint8_t*> vecFaceChips;
-    uint8_t faceChips[3][112][112][3];
+    // Create vector to store the face chips
+    std::vector<TFFacechip> facechips;
 
     // Run face detection on the 3 images in serial, then add the face chips the vector which we allocated.
     for (int i=0; i<3; i++) {
@@ -94,19 +93,21 @@ int main() {
             return 1;
         }
 
-        errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, &(faceChips[i][0][0][0]));
+        TFFacechip facechip;
+        errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to extract aligned face chip" << std::endl;
             std::cout << errorCode << std::endl;
             return 1;
         }
-        vecFaceChips.push_back(&(faceChips[i][0][0][0]));
+
+        facechips.push_back(facechip);
     }
 
     // Generate face recognition templates for those 3 face chips in batch.
     // Batch template generation increases throughput.
     std::vector<Faceprint> faceprints;
-    auto res = tfSdk.getFaceFeatureVectors(vecFaceChips, faceprints);
+    auto res = tfSdk.getFaceFeatureVectors(facechips, faceprints);
     if (res != ErrorCode::NO_ERROR) {
         std::cout << "Unable to generate face feature vectors" << std::endl;
         return 1;

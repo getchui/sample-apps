@@ -80,7 +80,7 @@ int main() {
             "../../images/brad_pitt_2.jpg"
     };
 
-    std::vector<cv::cuda::GpuMat> alignedFaceImages;
+    std::vector<TFFacechip> facechips;
 
     for (const auto& imagePath: imagePaths) {
         // using opencv to load the image in vram
@@ -112,25 +112,19 @@ int main() {
             return -1;
         }
 
-        cv::cuda::GpuMat chipGpu(1, 112*112, CV_8UC3);
-        errorCode = tfSdk.extractAlignedFace(gpuImg, fb, chipGpu.data);
+        TFFacechip facechip;
+        errorCode = tfSdk.extractAlignedFace(gpuImg, fb, facechip);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to extract aligned face" << std::endl;
             return 1;
         }
 
-        alignedFaceImages.push_back(chipGpu);
-    }
-
-    // Extract the feature vectors in batch
-    std::vector<uint8_t*> alignedFaceChips;
-    for (const auto& faceImage: alignedFaceImages) {
-        alignedFaceChips.push_back(faceImage.data);
+        facechips.push_back(facechip);
     }
 
     std::vector<Faceprint> faceprints;
 
-    auto errorcode = tfSdk.getFaceFeatureVectors(alignedFaceChips, faceprints);
+    auto errorcode = tfSdk.getFaceFeatureVectors(facechips, faceprints);
     if (errorcode != ErrorCode::NO_ERROR) {
         std::cout << errorcode << std::endl;
         return -1;
