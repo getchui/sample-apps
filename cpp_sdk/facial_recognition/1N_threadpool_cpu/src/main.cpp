@@ -252,8 +252,8 @@ private:
             // For each detected face, extract the aligned face chip, add to the face chip queue
             // Each face chip is 112x112 pixels in size, so we must allocate 112x112x3 bytes
             for (const auto& fb: faceBoxAndLandmarks) {
-                std::vector<uint8_t> faceImage (112*112*3);
-                retcode = m_sdkPtr->extractAlignedFace(img, fb, faceImage.data());
+                TFFacechip facechip;
+                retcode = m_sdkPtr->extractAlignedFace(img, fb, facechip);
 
                 if (retcode != ErrorCode::NO_ERROR) {
                     std::cout << "Thread " << std::this_thread::get_id() << ": Error extracting aligned face" << std::endl;
@@ -263,7 +263,7 @@ private:
                 // Push the face image into our queue and indicate that work is ready
                 {
                     std::lock_guard<std::mutex> lock(m_faceChipQueueMtx);
-                    m_faceChipQueue.push(std::move(faceImage));
+                    m_faceChipQueue.push(facechip);
                 }
                 m_faceChipQueueCondVar.notify_one();
             }
@@ -276,7 +276,7 @@ private:
     void extractAndEnqueueTemplate() {
         // Main loop
         while (m_run) {
-            std::vector<uint8_t> faceImage;
+            TFFacechip facechip;
             // wait for work
             {
                 std::unique_lock<std::mutex> lock(m_faceChipQueueMtx);
@@ -287,13 +287,13 @@ private:
                     break;
                 }
 
-                faceImage = std::move(m_faceChipQueue.front());
+                facechip = std::move(m_faceChipQueue.front());
                 m_faceChipQueue.pop();
             }
 
             // Generate a face recognition template from the face image
             Faceprint faceprint;
-            auto retcode = m_sdkPtr->getFaceFeatureVector(faceImage.data(), faceprint);
+            auto retcode = m_sdkPtr->getFaceFeatureVector(facechip, faceprint);
             if (retcode != ErrorCode::NO_ERROR) {
                 std::cout << "Thread " << std::this_thread::get_id() << ": Unable to generate feature vector" << std::endl;
                 continue;
@@ -379,7 +379,7 @@ private:
 
     // Shared queues and their mutexes
     std::queue<TFImage> m_imageQueue;
-    std::queue<std::vector<uint8_t>> m_faceChipQueue;
+    std::queue<TFFacechip> m_faceChipQueue;
     std::queue<Faceprint> m_faceprintQueue;
 
     std::mutex m_imageQueueMtx;
