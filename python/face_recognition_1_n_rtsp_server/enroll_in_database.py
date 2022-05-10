@@ -74,12 +74,8 @@ for path, identity in image_identities:
         continue
 
     # Get the aligned chip so we can compute the image quality
-    res, face = sdk.extract_aligned_face(faceBoxAndLandmarks)
-    if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print("Unable to extract algined face")
-        continue
-
-
+    face = sdk.extract_aligned_face(faceBoxAndLandmarks)
+    
     # Compute the image quality score
     res, quality = sdk.estimate_face_image_quality(face)
     if (res != tfsdk.ERRORCODE.NO_ERROR):

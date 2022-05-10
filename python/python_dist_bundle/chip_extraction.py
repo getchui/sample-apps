@@ -76,11 +76,8 @@ found, face_bounding_box = sdk.detect_largest_face(img)
 
 
 if found:
-    res, face = sdk.extract_aligned_face(img, face_bounding_box)
-    if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}Unable to extract face chip{Style.RESET_ALL}")
-        quit()
-
+    face = sdk.extract_aligned_face(img, face_bounding_box)
+    
     # Save the chip to disk
     face.save_image("facechip.jpg")
 else:
@@ -121,4 +118,4 @@ p5.y = 397.987305
 
 fb.landmarks = [p1, p2, p3, p4, p5]
 
-res, face = sdk.extract_aligned_face(img, fb)
+face = sdk.extract_aligned_face(img, fb)

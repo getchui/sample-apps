@@ -143,11 +143,7 @@ for path in image_paths:
         continue
 
     # Get the aligned chip
-    res, face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
-    if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}Unable to extract face chip{Style.RESET_ALL}")
-        quit()
-
+    face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
 
     # Add the face chip to our array for processing
     face_chips.append(face)
