@@ -13,6 +13,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^7.1.0"
+    "concurrently": "^7.2.1"
   }
 }
