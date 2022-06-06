@@ -107,7 +107,7 @@ int main() {
     }
 
     // Load the fake image
-    errorCode = tfSdk.preprocessImage("../../images/fake.jpg", img);
+    errorCode = tfSdk.preprocessImage("../../images/spoof.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << errorCode << std::endl;
         return 1;
