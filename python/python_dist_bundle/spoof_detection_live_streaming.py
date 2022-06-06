@@ -48,7 +48,6 @@ options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 options.smallest_face_height = 40 
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
-print(options.models_path)
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
 options.fr_vector_compression = False
 # Database management system for the storage of biometric templates for 1 to N identification.
@@ -117,21 +116,22 @@ while(True):
     # Detect the largest face in the image
     found, fb = sdk.detect_largest_face(img)
     if found == True:
+        draw_rectangle(frame, fb, (255, 255, 255))
 
         ret, label, score = sdk.detect_spoof(img, fb)
         if ret != tfsdk.ERRORCODE.NO_ERROR:
-            print(ret)
-            # TODO Cyrus: Display the error code on the screen here
+            draw_label(frame, (0, 30), ret.name, (255, 0, 0))
 
         else:
             if label == tfsdk.SPOOFLABEL.REAL:
-                print("REAL")
-                # TODO Cyrus: Display label
-            else:
-                print("Fake")
-                # TODO Cyrus: Display Label
-        
+                label = "Real: {:.2f}".format(score)
+                draw_label(frame, (0, 30), label, (0, 255, 0))
 
+            else:
+                label = "Fake: {:.2f}".format(score)
+                draw_label(frame, (0, 30), label, (0, 0, 255))
+
+    
     # TODO Cyrus: Draw the ovals of the screen
 
     # Display the resulting frame
