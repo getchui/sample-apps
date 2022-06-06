@@ -54,8 +54,8 @@ Any sample app ending in `_live_streaming.py` requires you to have a camera (phy
   You can find a more involved sample app [here](https://github.com/getchui/sample-apps/tree/master/python/active_spoof_frontend_app).
 
 ### Spoof Detection
-- `detect_spoof.py` demonstrates how to run spoof detection on an image. 
-  Spoof is detected when a user is trying to impersonate an identity, for example by holding a phone with a face image up to the camera.
+- `spoof_detection_live_streaming.py` demonstrates how to run spoof detection on a video feed. 
+  Spoof is detected when a user is trying to impersonate an identity, for example by holding a phone with a face image up to the camera. The input image must meet strict criteria in order for it to pass the spoof test. 
 
 ### Face Recognition - 1 to 1 Identification
 - `face_recognition.py` demonstrates the usage of our face recognition API for 1 to 1 matching. 
