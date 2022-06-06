@@ -23,7 +23,7 @@ options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
 options.smallest_face_height = 40 
 # The path specifying the directory containing the model files which were downloaded.
-options.models_path = "./"
+options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
 options.fr_vector_compression = False
 # Database management system for the storage of biometric templates for 1 to N identification.
