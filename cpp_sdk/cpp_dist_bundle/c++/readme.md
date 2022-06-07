@@ -7,7 +7,8 @@ If you are are using the GPU SDK, be sure to read [this guide](https://reference
 
 
 ## Build Instructions
-Open the `CMakeLists.txt` file and edit this line here: `add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")`.
+Export your Trueface token to your environment as `TRUEFACE_TOKEN`. 
+Alternatively, open the `CMakeLists.txt` file and edit this line here: `add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")`.
 Replace `YOUR_TOKEN_HERE` with the license token you were provided with. If you have not yet received a token, contact sales@trueface.ai. 
 This will insert your token into all the sample apps. Alternatively, you can edit each individual sample app and enter your token manually. 
 

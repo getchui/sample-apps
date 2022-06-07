@@ -43,8 +43,13 @@ if (CMAKE_CROSSCOMPILING)
     list(APPEND LINKER_LIBS ${CMAKE_DL_LIBS})
 endif()
 
-add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")
-
+# Check if token has been defined as environment variable
+if(DEFINED ENV{TRUEFACE_TOKEN})
+    add_definitions(-DTRUEFACE_TOKEN="$ENV{TRUEFACE_TOKEN}")
+else()
+    # TODO: Either define token as environment variable, or need to manually enter below
+    add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")
+endif()
 # Face Recognition 1 to 1
 add_executable(face_recognition_1_1 face_recognition_1_1.cpp)
 target_link_libraries(face_recognition_1_1 ${LINKER_LIBS})
