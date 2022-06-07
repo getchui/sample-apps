@@ -19,6 +19,12 @@ int main() {
     options.frModel = FacialRecognitionModel::TFV5;
     options.dbms = DatabaseManagementSystem::NONE;
 
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
+
     // TODO modify the following option to test with / without vector compression
     options.frVectorCompression = true;
 

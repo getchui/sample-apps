@@ -87,6 +87,11 @@ std::string getModelName(FacialRecognitionModel model) {
 void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUModuleOptions& gpuOptions, unsigned int batchSize, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
     options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
     options.frModel = model;
 
@@ -142,6 +147,11 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
 void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK with the fast object detection model
     ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
     options.objModel = ObjectDetectionModel::FAST;
 
     // Since we initialize the module, we do not need to discard the first inference time.
@@ -184,6 +194,11 @@ void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions
 void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
     options.gpuOptions = gpuOptions.enableGPU;
 
     SDK tfSdk(options);
@@ -229,6 +244,11 @@ void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions
 void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
     options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
@@ -281,6 +301,11 @@ void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUMod
 void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
     options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
@@ -333,6 +358,11 @@ void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions
 void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
     options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
@@ -384,6 +414,11 @@ void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& 
 void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
     options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
