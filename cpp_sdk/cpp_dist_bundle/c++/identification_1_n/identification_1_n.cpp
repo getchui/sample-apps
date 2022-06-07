@@ -27,6 +27,10 @@ int main() {
     options.smallestFaceHeight = 40;
     // The path specifying the directory where the model files have been downloaded
     options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
     // Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
     options.frVectorCompression = false;
     // Database management system for storage of biometric templates for 1 to N identification.
