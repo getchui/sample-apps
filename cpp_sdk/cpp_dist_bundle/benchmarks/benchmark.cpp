@@ -20,10 +20,11 @@ void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleO
 void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkBlinkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkSpoofDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 200);
 
 int main() {
-    // TODO: Replace with your license
     const std::string license = TRUEFACE_TOKEN;
     std::cout << "Running speed benchmarks with 1280x720 image\n";
 
@@ -48,6 +49,8 @@ int main() {
     benchmarkFaceLandmarkDetection(license, gpuOptions);
     benchmarkDetailedLandmarkDetection(license, gpuOptions);
     benchmarkMaskDetection(license, gpuOptions);
+    benchmarkBlinkDetection(license, gpuOptions);
+    benchmarkSpoofDetection(license, gpuOptions);
     benchmarkHeadOrientation(license, gpuOptions);
 
     if (!gpuOptions.enableGPU) {
@@ -407,6 +410,128 @@ void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& 
     double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
     std::cout << "Average time mask detection: " << totalTime / numIterations
+              << " ms | " << numIterations << " iterations" << std::endl;
+
+}
+
+void benchmarkBlinkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
+    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.smallestFaceHeight = 40;
+
+    // Since we initialize the module, we do not need to discard the first inference time.
+    InitializeModule initializeModule;
+    initializeModule.faceDetector = true;
+    initializeModule.liveness = true;
+    options.initializeModule = initializeModule;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Load the image
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not load the image" << std::endl;
+        return;
+    }
+
+    FaceBoxAndLandmarks faceBoxAndLandmarks;
+    bool found = false;
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+    if (errorCode != ErrorCode::NO_ERROR || !found) {
+        std::cout << "Unable to detect face in image" << std::endl;
+        return;
+    }
+
+    BlinkState blinkstate;
+
+    // Time the blink detector
+    auto t1 = Clock::now();
+    for (size_t i = 0; i < numIterations; ++i) {
+        tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
+    }
+    auto t2 = Clock::now();
+    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+    std::cout << "Average time blink detection: " << totalTime / numIterations
+              << " ms | " << numIterations << " iterations" << std::endl;
+
+}
+
+void benchmarkSpoofDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
+    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.smallestFaceHeight = 40;
+
+    // Since we initialize the module, we do not need to discard the first inference time.
+    InitializeModule initializeModule;
+    initializeModule.faceDetector = true;
+    initializeModule.passiveSpoof = true;
+    options.initializeModule = initializeModule;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Load the image
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not load the image" << std::endl;
+        return;
+    }
+
+    FaceBoxAndLandmarks faceBoxAndLandmarks;
+    bool found = false;
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+    if (errorCode != ErrorCode::NO_ERROR || !found) {
+        std::cout << "Unable to detect face in image" << std::endl;
+        return;
+    }
+
+    float spoofScore;
+    SpoofLabel label;
+
+    errorCode = tfSdk.detectSpoof(img, faceBoxAndLandmarks, label, spoofScore);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Spoof function failed" << std::endl;
+        std::cout << errorCode << std::endl;
+        return;
+    }
+
+    // Time the spoof detector
+    auto t1 = Clock::now();
+    for (size_t i = 0; i < numIterations; ++i) {
+        tfSdk.detectSpoof(img, faceBoxAndLandmarks, label, spoofScore);
+    }
+    auto t2 = Clock::now();
+    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+    std::cout << "Average time spoof detection: " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
 
 }

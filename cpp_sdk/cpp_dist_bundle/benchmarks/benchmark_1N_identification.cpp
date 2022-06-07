@@ -12,7 +12,6 @@ typedef std::chrono::high_resolution_clock Clock;
 using namespace Trueface;
 
 int main() {
-    // TODO: Replace with your license
     const std::string license = TRUEFACE_TOKEN;
 
     ConfigurationOptions options;
