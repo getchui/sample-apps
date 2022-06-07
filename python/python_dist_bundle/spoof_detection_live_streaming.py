@@ -24,9 +24,12 @@ def draw_label(image, point, label, color,
         image, label.capitalize(), (x_label, y_label - 5), font, font_scale,
         (0, 0, 0), thickness, cv2.LINE_AA)
 
+def draw_rectangle(frame, start_point, end_point, color):
 
-def draw_rectangle(frame, bounding_box, color):
+    # Draw the rectangle on the frame
+    cv2.rectangle(frame, start_point, end_point, color, 3)
 
+def draw_rectangle_fb(frame, bounding_box, color):
     # Draw the rectangle on the frame
     cv2.rectangle(frame,
                   (int(bounding_box.top_left.x), int(bounding_box.top_left.y)),
@@ -116,7 +119,7 @@ while(True):
     # Detect the largest face in the image
     found, fb = sdk.detect_largest_face(img)
     if found == True:
-        draw_rectangle(frame, fb, (255, 255, 255))
+        draw_rectangle_fb(frame, fb, (255, 255, 255))
 
         ret, label, score = sdk.detect_spoof(img, fb)
         if ret != tfsdk.ERRORCODE.NO_ERROR:
@@ -133,6 +136,32 @@ while(True):
 
     
     # TODO Cyrus: Draw the ovals of the screen
+    # Compute the rectangle
+    img_height = img.get_height()
+    img_width = img.get_width()
+
+    c_x = img_width / 2
+    c_y = img_height / 2 
+
+    y_offset = img_height * 0.55 * 2.0 / 3.0
+    x_offset = img_height * 0.55 * 0.5
+
+    y1 = c_y - y_offset
+    y2 = c_y + y_offset
+
+    # If image is in landscape mode, then we are more permissive for horizontal centering of face
+    if img_height < (4.0 / 3.0 * img_width):
+        new_width = img_height * 3.0 / 4.0
+        x1 = new_width / 2 - x_offset
+        x2 = img_width - x1
+    else:
+        x1 = c_x - x_offset
+        x2 = c_x + x_offset
+
+
+    draw_rectangle(frame, (int(x1), int(y1)), 
+        (int(x2), int(y2)), (255, 255, 0))
+
 
     # Display the resulting frame
     cv2.imshow('frame', frame)
