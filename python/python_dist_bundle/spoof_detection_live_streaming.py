@@ -96,6 +96,9 @@ if (is_valid == False):
     quit()
 
 
+print("Face must be located within cyan rectangle")
+print("Face size must be between two yellow rectangles")
+
 # Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
 cap = cv2.VideoCapture(0)
 if (cap.isOpened()== False): 
@@ -109,6 +112,8 @@ while(True):
     ret, frame = cap.read()
     if ret == False:
         continue
+
+    # frame = frame[0: 480, 0: 270].copy() # TODO Cyrus: Remove this
 
     # Set the image using the frame buffer. OpenCV stores images in BGR format
     res, img = sdk.preprocess_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
@@ -135,8 +140,7 @@ while(True):
                 draw_label(frame, (0, 30), label, (0, 0, 255))
 
     
-    # TODO Cyrus: Draw the ovals of the screen
-    # Compute the rectangle
+    # Face must be within the cyan rectangle
     img_height = img.get_height()
     img_width = img.get_width()
 
@@ -158,10 +162,29 @@ while(True):
         x1 = c_x - x_offset
         x2 = c_x + x_offset
 
-
     draw_rectangle(frame, (int(x1), int(y1)), 
         (int(x2), int(y2)), (255, 255, 0))
 
+
+    # Compute the smallest and largest face size, and draw yellow rectangles
+    smallest_height = img_height * 0.325
+    largest_height =  img_height * 0.55
+
+    x1_smallest = c_x - smallest_height / 3
+    x2_smallest = c_x + smallest_height / 3
+    y1_smallest = c_y - smallest_height / 2
+    y2_smallest = c_y + smallest_height / 2
+
+    x1_largest = c_x - largest_height / 3
+    x2_largest = c_x + largest_height / 3
+    y1_largest = c_y - largest_height / 2
+    y2_largest = c_y + largest_height / 2
+    
+    draw_rectangle(frame, (int(x1_smallest), int(y1_smallest)), 
+        (int(x2_smallest), int(y2_smallest)), (0, 255, 255))
+
+    draw_rectangle(frame, (int(x1_largest), int(y1_largest)), 
+        (int(x2_largest), int(y2_largest)), (0, 255, 255))
 
     # Display the resulting frame
     cv2.imshow('frame', frame)
