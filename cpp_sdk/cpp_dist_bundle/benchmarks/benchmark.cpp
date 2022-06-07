@@ -24,7 +24,7 @@ void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions
 
 int main() {
     // TODO: Replace with your license
-    const std::string license = "${LICENSE_CODE}";
+    const std::string license = TRUEFACE_TOKEN;
     std::cout << "Running speed benchmarks with 1280x720 image\n";
 
     GPUModuleOptions gpuOptions;

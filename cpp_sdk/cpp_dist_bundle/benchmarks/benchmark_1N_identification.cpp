@@ -13,7 +13,7 @@ using namespace Trueface;
 
 int main() {
     // TODO: Replace with your license
-    const std::string license = "${LICENSE_CODE}";
+    const std::string license = TRUEFACE_TOKEN;
 
     ConfigurationOptions options;
     options.frModel = FacialRecognitionModel::TFV5;
