@@ -413,7 +413,7 @@ int main() {
     signal(SIGTERM, sigstop);
 
     // TODO: Replace with your license token
-    const std::string token = "<LICENSE_CODE>";
+    const std::string token = TRUEFACE_TOKEN;
 
     // TODO: Fill out your database connection string and collection name
     // Should point to an existing collection that you have already filled with enrollment templates.

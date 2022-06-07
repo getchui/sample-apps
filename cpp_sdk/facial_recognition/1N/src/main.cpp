@@ -147,7 +147,7 @@ int main() {
     SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
-    auto isValid = tfSdk.setLicense("<LICENSE_CODE>");
+    auto isValid = tfSdk.setLicense(TRUEFACE_TOKEN);
     if (!isValid) {
         std::cout << "Error: the provided license is invalid\n";
         return -1;

@@ -5,6 +5,15 @@ project(
         LANGUAGES CXX
 )
 
+# Check if token has been defined as environment variable
+if(DEFINED ENV{TRUEFACE_TOKEN})
+    add_definitions(-DTRUEFACE_TOKEN="$ENV{TRUEFACE_TOKEN}")
+else()
+    # TODO: Either define token as environment variable, or need to manually enter below
+    add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")
+endif()
+
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Ofast -ffast-math")
 if (UNIX AND NOT APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")

@@ -22,7 +22,9 @@ Must have OpenCV installed with the `Video I/O` module built.
 ### Build Instructions
 * Place Trueface header files in `../../trueface_sdk/include/` and trueface libraries in `../../trueface_sdk/lib/`
 * Download the appropriate face recognition model using the download scripts which come bundled with the SDK. 
-* replace `<LICENSE_CODE>` with your license code in `src/main.cpp`
+* Export your Trueface token to your environment as `TRUEFACE_TOKEN`.
+  Alternatively, open the `CMakeLists.txt` file and edit this line here: `add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")`.
+  Replace `YOUR_TOKEN_HERE` with the license token you were provided with. If you have not yet received a token, contact sales@trueface.ai.
 * `mkdir build && cd build`
 * `cmake ..`
 * `make`
