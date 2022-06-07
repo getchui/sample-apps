@@ -113,8 +113,6 @@ while(True):
     if ret == False:
         continue
 
-    # frame = frame[0: 480, 0: 270].copy() # TODO Cyrus: Remove this
-
     # Set the image using the frame buffer. OpenCV stores images in BGR format
     res, img = sdk.preprocess_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
