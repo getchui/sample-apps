@@ -24,10 +24,10 @@ def draw_label(image, point, label, color,
         image, label.capitalize(), (x_label, y_label - 5), font, font_scale,
         (0, 0, 0), thickness, cv2.LINE_AA)
 
-def draw_rectangle(frame, start_point, end_point, color):
+def draw_rectangle(frame, start_point, end_point, color, width = 3):
 
     # Draw the rectangle on the frame
-    cv2.rectangle(frame, start_point, end_point, color, 3)
+    cv2.rectangle(frame, start_point, end_point, color, width)
 
 def draw_rectangle_fb(frame, bounding_box, color):
     # Draw the rectangle on the frame
@@ -179,10 +179,10 @@ while(True):
     y2_largest = c_y + largest_height / 2
     
     draw_rectangle(frame, (int(x1_smallest), int(y1_smallest)), 
-        (int(x2_smallest), int(y2_smallest)), (0, 255, 255))
+        (int(x2_smallest), int(y2_smallest)), (0, 255, 255), 1)
 
     draw_rectangle(frame, (int(x1_largest), int(y1_largest)), 
-        (int(x2_largest), int(y2_largest)), (0, 255, 255))
+        (int(x2_largest), int(y2_largest)), (0, 255, 255), 1)
 
     # Display the resulting frame
     cv2.imshow('frame', frame)
