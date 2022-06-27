@@ -14,27 +14,34 @@ using namespace Trueface;
 
 typedef std::chrono::high_resolution_clock Clock;
 
-void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUModuleOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
-void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkBlinkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkSpoofDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations = 200);
+void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
+void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
 
 int main() {
     const std::string license = TRUEFACE_TOKEN;
     std::cout << "Running speed benchmarks with 1280x720 image\n";
 
-    GPUModuleOptions gpuOptions;
-    gpuOptions.enableGPU = false; // TODO set this to true to benchmark on GPU
-    gpuOptions.precision = Precision::FP16;
+    GPUOptions gpuOptions;
+    gpuOptions.enableGPU = true; // TODO set this to true to benchmark on GPU
+    gpuOptions.deviceIndex = 0;
+
+    GPUModuleOptions gpuModuleOptions;
+    gpuModuleOptions.precision = Precision::FP16;
 
     int32_t batchSize = 4;
-    gpuOptions.maxBatchSize = batchSize;
-    gpuOptions.optBatchSize = batchSize;
+    gpuModuleOptions.maxBatchSize = batchSize;
+    gpuModuleOptions.optBatchSize = batchSize;
+
+    gpuOptions.faceDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceRecognizerGPUOptions = gpuModuleOptions;
+    gpuOptions.maskDetectorGPUOptions = gpuModuleOptions;
 
     if (gpuOptions.enableGPU) {
         std::cout << "Using GPU for inference" << std::endl;
@@ -87,7 +94,7 @@ std::string getModelName(FacialRecognitionModel model) {
     }
 }
 
-void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUModuleOptions& gpuOptions, unsigned int batchSize, unsigned int numIterations) {
+void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUOptions& gpuOptions, unsigned int batchSize, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -95,7 +102,7 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
-    options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
+    options.gpuOptions = gpuOptions;
     options.frModel = model;
 
     // Since we initialize the module, we do not need to discard the first inference time.
@@ -147,7 +154,7 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
 
 }
 
-void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK with the fast object detection model
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -194,7 +201,7 @@ void benchmarkObjectDetection(const std::string& license, const GPUModuleOptions
 
 }
 
-void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -202,7 +209,7 @@ void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
-    options.gpuOptions = gpuOptions.enableGPU;
+    options.gpuOptions = gpuOptions;
 
     SDK tfSdk(options);
     bool valid = tfSdk.setLicense(license);
@@ -244,7 +251,7 @@ void benchmarkPreprocessImage(const std::string& license, const GPUModuleOptions
     totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
 }
 
-void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -252,7 +259,7 @@ void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUMod
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
-    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.gpuOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
@@ -301,7 +308,7 @@ void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUMod
 
 }
 
-void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -309,7 +316,7 @@ void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
-    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.gpuOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
@@ -358,7 +365,7 @@ void benchmarkHeadOrientation(const std::string& license, const GPUModuleOptions
 
 }
 
-void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -366,7 +373,7 @@ void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& 
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
-    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.gpuOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
@@ -414,7 +421,7 @@ void benchmarkMaskDetection(const std::string& license, const GPUModuleOptions& 
 
 }
 
-void benchmarkBlinkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -422,7 +429,7 @@ void benchmarkBlinkDetection(const std::string& license, const GPUModuleOptions&
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
-    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.gpuOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
@@ -471,7 +478,7 @@ void benchmarkBlinkDetection(const std::string& license, const GPUModuleOptions&
 
 }
 
-void benchmarkSpoofDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -479,7 +486,7 @@ void benchmarkSpoofDetection(const std::string& license, const GPUModuleOptions&
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
-    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.gpuOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
@@ -536,7 +543,7 @@ void benchmarkSpoofDetection(const std::string& license, const GPUModuleOptions&
 
 }
 
-void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -544,7 +551,7 @@ void benchmarkFaceLandmarkDetection(const std::string& license, const GPUModuleO
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
-    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.gpuOptions = gpuOptions;
     options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
