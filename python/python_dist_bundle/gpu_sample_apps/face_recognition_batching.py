@@ -49,17 +49,19 @@ options.initialize_module.face_recognizer = True
 
 # Options for enabling GPU
 # Note, you may require a specific GPU enabled token in order to enable GPU inference.
+options.GPU_options = True;
+options.GPU_options.device_index = 0
+
 gpuModuleOptions = tfsdk.GPUModuleOptions()
-gpuModuleOptions.enable_GPU = True 
 gpuModuleOptions.max_batch_size = batch_size
 gpuModuleOptions.opt_batch_size = batch_size
 gpuModuleOptions.max_workspace_size = 2000
-gpuModuleOptions.device_index = 0
 gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 
 # Note, you can set separate GPU options for each GPU supported module
 options.GPU_options.face_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
+options.GPU_options.face_detector_GPU_options = gpuModuleOptions
 
 # You can also enable GPU for all supported modules at once through the following syntax
 # options.GPU_options = True
@@ -100,7 +102,7 @@ for image in images:
         quit()
         
 
-    res, face_chip = sdk.extract_aligned_face(img, face_bounding_box)
+    face_chip = sdk.extract_aligned_face(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to extract aligned face{Style.RESET_ALL}")
         quit()
