@@ -51,19 +51,18 @@ int main() {
     // Options for enabling GPU
     // We will disable GPU inference, but you can easily enable it by modifying the following options
     // Note, you may require a specific GPU enabled token in order to enable GPU inference.
-    GPUModuleOptions gpuOptions;
-    gpuOptions.enableGPU = false; // TODO: Change this to true to enable GPU inference.
-    gpuOptions.maxBatchSize = 4;
-    gpuOptions.optBatchSize = 1;
-    gpuOptions.maxWorkspaceSizeMb = 2000;
-    gpuOptions.deviceIndex = 0;
-    gpuOptions.precision = Precision::FP16;
+    options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
+    options.gpuOptions.deviceIndex = 0;
 
-    options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
-    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    GPUModuleOptions moduleOptions;
+    moduleOptions.maxBatchSize = 4;
+    moduleOptions.optBatchSize = 1;
+    moduleOptions.maxWorkspaceSizeMb = 2000;
+    moduleOptions.precision = Precision::FP16;
 
-    // Alternatively, can also do the following to enable GPU inference for all supported modules:
-//    options.gpuOptions = true;
+    options.gpuOptions.faceRecognizerGPUOptions = moduleOptions;
+    options.gpuOptions.faceDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.maskDetectorGPUOptions = moduleOptions;
     
     SDK tfSdk(options);
 
