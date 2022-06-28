@@ -57,7 +57,7 @@ int main() {
     benchmarkDetailedLandmarkDetection(license, gpuOptions);
     benchmarkBlinkDetection(license, gpuOptions);
     benchmarkSpoofDetection(license, gpuOptions);
-    benchmarkMaskDetection(license, gpuOptions);
+    benchmarkMaskDetection(license, gpuOptions, 100 * multFactor);
     benchmarkHeadOrientation(license, gpuOptions);
 
     if (!gpuOptions.enableGPU) {
@@ -74,7 +74,7 @@ int main() {
     // On CPU, should be the same speed as a batch size of 1.
     // On GPU, will increase the throughput.
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5, gpuOptions, batchSize, 40 * multFactor);
-    benchmarkMaskDetection(license, gpuOptions, batchSize, 40 * multFactor);
+    benchmarkMaskDetection(license, gpuOptions, batchSize, 100 * multFactor);
 
     return 0;
 }
