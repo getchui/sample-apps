@@ -57,7 +57,7 @@ int main() {
     benchmarkDetailedLandmarkDetection(license, gpuOptions);
     benchmarkBlinkDetection(license, gpuOptions);
     benchmarkSpoofDetection(license, gpuOptions);
-    benchmarkMaskDetection(license, gpuOptions, 100 * multFactor);
+    benchmarkMaskDetection(license, gpuOptions, 1, 100 * multFactor);
     benchmarkHeadOrientation(license, gpuOptions);
 
     if (!gpuOptions.enableGPU) {
