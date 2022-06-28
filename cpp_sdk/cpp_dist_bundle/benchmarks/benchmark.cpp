@@ -19,7 +19,7 @@ void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuO
 void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
 void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
@@ -55,9 +55,9 @@ int main() {
     benchmarkPreprocessImage(license, gpuOptions, 200);
     benchmarkFaceLandmarkDetection(license, gpuOptions);
     benchmarkDetailedLandmarkDetection(license, gpuOptions);
-    benchmarkMaskDetection(license, gpuOptions);
     benchmarkBlinkDetection(license, gpuOptions);
     benchmarkSpoofDetection(license, gpuOptions);
+    benchmarkMaskDetection(license, gpuOptions);
     benchmarkHeadOrientation(license, gpuOptions);
 
     if (!gpuOptions.enableGPU) {
@@ -74,6 +74,7 @@ int main() {
     // On CPU, should be the same speed as a batch size of 1.
     // On GPU, will increase the throughput.
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5, gpuOptions, batchSize, 40 * multFactor);
+    benchmarkMaskDetection(license, gpuOptions, batchSize, 40 * multFactor);
 
     return 0;
 }
@@ -365,7 +366,7 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
 
 }
 
-void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int batchSize, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -406,18 +407,26 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
         return;
     }
 
-    MaskLabel maskLabel;
+    TFFacechip facechip;
+    tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
+
+    std::vector<TFFacechip> facechips;
+    for (size_t i = 0; i < batchSize; ++i) {
+        facechips.push_back(facechip);
+    }
+
+    std::vector<MaskLabel> maskLabels;
 
     // Time the mask detector
     auto t1 = Clock::now();
     for (size_t i = 0; i < numIterations; ++i) {
-        tfSdk.detectMask(img, faceBoxAndLandmarks, maskLabel);
+        tfSdk.detectMasks(facechips, maskLabels);
     }
     auto t2 = Clock::now();
     double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
-    std::cout << "Average time mask detection: " << totalTime / numIterations
-              << " ms | " << numIterations << " iterations" << std::endl;
+    std::cout << "Average time mask detection: " << totalTime / numIterations / static_cast<float>(batchSize)
+              << " ms | batch size = " << batchSize << " | " << numIterations << " iterations" << std::endl;
 
 }
 
