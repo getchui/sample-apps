@@ -29,7 +29,7 @@ int main() {
     std::cout << "Running speed benchmarks with 1280x720 image\n";
 
     GPUOptions gpuOptions;
-    gpuOptions.enableGPU = true; // TODO set this to true to benchmark on GPU
+    gpuOptions.enableGPU = false; // TODO set this to true to benchmark on GPU
     gpuOptions.deviceIndex = 0;
 
     GPUModuleOptions gpuModuleOptions;
@@ -514,7 +514,7 @@ void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOp
 
     // Load the image
     TFImage img;
-    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/real_spoof.jpg", img);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Error: could not load the image" << std::endl;
         return;
