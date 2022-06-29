@@ -84,7 +84,7 @@ Passing multiple frames in succession to the blink detector can be used to build
 - `detect_eyeglasses.cpp` demonstrates how to run eye glasses detection on an image. Glasses are detected when a user is wearing some type of glasses.
 
 ### GPU Sample Code - Batch Inference and VRam
-- `gpu_sample_apps/batch_fr_cuda.cpp` demonstrates how to generate face recognition templates in batch when using the GPU library.
+- `gpu_sample_apps/batch_fr_cuda.cpp` demonstrates how to generate face recognition templates and run mask detection in batch when using the GPU library.
 Batching is used to increase throughput on GPUs. 
 
 - `gpu_sample_apps/face_recognition_image_in_vram.cpp` demonstrates how the GPU SDK can be used to run face detection and face recognition with an image already loaded in the graphics card's memory.

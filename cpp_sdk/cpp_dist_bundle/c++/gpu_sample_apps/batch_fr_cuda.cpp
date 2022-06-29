@@ -57,6 +57,7 @@ int main() {
 
     options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
     options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
+    options.gpuOptions.maskDetectorGPUOptions = gpuOptions;
 
     SDK tfSdk(options);
 
@@ -105,10 +106,26 @@ int main() {
         facechips.push_back(facechip);
     }
 
+
+    std::vector<MaskLabel> maskLabels;
+    auto res = tfSdk.detectMasks(facechips, maskLabels);
+    if (res != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to run mask detection" << std::endl;
+        return 1;
+    }
+
+    for (auto maskLabel: maskLabels) {
+        if (maskLabel == MaskLabel::MASK) {
+            std::cout << "Masked face detected" << std::endl;
+        } else {
+            std::cout << "Unmasked face detected" << std::endl;
+        }
+    }
+
     // Generate face recognition templates for those 3 face chips in batch.
     // Batch template generation increases throughput.
     std::vector<Faceprint> faceprints;
-    auto res = tfSdk.getFaceFeatureVectors(facechips, faceprints);
+    res = tfSdk.getFaceFeatureVectors(facechips, faceprints);
     if (res != ErrorCode::NO_ERROR) {
         std::cout << "Unable to generate face feature vectors" << std::endl;
         return 1;
