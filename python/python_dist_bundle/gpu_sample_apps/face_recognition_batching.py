@@ -61,7 +61,7 @@ gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 # Note, you can set separate GPU options for each GPU supported module
 options.GPU_options.face_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
-options.GPU_options.face_detector_GPU_options = gpuModuleOptions
+options.GPU_options.mask_detector_GPU_options = gpuModuleOptions
 
 # You can also enable GPU for all supported modules at once through the following syntax
 # options.GPU_options = True
@@ -109,6 +109,17 @@ for image in images:
 
     face_chips.append(face_chip)    
 
+# Run mask detection in batch
+res, mask_labels = sdk.detect_masks(face_chips)
+if (res != tfsdk.ERRORCODE.NO_ERROR):
+    print(f"{Fore.RED}Unable to run mask detection{Style.RESET_ALL}")
+    quit()
+
+for mask_label in mask_labels:
+    if mask_label == tfsdk.MASKLABEL.MASK:
+        print("Masked image detected")
+    else:
+        print("Unmasked image detected")
 
 # Now that we have generated the face chips, we can go ahead and batch generate the FR templates.
 res, faceprints = sdk.get_face_feature_vectors(face_chips)

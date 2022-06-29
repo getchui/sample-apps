@@ -103,7 +103,7 @@ Passing multiple frames in succession to the blink detector can be used to build
 - `detect_eyeglasses.py` demonstrates how to run eye glasses detection on an image. Glasses are detected when a user is wearing some type of glasses.
 
 ### GPU Sample Code - Batch Inference and VRam
-- `gpu_sample_apps/face_recognition_batching.py` demonstrates how to generate face recognition templates in batch when using the GPU library.
+- `gpu_sample_apps/face_recognition_batching.py` demonstrates how to generate face recognition templates and run mask detection in batch when using the GPU library.
 Batching is used to increase throughput on GPUs.
 
 - `gpu_sample_apps/face_recognition_vram.py` demonstrates how the GPU SDK can be used to detect the largest face in an image already loaded in the graphics card's memory.
