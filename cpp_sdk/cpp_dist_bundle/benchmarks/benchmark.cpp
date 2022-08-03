@@ -45,6 +45,8 @@ int main() {
 
     if (gpuOptions.enableGPU) {
         std::cout << "Using GPU for inference" << std::endl;
+    } else {
+        std::cout << "Using CPU for inference" << std::endl;
     }
 
     int multFactor = 1;
