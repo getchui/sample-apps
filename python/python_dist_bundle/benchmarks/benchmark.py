@@ -116,7 +116,7 @@ def benchmark_detailed_landmark_detection(license, gpu_options, num_iterations =
     total_time = t2 - t1
     avg_time = total_time / num_iterations
 
-    print("Average time 106 face landmark detection ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
+    print("Average time 106 face landmark detection: {} ms | {} iterations".format(avg_time, num_iterations))
 
 def benchmark_blink_detection(license, gpu_options, num_iterations = 100):
     options = tfsdk.ConfigurationOptions()
@@ -158,7 +158,7 @@ def benchmark_blink_detection(license, gpu_options, num_iterations = 100):
     total_time = t2 - t1
     avg_time = total_time / num_iterations
 
-    print("Average time blink detection ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
+    print("Average time blink detection: {} ms | {} iterations".format(avg_time, num_iterations))
 
 def benchmark_spoof_detection(license, gpu_options, num_iterations = 100):
     options = tfsdk.ConfigurationOptions()
@@ -200,7 +200,7 @@ def benchmark_spoof_detection(license, gpu_options, num_iterations = 100):
     total_time = t2 - t1
     avg_time = total_time / num_iterations
 
-    print("Average time spoof detection ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
+    print("Average time spoof detection: {} ms | {} iterations".format(avg_time, num_iterations))
 
 
 def benchmark_mask_detection(license, gpu_options, batch_size = 1, num_iterations = 100):
@@ -248,8 +248,7 @@ def benchmark_mask_detection(license, gpu_options, batch_size = 1, num_iteration
     total_time = t2 - t1
     avg_time = total_time / num_iterations / batch_size
 
-    print("Average time mask detection ({}x{}): {} ms | batch size = {} | {} iterations".format(img.get_width(), img.get_height(), 
-        avg_time, batch_size, num_iterations))
+    print("Average time mask detection: {} ms | batch size = {} | {} iterations".format(avg_time, batch_size, num_iterations))
 
 def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
     options = tfsdk.ConfigurationOptions()
@@ -290,7 +289,7 @@ def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
     total_time = t2 - t1
     avg_time = total_time / num_iterations
 
-    print("Average time head orientation ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
+    print("Average time head orientation: {} ms | {} iterations".format(avg_time, num_iterations))
 
 
 def benchmark_object_detection(license, gpu_options, num_iterations = 100):
@@ -372,8 +371,7 @@ def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, n
     total_time = t2 - t1
     avg_time = total_time / num_iterations / batch_size
 
-    print("Average time face recognition {} ({}x{}): {} ms | batch size = {} | {} iterations".format(fr_model.name, img.get_width(), img.get_height(), 
-        avg_time, batch_size, num_iterations))
+    print("Average time face recognition: {} ms | batch size = {} | {} iterations".format(fr_model.name, avg_time, batch_size, num_iterations))
 
 # ********************************************************************************************************
 # ********************************************************************************************************
@@ -382,8 +380,6 @@ def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, n
 #
 # ********************************************************************************************************
 # ********************************************************************************************************
-
-print("Running speed benchmarks with 1280x720 image")
 
 license = os.environ['TRUEFACE_TOKEN']
 

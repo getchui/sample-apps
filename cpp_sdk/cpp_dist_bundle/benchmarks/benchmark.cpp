@@ -26,7 +26,6 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
 
 int main() {
     const std::string license = TRUEFACE_TOKEN;
-    std::cout << "Running speed benchmarks with 1280x720 image\n";
 
     GPUOptions gpuOptions;
     gpuOptions.enableGPU = false; // TODO set this to true to benchmark on GPU
@@ -75,7 +74,7 @@ int main() {
     // Benchmarks with batching.
     // On CPU, should be the same speed as a batch size of 1.
     // On GPU, will increase the throughput.
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5, gpuOptions, batchSize, 40 * multFactor);
+    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, batchSize, 40 * multFactor);
     benchmarkMaskDetection(license, gpuOptions, batchSize, 100 * multFactor);
 
     return 0;
