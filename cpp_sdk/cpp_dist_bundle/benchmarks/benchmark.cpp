@@ -61,6 +61,7 @@ int main() {
     benchmarkSpoofDetection(license, gpuOptions);
     benchmarkMaskDetection(license, gpuOptions, 1, 100 * multFactor);
     benchmarkHeadOrientation(license, gpuOptions);
+    benchmarkObjectDetection(license, gpuOptions);
 
     if (!gpuOptions.enableGPU) {
         // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE and LITE_V2 models.
@@ -70,7 +71,6 @@ int main() {
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, 1,  40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5, gpuOptions, 1,  40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::FULL, gpuOptions, 1,  40 * multFactor);
-    benchmarkObjectDetection(license, gpuOptions);
 
     // Benchmarks with batching.
     // On CPU, should be the same speed as a batch size of 1.
@@ -169,7 +169,7 @@ void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuO
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
-    initializeModule.faceDetector = true;
+    initializeModule.objectDetector = true;
     options.initializeModule = initializeModule;
 
     SDK tfSdk(options);

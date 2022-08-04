@@ -178,7 +178,7 @@ def benchmark_spoof_detection(license, gpu_options, num_iterations = 100):
         quit()
 
 
-    ret, img = sdk.preprocess_image("./headshot.jpg")
+    ret, img = sdk.preprocess_image("./real_spoof.jpg")
     if (ret != tfsdk.ERRORCODE.NO_ERROR):
         print("There was an error setting the image in the {} method".format(inspect.stack()[0][3]))
         quit()
@@ -202,6 +202,186 @@ def benchmark_spoof_detection(license, gpu_options, num_iterations = 100):
 
     print("Average time spoof detection ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
 
+
+def benchmark_mask_detection(license, gpu_options, batch_size = 1, num_iterations = 100):
+    options = tfsdk.ConfigurationOptions()
+    options.models_path = os.getenv('MODELS_PATH') or './'
+    options.GPU_options = gpu_options
+
+    options.smallest_face_height = 40
+    options.initialize_module.face_detector = True
+
+    sdk = tfsdk.SDK(options)
+
+    is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
+    if (is_valid == False):
+        print(f"{Fore.RED}Invalid License Provided{Style.RESET_ALL}")
+        print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
+        quit()
+
+
+    ret, img = sdk.preprocess_image("./headshot.jpg")
+    if (ret != tfsdk.ERRORCODE.NO_ERROR):
+        print("There was an error setting the image in the {} method".format(inspect.stack()[0][3]))
+        quit()
+
+    found, fb = sdk.detect_largest_face(img)
+    if found == False:
+        print("Unable to find face in {} method".format(inspect.stack()[0][3]))
+        quit()
+
+    chip = sdk.extract_aligned_face(img, fb)
+    chips = []
+
+    for i in range(batch_size):
+        chips.append(chip)
+
+    # Run our timing code
+    t1 = current_milli_time()
+    for i in range(num_iterations):
+        ret, mask_labels = sdk.detect_masks(chips)
+    t2 = current_milli_time()
+
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print("Unable to run mask detection in {} method".format(inspect.stack()[0][3]))
+
+    total_time = t2 - t1
+    avg_time = total_time / num_iterations / batch_size
+
+    print("Average time mask detection ({}x{}): {} ms | batch size = {} | {} iterations".format(img.get_width(), img.get_height(), 
+        avg_time, batch_size, num_iterations))
+
+def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
+    options = tfsdk.ConfigurationOptions()
+    options.models_path = os.getenv('MODELS_PATH') or './'
+    options.GPU_options = gpu_options
+
+    options.smallest_face_height = 40
+    options.initialize_module.face_detector = True
+
+    sdk = tfsdk.SDK(options)
+
+    is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
+    if (is_valid == False):
+        print(f"{Fore.RED}Invalid License Provided{Style.RESET_ALL}")
+        print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
+        quit()
+
+
+    ret, img = sdk.preprocess_image("./headshot.jpg")
+    if (ret != tfsdk.ERRORCODE.NO_ERROR):
+        print("There was an error setting the image in the {} method".format(inspect.stack()[0][3]))
+        quit()
+
+    found, fb = sdk.detect_largest_face(img)
+    if found == False:
+        print("Unable to find face in {} method".format(inspect.stack()[0][3]))
+        quit()
+
+    # Run our timing code
+    t1 = current_milli_time()
+    for i in range(num_iterations):
+        ret, yaw, pitch, roll = sdk.estimate_head_orientation(img, fb)
+    t2 = current_milli_time()
+
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print("Unable to estimate head orientation in {} method".format(inspect.stack()[0][3]))
+
+    total_time = t2 - t1
+    avg_time = total_time / num_iterations
+
+    print("Average time head orientation ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
+
+
+def benchmark_object_detection(license, gpu_options, num_iterations = 100):
+    options = tfsdk.ConfigurationOptions()
+    options.models_path = os.getenv('MODELS_PATH') or './'
+    options.GPU_options = gpu_options
+
+    options.obj_model = tfsdk.OBJECTDETECTIONMODEL.FAST
+    options.initialize_module.object_detector = True
+
+    sdk = tfsdk.SDK(options)
+
+    is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
+    if (is_valid == False):
+        print(f"{Fore.RED}Invalid License Provided{Style.RESET_ALL}")
+        print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
+        quit()
+
+
+    ret, img = sdk.preprocess_image("./bike.jpg")
+    if (ret != tfsdk.ERRORCODE.NO_ERROR):
+        print("There was an error setting the image in the {} method".format(inspect.stack()[0][3]))
+        quit()
+
+    # Run our timing code
+    t1 = current_milli_time()
+    for i in range(num_iterations):
+        objects = sdk.detect_objects(img)
+    t2 = current_milli_time()
+
+    total_time = t2 - t1
+    avg_time = total_time / num_iterations
+
+    print("Average time object detection ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
+
+
+def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, num_iterations = 100):
+    options = tfsdk.ConfigurationOptions()
+    options.models_path = os.getenv('MODELS_PATH') or './'
+    options.GPU_options = gpu_options
+    options.fr_model = fr_model
+
+    options.initialize_module.face_recognizer = True
+
+    sdk = tfsdk.SDK(options)
+
+    is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
+    if (is_valid == False):
+        print(f"{Fore.RED}Invalid License Provided{Style.RESET_ALL}")
+        print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
+        quit()
+
+
+    ret, img = sdk.preprocess_image("./headshot.jpg")
+    if (ret != tfsdk.ERRORCODE.NO_ERROR):
+        print("There was an error setting the image in the {} method".format(inspect.stack()[0][3]))
+        quit()
+
+    found, fb = sdk.detect_largest_face(img)
+    if found == False:
+        print("Unable to find face in {} method".format(inspect.stack()[0][3]))
+        quit()
+
+    chip = sdk.extract_aligned_face(img, fb)
+    chips = []
+
+    for i in range(batch_size):
+        chips.append(chip)
+
+    # Run our timing code
+    t1 = current_milli_time()
+    for i in range(num_iterations):
+        ret, faceprints = sdk.get_face_feature_vectors(chips)
+    t2 = current_milli_time()
+
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print("Unable to run face recognition in {} method".format(inspect.stack()[0][3]))
+
+    total_time = t2 - t1
+    avg_time = total_time / num_iterations / batch_size
+
+    print("Average time face recognition {} ({}x{}): {} ms | batch size = {} | {} iterations".format(fr_model.name, img.get_width(), img.get_height(), 
+        avg_time, batch_size, num_iterations))
+
+# ********************************************************************************************************
+# ********************************************************************************************************
+#
+#                                  START OF BENCHMARKING SCRIPT
+#
+# ********************************************************************************************************
+# ********************************************************************************************************
 
 print("Running speed benchmarks with 1280x720 image")
 
@@ -235,3 +415,24 @@ benchmark_face_landmark_detection(license, gpu_options)
 benchmark_detailed_landmark_detection(license, gpu_options)
 benchmark_blink_detection(license, gpu_options)
 benchmark_spoof_detection(license, gpu_options)
+benchmark_mask_detection(license, gpu_options, 1, 100 * mult_factor)
+benchmark_head_orientation(license, gpu_options)
+benchmark_object_detection(license, gpu_options)
+
+if gpu_options.enable_GPU == False:
+    # get_face_feature_vectors method is not support by the LITE and LITE_V2 models
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, 1, 200)
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, 1, 200)
+
+benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, 1, 40 * mult_factor)
+benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5, gpu_options, 1, 40 * mult_factor)
+benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.FULL, gpu_options, 1, 40 * mult_factor)
+
+# TODO Cyrus: Add Object detection benchmarking coe
+
+
+# Benchmarks with batching.
+# On CPU, should be the same speed as a batch size of 1.
+# On GPU, will increase the throughput.
+benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 100 * mult_factor)
+benchmark_mask_detection(license, gpu_options, batch_size, 100 * mult_factor)
