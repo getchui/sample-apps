@@ -430,5 +430,5 @@ benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.FULL, gpu_optio
 # Benchmarks with batching.
 # On CPU, should be the same speed as a batch size of 1.
 # On GPU, will increase the throughput.
-benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 100 * mult_factor)
-benchmark_mask_detection(license, gpu_options, batch_size, 100 * mult_factor)
+benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 40 * mult_factor)
+benchmark_mask_detection(license, gpu_options, batch_size, 40 * mult_factor)
