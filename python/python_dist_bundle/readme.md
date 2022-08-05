@@ -13,7 +13,12 @@ The following dependencies may need to be installed for some sample apps:
 - `pip install opencv-python`
 - `pip install cupy` (required for `face_recognition_vram.py` sample app)
 
-If you are are using the GPU SDK, be sure to read [this guide](https://reference.trueface.ai/cpp/dev/latest/index.html#gpu-sdk-dependencies) on installing GPU dependencies. 
+If you are are using the GPU SDK, be sure to read [this guide](https://reference.trueface.ai/cpp/dev/latest/index.html#gpu-sdk-dependencies) on installing GPU dependencies.
+
+## Benchmarks
+
+The benchmarking script can be found in the ./benchmarks directory.
+To benchmark GPU inference, change [this](https://github.com/getchui/sample-apps/blob/a14337d5bcbdfcee952293da11c62ae7be239504/python/python_dist_bundle/benchmarks/benchmark.py#L387) line to `True`. 
 
 ## Running The Sample Code
 
