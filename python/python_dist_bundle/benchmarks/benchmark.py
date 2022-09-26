@@ -299,6 +299,7 @@ def benchmark_object_detection(license, gpu_options, num_iterations = 100):
 
     options.obj_model = tfsdk.OBJECTDETECTIONMODEL.FAST
     options.initialize_module.object_detector = True
+    options.GPU_options = gpu_options
 
     sdk = tfsdk.SDK(options)
 
@@ -397,6 +398,7 @@ gpu_module_options.opt_batch_size = batch_size
 gpu_options.face_detector_GPU_options = gpu_module_options
 gpu_options.face_recognizer_GPU_options = gpu_module_options
 gpu_options.mask_detector_GPU_options = gpu_module_options
+gpu_options.object_detector_GPU_options = gpu_module_options
 
 mult_factor = 1
 
@@ -413,7 +415,7 @@ benchmark_blink_detection(license, gpu_options)
 benchmark_spoof_detection(license, gpu_options)
 benchmark_mask_detection(license, gpu_options, 1, 100 * mult_factor)
 benchmark_head_orientation(license, gpu_options)
-benchmark_object_detection(license, gpu_options)
+benchmark_object_detection(license, gpu_options, 100 * mult_factor)
 
 if gpu_options.enable_GPU == False:
     # get_face_feature_vectors method is not support by the LITE and LITE_V2 models
