@@ -65,21 +65,6 @@ private:
 };
 
 
-// Utility function for drawing the label on our image
-void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin, const cv::Scalar& color) {
-    cv::Point origin(oldOrigin.x - 2, oldOrigin.y - 10);
-    const int font = cv::FONT_HERSHEY_SIMPLEX;
-    // Can change scale and thickness to change label size
-    const double scale = 0.8;
-    const int thickness = 1;
-    int baseline = 0;
-
-    cv::Size text = cv::getTextSize(label, font, scale, thickness, &baseline);
-    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), color, cv::FILLED);
-    cv::putText(im, label, origin, font, scale, CV_RGB(0,0,0), thickness, cv::LINE_AA);
-}
-
-
 int main() {
     std::atomic<bool> run {true};
     StreamController streamController(run);
@@ -91,7 +76,7 @@ int main() {
     // The face recognition model to use. Use the most accurate face recognition model.
     options.frModel = FacialRecognitionModel::TFV5;
     // The object detection model to use.
-    options.objModel = ObjectDetectionModel::ACCURATE;
+    options.objModel = ObjectDetectionModel::FAST;
     // The face detection filter.
     options.fdFilter = FaceDetectionFilter::BALANCED;
     // Smallest face height in pixels for the face detector.
@@ -132,6 +117,7 @@ int main() {
     options.gpuOptions.faceRecognizerGPUOptions = moduleOptions;
     options.gpuOptions.faceDetectorGPUOptions = moduleOptions;
     options.gpuOptions.maskDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.objectDetectorGPUOptions = moduleOptions;
 
     SDK tfSdk(options);
 
@@ -162,34 +148,18 @@ int main() {
         std::vector<BoundingBox> bboxVec;
         tfSdk.detectObjects(img, bboxVec);
 
-        // Display the bounding boxes and labels for the detected objects
-        for (const auto& bbox: bboxVec) {
-            // TODO: Can use the bbox.probability to filter results if desired
-//            if (bbox.probability < SOME_THRESHOLD) {
-//                continue;
-//            }
-
-            // TODO: Can set color for each class
-            cv::Scalar color;
-            if (bbox.label == ObjectLabel::person) {
-                // Note: Opencv uses BGR
-                color = cv::Scalar(0, 255, 0);
-            } else {
-                color = cv::Scalar(255, 0, 255);
-            }
-
-            // Draw a rectangle using the top left and bottom right coordinates of the bounding box
-            cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
-            cv::Point bottomRight(bbox.topLeft.x + bbox.width, bbox.topLeft.y + bbox.height);
-            cv::rectangle(frame, topLeft, bottomRight, color, 3);
-
-            // Convert the object label to a string
-            // Draw the string on the frame
-            const auto label = tfSdk.getObjectLabelString(bbox.label);
-            setLabel(frame, label, topLeft, color);
+        // Annotate the frame
+        errorCode = tfSdk.drawObjectLabels(img, bboxVec);
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << errorCode << std::endl;
+            return -1;
         }
 
-        cv::imshow("frame", frame);
+        // Now create a CV image from the frame
+        cv::Mat annotated(img->getHeight(), img->getWidth(), CV_8UC3, img->getData());
+        cv::cvtColor(annotated, annotated, cv::COLOR_RGB2BGR);
+
+        cv::imshow("frame", annotated);
 
         if (cv::waitKey(1) == 27) {
             run = false;
