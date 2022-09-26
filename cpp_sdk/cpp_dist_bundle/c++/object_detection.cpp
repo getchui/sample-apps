@@ -94,5 +94,18 @@ int main() {
         std::cout << "Detected " << label << " with probability: " << bbox.probability << std::endl;
     }
 
+    // Now annotate the image
+    errorCode = tfSdk.drawObjectLabels(img, boundingBoxes);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << errorCode << std::endl;
+        return -1;
+    }
+
+    // Save the annotated image
+    const std::string outputPath = "./annotated.jpg";
+    img->saveImage(outputPath);
+
+    std::cout << "Annotated image saved to: " << outputPath << std::endl;
+
     return 0;
 }
