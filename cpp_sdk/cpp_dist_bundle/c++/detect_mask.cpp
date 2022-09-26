@@ -60,6 +60,7 @@ int main() {
     options.gpuOptions.faceRecognizerGPUOptions = moduleOptions;
     options.gpuOptions.faceDetectorGPUOptions = moduleOptions;
     options.gpuOptions.maskDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.objectDetectorGPUOptions = moduleOptions;
     
     SDK tfSdk(options);
     // TODO: Either input your token in the CMakeLists.txt file, or insert it below directly

@@ -58,6 +58,7 @@ int main() {
     options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
     options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
     options.gpuOptions.maskDetectorGPUOptions = gpuOptions;
+    options.gpuOptions.objectDetectorGPUOptions = gpuOptions;
 
     SDK tfSdk(options);
 

@@ -56,6 +56,7 @@ gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 options.GPU_options.face_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
 options.GPU_options.mask_detector_GPU_options = gpuModuleOptions
+options.GPU_options.object_detector_GPU_options = gpuModuleOptions
 
 sdk = tfsdk.SDK(options)
 
