@@ -41,6 +41,7 @@ int main() {
     gpuOptions.faceDetectorGPUOptions = gpuModuleOptions;
     gpuOptions.faceRecognizerGPUOptions = gpuModuleOptions;
     gpuOptions.maskDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.objectDetectorGPUOptions = gpuModuleOptions;
 
     if (gpuOptions.enableGPU) {
         std::cout << "Using GPU for inference" << std::endl;
@@ -60,7 +61,7 @@ int main() {
     benchmarkSpoofDetection(license, gpuOptions);
     benchmarkMaskDetection(license, gpuOptions, 1, 100 * multFactor);
     benchmarkHeadOrientation(license, gpuOptions);
-    benchmarkObjectDetection(license, gpuOptions);
+    benchmarkObjectDetection(license, gpuOptions, 100 * multFactor);
 
     if (!gpuOptions.enableGPU) {
         // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE and LITE_V2 models.
@@ -164,6 +165,7 @@ void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuO
     if (modelsPath) {
         options.modelsPath = modelsPath;
     }
+    options.gpuOptions = gpuOptions;
     options.objModel = ObjectDetectionModel::FAST;
 
     // Since we initialize the module, we do not need to discard the first inference time.
