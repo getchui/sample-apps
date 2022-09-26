@@ -80,9 +80,20 @@ for bounding_box in bounding_boxes:
     # Get the bounding box label as a string
     label_string = sdk.get_object_label_string(bounding_box.label)
 
-
     print(f"Detected: {label_string} with probability: {bounding_box.probability}")
     print(f"Top left: ({bounding_box.top_left.x}, {bounding_box.top_left.y}), width: {bounding_box.width}, height: {bounding_box.height}")
 
 
+# Now draw the object labels onto the imag
+res = sdk.draw_object_labels(img, bounding_boxes)
+
+if res != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}Unable annotate the image{Style.RESET_ALL}")
+    quit()
+
+# Now save the image
+output_path = "./annotated.jpg"
+img.save_image(output_path)
+
+print("Annotated image saved to:", output_path)
 
