@@ -200,7 +200,9 @@ void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuO
     auto t2 = Clock::now();
     double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
-    std::cout << "Average time object detection (fast mode): " << totalTime / numIterations
+    const std::string mode = (options.objModel == ObjectDetectionModel::FAST) ? "fast" : "accurate";
+
+    std::cout << "Average time object detection (" + mode + " mode): " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
 
 }
