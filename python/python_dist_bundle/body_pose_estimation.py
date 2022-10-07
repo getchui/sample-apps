@@ -82,7 +82,8 @@ if len(bounding_boxes) == 0:
 body_landmarks = sdk.estimate_pose(img, bounding_boxes)
 
 # Now draw the pose on the image and save the file to disk
-sdk.draw_pose(img, "pose_image", body_landmarks)
+sdk.draw_pose(img, body_landmarks)
+img.save_image("pose.jpg")
 
 
 
