@@ -7,6 +7,8 @@ import os
 import time
 from colorama import Fore
 from colorama import Style
+import numpy
+import ctypes
 
 def draw_label(image, point, label,
                font=cv2.FONT_HERSHEY_SIMPLEX,
@@ -60,7 +62,7 @@ options.initialize_module.object_detector = True
 # Options for enabling GPU
 # We will disable GPU inference, but you can easily enable it by modifying the following options
 # Note, you may require a specific GPU enabled token in order to enable GPU inference.
-options.GPU_options = False # TODO: Change this to true to enable GPU
+options.GPU_options = True # TODO: Change this to true to enable GPU
 options.GPU_options.device_index = 0;
 
 gpuModuleOptions = tfsdk.GPUModuleOptions()
@@ -86,7 +88,7 @@ if (is_valid == False):
 
 
 # Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture("/home/cyrus/Downloads/1.mp4")
 if (cap.isOpened()== False): 
     print(f"{Fore.RED}Error opening video stream{Style.RESET_ALL}")
     os._exit(1)
@@ -109,19 +111,11 @@ while(True):
 
     # Run object detection
     bounding_boxes = sdk.detect_objects(img)
-    if (len(bounding_boxes) > 0) :
-        
-        # Draw the bounding boxes and label on the frame
-        for bounding_box in bounding_boxes:
-            tl = (int(bounding_box.top_left.x), int(bounding_box.top_left.y))
-            br = (int(bounding_box.top_left.x + bounding_box.width), int(bounding_box.top_left.y + bounding_box.height))
 
-            # Draw the rectangle on the frame
-            cv2.rectangle(frame, tl, br, (194,134,58), 3)
-
-            label_string = sdk.get_object_label_string(bounding_box.label)
-            draw_label(frame, tl, label_string)
-
+    # Draw the annotations
+    ret = sdk.draw_object_labels(img, bounding_boxes)
+    if (ret == tfsdk.ERRORCODE.NO_ERROR):
+        frame = img.as_numpy_array()
 
     # Display the resulting frame
     cv2.imshow('frame', frame)
