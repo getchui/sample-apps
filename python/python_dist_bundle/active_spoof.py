@@ -94,7 +94,7 @@ if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
     print(f"{Fore.RED}The face is too far in the real image, far face{Style.RESET_ALL}")
     quit()
 elif ret == tfsdk.ERRORCODE.FACE_TOO_CLOSE:
-    print(f"{Fore.RED}The face is too far in the real image, far face{Style.RESET_ALL}")
+    print(f"{Fore.RED}The face is too close in the real image, far face{Style.RESET_ALL}")
     quit()
 elif ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error with the real image, far face{Style.RESET_ALL}")
@@ -130,7 +130,7 @@ if ret == tfsdk.ERRORCODE.FACE_TOO_FAR:
     print(f"{Fore.RED}The face is too far in the real image, near face{Style.RESET_ALL}")
     quit()
 elif ret == tfsdk.ERRORCODE.FACE_TOO_CLOSE:
-    print(f"{Fore.RED}The face is too far in the real image, near face{Style.RESET_ALL}")
+    print(f"{Fore.RED}The face is too close in the real image, near face{Style.RESET_ALL}")
     quit()
 elif ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error with the real image, near face{Style.RESET_ALL}")
