@@ -591,13 +591,6 @@ void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found = false;
 
-    // Even though we have initialized the module, if using GPU, still need to discard first inference time
-    // because GPU framework requires image size in order to allocate GPU buffers and therefore can't do it
-    // in the SDK constructor
-    if (gpuOptions.enableGPU) {
-        tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
-    }
-
     // Time the face detection
     auto t1 = Clock::now();
     for (size_t i = 0; i < numIterations; ++i) {
