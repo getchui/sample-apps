@@ -146,6 +146,14 @@ int main() {
             continue;
         }
 
+        // Ensure that the image is not overly bright or dark, and that the exposure if good for face recognition
+        errorCode = tfSdk.checkFaceImageExposure(img, faceBoxAndLandmarks);
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << "Image has sub-optimal exposure for face recognition" << std::endl;
+            std::cout << errorCode << std::endl;
+            continue;
+        }
+
         // Get the aligned face chip so that we can compute the image quality
         TFFacechip facechip;
         errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
