@@ -165,6 +165,12 @@ for path, identity in image_identities:
         print(f"{Fore.RED}The face is too small in the image for a high quality enrollment, not enrolling{Style.RESET_ALL}")
         continue
 
+    # Ensure that the image is not too bright or dark, and that the exposure is optimal for face recognition
+    res = sdk.check_face_image_exposure(img, faceBoxAndLandmarks)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}The image exposure is suboptimal for face recognition, not enrolling{Style.RESET_ALL}")
+        continue
+
     # Get the aligned chip so we can compute the image quality
     face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
 
