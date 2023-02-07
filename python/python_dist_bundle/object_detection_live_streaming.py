@@ -62,7 +62,7 @@ options.initialize_module.object_detector = True
 # Options for enabling GPU
 # We will disable GPU inference, but you can easily enable it by modifying the following options
 # Note, you may require a specific GPU enabled token in order to enable GPU inference.
-options.GPU_options = True # TODO: Change this to true to enable GPU
+options.GPU_options = False # TODO: Change this to true to enable GPU
 options.GPU_options.device_index = 0;
 
 gpuModuleOptions = tfsdk.GPUModuleOptions()
@@ -88,7 +88,7 @@ if (is_valid == False):
 
 
 # Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
-cap = cv2.VideoCapture("/home/cyrus/Downloads/1.mp4")
+cap = cv2.VideoCapture(0)
 if (cap.isOpened()== False): 
     print(f"{Fore.RED}Error opening video stream{Style.RESET_ALL}")
     os._exit(1)
