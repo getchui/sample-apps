@@ -239,31 +239,33 @@ int main() {
             faceprints.emplace_back(std::move(tmpFaceprint));
         }
 
-        // Run batch identification on the faceprints
-        std::vector<bool> found;
-        std::vector<Candidate> candidates;
-        tfSdk.batchIdentifyTopCandidate(faceprints, candidates, found, threshold);
+        if (!bboxVec.empty()) {
+            // Run batch identification on the faceprints
+            std::vector<bool> found;
+            std::vector<Candidate> candidates;
+            tfSdk.batchIdentifyTopCandidate(faceprints, candidates, found, threshold);
 
-        // If the identity was found, draw the identity label
-        // If the identity was not found, blur the face
+            // If the identity was found, draw the identity label
+            // If the identity was not found, blur the face
 
-        for (size_t i = 0; i < found.size(); ++i) {
-            const auto& bbox = bboxVec[i];
-            const auto& candidate = candidates[i];
+            for (size_t i = 0; i < found.size(); ++i) {
+                const auto &bbox = bboxVec[i];
+                const auto &candidate = candidates[i];
 
-            if (found[i]) {
-                // If the similarity is greater than our threshold, then we have a match
-                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
-                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
-                cv::Scalar color (0, 255, 0);
-                cv::rectangle(frame, topLeft, bottomRight, color, 2);
-                setLabel(frame, candidate.identity, topLeft, color);
-            } else {
-                // If the identity is not found, draw a white bounding box
-                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
-                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
-                cv::Scalar color (255, 255, 255);
-                cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                if (found[i]) {
+                    // If the similarity is greater than our threshold, then we have a match
+                    cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
+                    cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
+                    cv::Scalar color(0, 255, 0);
+                    cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                    setLabel(frame, candidate.identity, topLeft, color);
+                } else {
+                    // If the identity is not found, draw a white bounding box
+                    cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
+                    cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
+                    cv::Scalar color(255, 255, 255);
+                    cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                }
             }
         }
 
