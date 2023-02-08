@@ -276,40 +276,41 @@ int main() {
         std::vector<FaceBoxAndLandmarks> bboxVec;
         tfSdk.detectFaces(img, bboxVec);
 
-        // For each bounding box, get the face feature vector
-        std::vector<Faceprint> faceprints;
-        faceprints.reserve(bboxVec.size());
+        if (!bboxVec.empty()) {
+            // For each bounding box, get the face feature vector
+            std::vector<Faceprint> faceprints;
+            faceprints.reserve(bboxVec.size());
 
-        for (const auto &bbox: bboxVec) {
-            // Get the face feature vector
-            Faceprint tmpFaceprint;
-            tfSdk.getFaceFeatureVector(img, bbox, tmpFaceprint);
-            faceprints.emplace_back(std::move(tmpFaceprint));
-        }
+            for (const auto &bbox: bboxVec) {
+                // Get the face feature vector
+                Faceprint tmpFaceprint;
+                tfSdk.getFaceFeatureVector(img, bbox, tmpFaceprint);
+                faceprints.emplace_back(std::move(tmpFaceprint));
+            }
 
-        // Run batch identification on the faceprints
-        std::vector<bool> found;
-        std::vector<Candidate> candidates;
-        tfSdk.batchIdentifyTopCandidate(faceprints, candidates, found, threshold);
+            // Run batch identification on the faceprints
+            std::vector<bool> found;
+            std::vector<Candidate> candidates;
+            tfSdk.batchIdentifyTopCandidate(faceprints, candidates, found, threshold);
 
-        // If the identity was found, draw the identity label
-        for (size_t i = 0; i < found.size(); ++i) {
-            const auto& bbox = bboxVec[i];
-            const auto& candidate = candidates[i];
+            // If the identity was found, draw the identity label
+            for (size_t i = 0; i < found.size(); ++i) {
+                const auto &bbox = bboxVec[i];
+                const auto &candidate = candidates[i];
 
-            cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
-            cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
-            cv::Scalar color (0, 255, 0);
-            if (found[i]) {
-                // If the similarity is greater than our threshold, then we have a match
-                setLabel(frame, candidate.identity, topLeft, color);
-                cv::rectangle(frame, topLeft, bottomRight, color, 2);
-            } else {
-                color = cv::Scalar(0, 0, 255);
-                cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                cv::Point topLeft(bbox.topLeft.x, bbox.topLeft.y);
+                cv::Point bottomRight(bbox.bottomRight.x, bbox.bottomRight.y);
+                cv::Scalar color(0, 255, 0);
+                if (found[i]) {
+                    // If the similarity is greater than our threshold, then we have a match
+                    setLabel(frame, candidate.identity, topLeft, color);
+                    cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                } else {
+                    color = cv::Scalar(0, 0, 255);
+                    cv::rectangle(frame, topLeft, bottomRight, color, 2);
+                }
             }
         }
-
         cv::imshow("frame", frame);
 
         if (cv::waitKey(1) == 27) {
