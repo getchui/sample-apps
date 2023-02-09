@@ -49,6 +49,7 @@ int main() {
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.faceRecognizer = true;
+    initializeModule.faceOrientationDetector = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
@@ -67,6 +68,7 @@ int main() {
     options.gpuOptions.faceDetectorGPUOptions = moduleOptions;
     options.gpuOptions.maskDetectorGPUOptions = moduleOptions;
     options.gpuOptions.objectDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.faceOrientationDetectorGPUOptions = moduleOptions;
 
 
     SDK tfSdk(options);
@@ -118,6 +120,18 @@ int main() {
             std::cout << retcode << std::endl;
             return -1;
         }
+
+        // Ensure the enrollment image is correctly oriented since we are reading the image off disk
+        RotateFlags imageRotation;
+        retcode = tfSdk.getFaceImageRotation(img, imageRotation);
+        if (retcode != ErrorCode::NO_ERROR) {
+            std::cout << "There was an error computing the image rotation" << std::endl;
+            std::cout << retcode << std::endl;
+            continue;
+        }
+        
+        // Rotate the image appropriately
+        img->rotate(imageRotation);
 
         // Detect the largest face in the image
         FaceBoxAndLandmarks faceBoxAndLandmarks;
