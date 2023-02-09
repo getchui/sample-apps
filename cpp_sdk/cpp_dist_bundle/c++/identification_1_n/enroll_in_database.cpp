@@ -121,7 +121,8 @@ int main() {
             return -1;
         }
 
-        // Ensure the enrollment image is correctly oriented since we are reading the image off disk
+        // Since we are enrolling images from disk, there is a possibility that the images may be oriented incorrectly.
+        // Therefore, run the image orientation detector and rotate the images appropriately.
         RotateFlags imageRotation;
         retcode = tfSdk.getFaceImageRotation(img, imageRotation);
         if (retcode != ErrorCode::NO_ERROR) {
@@ -129,7 +130,7 @@ int main() {
             std::cout << retcode << std::endl;
             continue;
         }
-        
+
         // Rotate the image appropriately
         img->rotate(imageRotation);
 

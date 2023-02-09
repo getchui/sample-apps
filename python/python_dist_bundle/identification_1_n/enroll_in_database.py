@@ -41,6 +41,7 @@ options.encrypt_database.key = "TODO: Your encryption key here"
 # Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
 options.initialize_module.face_detector = True
 options.initialize_module.face_recognizer = True
+options.initialize_module.face_orientation_detector = True
 
 # Options for enabling GPU
 # We will disable GPU inference, but you can easily enable it by modifying the following options
@@ -59,6 +60,7 @@ options.GPU_options.face_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
 options.GPU_options.mask_detector_GPU_options = gpuModuleOptions
 options.GPU_options.object_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_orientation_detector_GPU_options = gpuModuleOptions
 
 sdk = tfsdk.SDK(options)
 
@@ -101,6 +103,16 @@ for path, identity in image_identities:
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set image at path: {path}, not enrolling{Style.RESET_ALL}")
         continue
+
+    # Since we are enrolling images from disk, there is a possibility that the images may be oriented incorrectly.
+    # Therefore, run the orientation detector and adjust for any needed rotation
+    ret, rotation = sdk.get_face_image_rotation(img)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}There was an error computing the image rotation{Style.RESET_ALL}")
+        continue
+
+    # Adjust for rotation
+    img.rotate(rotation)
 
     # Detect the largest face in the image
     found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
