@@ -162,14 +162,19 @@ int main() {
         }
 
         // Ensure that the image is not overly bright or dark, and that the exposure if good for face recognition
-        errorCode = tfSdk.checkFaceImageExposure(img, faceBoxAndLandmarks);
+        FaceImageQuality quality;
+        errorCode = tfSdk.checkFaceImageExposure(img, faceBoxAndLandmarks, quality);
         if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Image has sub-optimal exposure for face recognition" << std::endl;
-            std::cout << errorCode << std::endl;
+            std::cout << "Unable to run exposure check on the image" << std::endl;
             continue;
         }
 
-        // Get the aligned face chip so that we can compute the image quality
+        if (quality != FaceImageQuality::GOOD) {
+            std::cout << "The image has suboptimal exposure for enrollment" << std::endl;
+            continue;
+        }
+
+        // Get the aligned face chip so that we can compute the face blur
         TFFacechip facechip;
         errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
         if (errorCode != ErrorCode::NO_ERROR) {
@@ -178,20 +183,16 @@ int main() {
             continue;
         }
 
-        float quality;
-        errorCode = tfSdk.estimateFaceImageQuality(facechip, quality);
+        errorCode = tfSdk.detectFaceImageBlur(facechip, quality);
         if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << "Unable to compute image quality\n";
+            std::cout << "Unable to compute image blur\n";
             std::cout << errorCode << std::endl;
             continue;
         }
 
-        // Ensure the image quality is above a threshold
-        // Once again, we only want to enroll only high quality images into our collection
-        std::cout << "Face quality: " << quality << std::endl;
-        if (quality < 0.999) {
-            std::cout << "Please choose a higher quality enrollment image\n";
-            return -1;
+        if (quality != FaceImageQuality::GOOD) {
+            std::cout << "The face image is too blurry for enrollment, skipping" << std::endl;
+            continue;
         }
 
         // We can check the orientation of the head and ensure that it is facing forward
