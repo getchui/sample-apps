@@ -133,24 +133,28 @@ for path, identity in image_identities:
         continue
 
     # Ensure that the image is not too bright or dark, and that the exposure is optimal for face recognition
-    res = sdk.check_face_image_exposure(img, faceBoxAndLandmarks)
+    res, quality = sdk.check_face_image_exposure(img, faceBoxAndLandmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}The image exposure is suboptimal for face recognition, not enrolling{Style.RESET_ALL}")
+        print(f"{Fore.RED}Unable to get the face image exposure, not enrolling{Style.RESET_ALL}")
         continue
 
-    # Get the aligned chip so we can compute the image quality
+    if (quality != tfsdk.FACEIMAGEQUALITY.GOOD):
+        print(f"{Fore.RED}The face image is over or under exposed, not enrolling{Style.RESET_ALL}")
+        continue
+    
+
+    # Get the aligned chip so we can compute the image blur
     face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
 
-    # Compute the image quality score
-    res, quality = sdk.estimate_face_image_quality(face)
+
+    # Ensure the face image is not too blurry
+    res, quality = sdk.detect_face_image_blur(face)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}There was an error computing the image quality, not enrolling{Style.RESET_ALL}")
+        print(f"{Fore.RED}There was an error computing the image blur, not enrolling{Style.RESET_ALL}")
         continue
 
-    # Ensure the image quality is above a threshold
-    print("Face quality:", quality)
-    if quality < 0.999:
-        print(f"{Fore.RED}The image quality is too poor for enrollment, not enrolling{Style.RESET_ALL}")
+    if (quality != tfsdk.FACEIMAGEQUALITY.GOOD):
+        print(f"{Fore.RED}The face image is too blurry, not enrolling{Style.RESET_ALL}")
         continue
 
     # We can check the orientation of the head and ensure that it is facing forward

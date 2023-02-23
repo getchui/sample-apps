@@ -183,6 +183,7 @@ int main() {
             continue;
         }
 
+        // Compute the face image blur and ensure it is not too blurry for face recognition
         errorCode = tfSdk.detectFaceImageBlur(facechip, quality);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute image blur\n";

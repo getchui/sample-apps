@@ -141,14 +141,22 @@ for path, identity in image_identities:
     # Generate a template for each image
     res, img = sdk.preprocess_image(path)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
-        failed_enrollment.append(path)
         print(f"{Fore.RED}Unable to set image at path: {path}, not enrolling{Style.RESET_ALL}")
         continue
+
+    # Since we are enrolling images from disk, there is a possibility that the images may be oriented incorrectly.
+    # Therefore, run the orientation detector and adjust for any needed rotation
+    ret, rotation = sdk.get_face_image_rotation(img)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}There was an error computing the image rotation{Style.RESET_ALL}")
+        continue
+
+    # Adjust for rotation
+    img.rotate(rotation)
 
     # Detect the largest face in the image
     found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
     if found == False:
-        failed_enrollment.append(path)
         print(f"{Fore.RED}No face detected in image: {path}, not enrolling{Style.RESET_ALL}")
         continue
 
@@ -161,18 +169,34 @@ for path, identity in image_identities:
     print(f"Face height: {faceHeight} pixels")
 
     if faceHeight < 100:
-        failed_enrollment.append(path)
         print(f"{Fore.RED}The face is too small in the image for a high quality enrollment, not enrolling{Style.RESET_ALL}")
         continue
 
     # Ensure that the image is not too bright or dark, and that the exposure is optimal for face recognition
-    res = sdk.check_face_image_exposure(img, faceBoxAndLandmarks)
+    res, quality = sdk.check_face_image_exposure(img, faceBoxAndLandmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}The image exposure is suboptimal for face recognition, not enrolling{Style.RESET_ALL}")
+        print(f"{Fore.RED}Unable to get the face image exposure, not enrolling{Style.RESET_ALL}")
         continue
 
-    # Get the aligned chip so we can compute the image quality
+    if (quality != tfsdk.FACEIMAGEQUALITY.GOOD):
+        print(f"{Fore.RED}The face image is over or under exposed, not enrolling{Style.RESET_ALL}")
+        continue
+    
+
+    # Get the aligned chip so we can compute the image blur
     face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+
+
+    # Ensure the face image is not too blurry
+    res, quality = sdk.detect_face_image_blur(face)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}There was an error computing the image blur, not enrolling{Style.RESET_ALL}")
+        continue
+
+    if (quality != tfsdk.FACEIMAGEQUALITY.GOOD):
+        print(f"{Fore.RED}The face image is too blurry, not enrolling{Style.RESET_ALL}")
+        continue
+
 
     # We can check the orientation of the head and ensure that it is facing forward
     # To see the effect of yaw and pitch on match score, refer to: https://reference.trueface.ai/cpp/dev/latest/py/face.html#tfsdk.SDK.estimate_head_orientation
