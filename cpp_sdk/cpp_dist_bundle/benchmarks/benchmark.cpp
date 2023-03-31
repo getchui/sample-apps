@@ -68,6 +68,7 @@ int main() {
         benchmarkFaceRecognition(license, FacialRecognitionModel::LITE, gpuOptions, 1,  200);
         benchmarkFaceRecognition(license, FacialRecognitionModel::LITE_V2, gpuOptions, 1,  200);
     }
+    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, 1,  40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, 1,  40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5, gpuOptions, 1,  40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::FULL, gpuOptions, 1,  40 * multFactor);
@@ -76,6 +77,7 @@ int main() {
     // On CPU, should be the same speed as a batch size of 1.
     // On GPU, will increase the throughput.
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, batchSize, 40 * multFactor);
+    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, batchSize, 40 * multFactor);
     benchmarkMaskDetection(license, gpuOptions, batchSize, 100 * multFactor);
 
     return 0;
@@ -86,6 +88,8 @@ std::string getModelName(FacialRecognitionModel model) {
         return "TFV5";
     } else if (model == FacialRecognitionModel::TFV6) {
         return "TFV6";
+    } else if (model == FacialRecognitionModel::TFV7) {
+        return "TFV7";
     } else if (model == FacialRecognitionModel::FULL) {
         return "FULL";
     } else if (model == FacialRecognitionModel::LITE) {
