@@ -95,7 +95,7 @@ The annotated video is then displayed in real time.
 
 - `body_pose_estimation.py` demonstrates how to draw the human body pose on an input image. 
 
-- `body_face_pose_live_streaming.py` is a combination of `head_pose_estimation.py` and `body_pose_estimation.py`, and uses OpenCV to grab frames from the webcam then draws the body pose as well as the head orientation axis arrows on the live stream. 
+- `body_pose_live_streaming.py` is a combination of `head_pose_estimation.py` and `body_pose_estimation.py`, and uses OpenCV to grab frames from the webcam then draws the body pose as well as the head orientation axis arrows on the live stream. 
 
 ### Liveness
 - `blink_detection_live_streaming.py` demonstrates the use of our blink detection API.

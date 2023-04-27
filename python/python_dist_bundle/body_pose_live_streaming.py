@@ -1,4 +1,4 @@
-# Sample code: Get frame from webcam, run face pose estimation and body pose estimation, draw results on the frame, display the frame
+# Sample code: Get frame from webcam, body pose estimation, draw results on the frame, display the frame
 # Note: you will need to have the opencv-python module installed
 
 import tfsdk
@@ -29,27 +29,6 @@ def draw_body_pose(frame, body_landmarks):
         if l.score < 0.2:
             continue
         cv2.circle(frame, (int(l.point.x), int(l.point.y)), 3, (0, 255, 0), -1);
-
-
-def draw_pose_lines(yaw, pitch, roll, frame):
-
-    #Center point for the axis we will draw
-    origin = (100, 100);
-
-    #Compute 3D rotation axis from yaw, pitch, roll
-    #https://stackoverflow.com/a/32133715/4943329
-    x1 = 100 * math.cos(yaw) * math.cos(roll);
-    y1 = 100 * (math.cos(pitch) * math.sin(roll) + math.cos(roll) * math.sin(pitch) * math.sin(yaw));
-    x2 = 100 * (-1 * math.cos(yaw) * math.sin(roll));
-    y2 = 100 * (math.cos(pitch) * math.cos(roll) - math.sin(pitch) * math.sin(yaw) * math.sin(roll));
-    x3 = 100 * math.sin(yaw);
-    y3 = 100 * (-1 * math.cos(yaw) * math.sin(pitch));
-
-    #Draw the arrows on the screen
-    cv2.arrowedLine(frame, origin, (int(x1 + origin[0]), int(y1 + origin[1])), (255, 0, 0), 4, cv2.LINE_AA);
-    cv2.arrowedLine(frame, origin, (int(x2 + origin[0]), int(y2 + origin[1])), (0, 255, 0), 4, cv2.LINE_AA);
-    cv2.arrowedLine(frame, origin, (int(x3 + origin[0]), int(y3 + origin[1])), (0, 0, 255), 4, cv2.LINE_AA);
-    return frame
 
 
 # Start by specifying the configuration options to be used. 
@@ -133,13 +112,6 @@ while(True):
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to set frame.{Style.RESET_ALL}")
         continue
-
-    # Detect the largest face, then compute the face pose
-    found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
-    if found == True:
-        res, yaw, pitch, roll = sdk.estimate_head_orientation(img,faceBoxAndLandmarks)
-        if res == tfsdk.ERRORCODE.NO_ERROR:
-            draw_pose_lines(yaw, pitch, roll, frame)
 
     # Run object detection, then run body pose estimation
     bounding_boxes = sdk.detect_objects(img)

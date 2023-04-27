@@ -14,32 +14,6 @@ import time
 from colorama import Fore
 from colorama import Style
 
-def draw_label(image, point, label, color,
-               font=cv2.FONT_HERSHEY_SIMPLEX,
-               font_scale=1.0, thickness=2):
-    size = cv2.getTextSize(label, font, font_scale, thickness)[0]
-    x_label, y_label = point
-    cv2.rectangle(
-        image,
-        (x_label, y_label - size[1] - 10),
-        (x_label + size[0], y_label),
-        color,
-        cv2.FILLED)
-
-    cv2.putText(
-        image, label.capitalize(), (x_label, y_label - 5), font, font_scale,
-        (0, 0, 0), thickness, cv2.LINE_AA)
-
-
-def draw_rectangle(frame, bounding_box, color):
-
-    # Draw the rectangle on the frame
-    cv2.rectangle(frame,
-                  (int(bounding_box.top_left.x), int(bounding_box.top_left.y)),
-                  (int(bounding_box.bottom_right.x), int(bounding_box.bottom_right.y)), color, 3)
-        
-
-
 # Start by specifying the configuration options to be used. 
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
@@ -170,16 +144,18 @@ while(True):
         res, match_found, candidate = sdk.identify_top_candidate(faceprint, threshold=0.4)
 
         if (res != tfsdk.ERRORCODE.NO_ERROR or not match_found):
-            draw_rectangle(frame, facebox, (0, 0, 255))
-            continue
+            # Draw a red rectangle around the face
+            ret = sdk.draw_face_box_and_landmarks(img, facebox, False, tfsdk.ColorRGB(255, 0, 0), 2)
+            if (res != tfsdk.ERRORCODE.NO_ERROR):
+                print(f"{Fore.RED}Unable to draw bounding box{Style.RESET_ALL}")
         else:
-            color = (0, 255, 0)
-            draw_rectangle(frame, facebox, color)
-            draw_label(frame,
-                       (int(facebox.top_left.x), int(facebox.top_left.y)),
-                       "{} {}%".format(
-                           candidate.identity,
-                           int(candidate.match_probability*100)), color)
+            # Draw a rectangle with the ID and match score
+            ret = sdk.draw_candidate_bounding_box_and_label(img, facebox, candidate)
+            if (res != tfsdk.ERRORCODE.NO_ERROR):
+                print(f"{Fore.RED}Unable to draw candidate label and bounding box{Style.RESET_ALL}")
+
+        # Convert the annotated frame back to a OpenCV frame
+        frame = img.as_numpy_array()
 
 
     cv2.imshow(filename, frame)

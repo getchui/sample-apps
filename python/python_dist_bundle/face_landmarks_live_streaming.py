@@ -99,14 +99,20 @@ while(True):
             print(f"{Fore.RED}Unable to get face landmarks{Style.RESET_ALL}")
             continue
 
-        # Draw the 106 facial landmark points over the face in red
-        for landmark in landmarks:
-            frame = cv2.circle(frame, (int(landmark.x), int(landmark.y)), radius=1, color=(0, 0, 255), thickness=2 )
+        # Draw the bounding box
+        res = sdk.draw_face_box_and_landmarks(img, fb, False, tfsdk.ColorRGB(255, 255, 255), 2)
+        if (res != tfsdk.ERRORCODE.NO_ERROR):
+            print(f"{Fore.RED}Unable to draw bounding box{Style.RESET_ALL}")
+            continue
 
-        # To also draw the 5 facial landmarks in blue, uncomment the following code:
-        # for landmark in fb.landmarks:
-            # frame = cv2.circle(frame, (int(landmark.x), int(landmark.y)), radius=1, color=(255, 0, 0), thickness=2 )            
+        # Draw the 106 face landmarks
+        res = sdk.draw_face_landmarks(img, landmarks, tfsdk.ColorRGB(0, 255, 255), 2)
+        if (res != tfsdk.ERRORCODE.NO_ERROR):
+            print(f"{Fore.RED}Unable to draw face landmarks{Style.RESET_ALL}")
+            continue
 
+        # Now converted the annotated frame back to the OpenCV frame
+        frame = img.as_numpy_array()
 
     # Display the resulting frame
     cv2.imshow('frame', frame)
