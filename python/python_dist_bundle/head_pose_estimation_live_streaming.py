@@ -1,9 +1,11 @@
-# Sample code: Compute the yaw pitch and roll of a face image
-
 import tfsdk
+import cv2
 import os
+import math
+import time
 from colorama import Fore
 from colorama import Style
+
 
 # Start by specifying the configuration options to be used. 
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
@@ -64,27 +66,57 @@ if (is_valid == False):
     print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
     quit()
 
-# Load the input image
-res, img = sdk.preprocess_image("../images/brad_pitt_1.jpg")
-if (res != tfsdk.ERRORCODE.NO_ERROR):
-    print(f"{Fore.RED}Unable to set image 1{Style.RESET_ALL}")
-    quit()
 
-# detect the largest face
-found, face_bounding_box = sdk.detect_largest_face(img)
+# Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
+cap = cv2.VideoCapture(0)
+if (cap.isOpened()== False): 
+    print(f"{Fore.RED}Error opening video stream{Style.RESET_ALL}")
+    os._exit(1)
 
-if found == False:
-    print(f"{Fore.RED}Unable to detect face{Style.RESET_ALL}")
-    quit()
 
-res, yaw, pitch, roll = sdk.estimate_head_orientation(img, face_bounding_box)
-if (res != tfsdk.ERRORCODE.NO_ERROR):
-    print(f"{Fore.RED}Unable to compute orientation{Style.RESET_ALL}")
-    quit();
+while(True):
+    # To skip some frames, uncomment the following
+    # cap.grab()
+    
+    ret, frame = cap.read()
+    if ret == False:
+        continue
 
-print(f'yaw: {yaw} radians')
-print(f'pitch: {pitch} radians')
-print(f'roll: {roll} radians')
+    # Set the image using the frame buffer. OpenCV stores images in BGR format
+    res, img = sdk.preprocess_image(frame, frame.shape[1], frame.shape[0], tfsdk.COLORCODE.bgr)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}Unable to set frame.{Style.RESET_ALL}")
+        continue
+
+    # Detect the faces 
+    faces = sdk.detect_faces(img)
+    for face in faces:
+        # Run orientation detection
+        ret, yaw, pitch, roll = sdk.estimate_head_orientation(img, face)
+
+        if ret != tfsdk.ERRORCODE.NO_ERROR:
+            print(f"{Fore.RED}Unable to compute orientation.{Style.RESET_ALL}")
+            continue
+
+        # Now use the orientation to draw the orientation axes
+        ret = sdk.draw_head_orientation_axes(img, face, yaw, pitch, roll, 2)
+        if ret != tfsdk.ERRORCODE.NO_ERROR:
+            print(f"{Fore.RED}Unable to draw orientation arrows.{Style.RESET_ALL}")
+            continue           
+
+        # Convert the annotated image back to OpenCV Mat
+        frame = img.as_numpy_array()
+
+
+    # Display the resulting frame
+    cv2.imshow('frame', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# When everything done, release the capture
+cap.release()
+cv2.destroyAllWindows()
+
 
 
 

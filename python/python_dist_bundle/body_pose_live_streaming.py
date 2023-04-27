@@ -9,27 +9,6 @@ import time
 from colorama import Fore
 from colorama import Style
 
-def draw_body_pose(frame, body_landmarks):
-    joint_pairs = [
-        [0, 1], [1, 3], [0, 2], [2, 4],
-        [5, 6], [5, 7], [7, 9], [6, 8], [8, 10],
-        [5, 11], [6, 12], [11, 12],
-        [11, 13], [12, 14], [13, 15], [14, 16]
-    ]
-    for i,j in enumerate(joint_pairs):
-        Landmark1 = body_landmarks[0][joint_pairs[i][0]]
-        Landmark2 = body_landmarks[0][joint_pairs[i][1]]
-        if Landmark1.score < 0.2 or Landmark2.score < 0.2:
-            continue
-
-        cv2.line(frame, (int(Landmark1.point.x), int(Landmark1.point.y)), 
-            (int(Landmark2.point.x), int(Landmark2.point.y)), (255, 0, 0), 2)
-
-    for i,l in enumerate(body_landmarks[0]):
-        if l.score < 0.2:
-            continue
-        cv2.circle(frame, (int(l.point.x), int(l.point.y)), 3, (0, 255, 0), -1);
-
 
 # Start by specifying the configuration options to be used. 
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
@@ -61,7 +40,6 @@ options.encrypt_database.key = "TODO: Your encryption key here"
 # This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
 # The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
 # Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
-options.initialize_module.face_detector = True
 options.initialize_module.bodypose_estimator = True
 
 # Options for enabling GPU
@@ -118,7 +96,12 @@ while(True):
     if (len(bounding_boxes) > 0) :
         body_landmarks = sdk.estimate_pose(img, bounding_boxes)
         if len(body_landmarks) > 0 :
-            draw_body_pose(frame, body_landmarks)
+            ret = sdk.draw_pose(img, body_landmarks)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print(f"{Fore.RED}Unable to draw body pose.{Style.RESET_ALL}")
+
+            # Converted annotated image back to OpenCV Mat
+            frame = img.as_numpy_array()
 
 
     # Display the resulting frame
