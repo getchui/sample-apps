@@ -6,6 +6,10 @@ import time
 from colorama import Fore
 from colorama import Style
 
+# TODO: Draw axes or box
+draw_box = True
+draw_axes = False
+
 
 # Start by specifying the configuration options to be used. 
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
@@ -91,18 +95,31 @@ while(True):
     # Detect the faces 
     faces = sdk.detect_faces(img)
     for face in faces:
-        # Run orientation detection
-        ret, yaw, pitch, roll = sdk.estimate_head_orientation(img, face)
+        # Obtain the face landmarks 
+        ret, landmarks = sdk.get_face_landmarks(img, face)
+        if ret != tfsdk.ERRORCODE.NO_ERROR:
+            print(f"{Fore.RED}Unable to get face landmarks.{Style.RESET_ALL}")
+            continue
 
+        # Run orientation detection
+        ret, yaw, pitch, roll, rot_vec, trans_vec = sdk.estimate_head_orientation(img, landmarks)
         if ret != tfsdk.ERRORCODE.NO_ERROR:
             print(f"{Fore.RED}Unable to compute orientation.{Style.RESET_ALL}")
             continue
 
-        # Now use the orientation to draw the orientation axes
-        ret = sdk.draw_head_orientation_axes(img, face, yaw, pitch, roll, 2)
-        if ret != tfsdk.ERRORCODE.NO_ERROR:
-            print(f"{Fore.RED}Unable to draw orientation arrows.{Style.RESET_ALL}")
-            continue           
+        if draw_axes:
+            # Use the orientation to draw the orientation axes
+            ret = sdk.draw_head_orientation_axes(img, face, yaw, pitch, roll, 2)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print(f"{Fore.RED}Unable to draw orientation arrows.{Style.RESET_ALL}")
+                continue           
+
+        if draw_box:
+            # Use the orientation to draw the orientation axes
+            ret = sdk.draw_head_orientation_box(img, rot_vec, trans_vec, 2)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print(f"{Fore.RED}Unable to draw orientation box.{Style.RESET_ALL}")
+                continue           
 
         # Convert the annotated image back to OpenCV Mat
         frame = img.as_numpy_array()
