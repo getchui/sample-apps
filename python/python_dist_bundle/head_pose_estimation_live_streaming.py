@@ -101,8 +101,10 @@ while(True):
             print(f"{Fore.RED}Unable to get face landmarks.{Style.RESET_ALL}")
             continue
 
+        sdk.draw_face_landmarks(img, landmarks)
+
         # Run orientation detection
-        ret, yaw, pitch, roll, rot_vec, trans_vec = sdk.estimate_head_orientation(img, landmarks)
+        ret, yaw, pitch, roll, rot_vec, trans_vec = sdk.estimate_head_orientation(img, face, landmarks)
         if ret != tfsdk.ERRORCODE.NO_ERROR:
             print(f"{Fore.RED}Unable to compute orientation.{Style.RESET_ALL}")
             continue
