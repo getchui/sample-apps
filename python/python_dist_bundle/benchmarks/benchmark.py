@@ -277,10 +277,15 @@ def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
         print("Unable to find face in {} method".format(inspect.stack()[0][3]))
         quit()
 
+    ret, landmarks = sdk.get_face_landmarks(img, fb)
+    if (ret != tfsdk.ERRORCODE.NO_ERROR):
+        print("Unable to get face landmarks in {} method".format(inspect.stack()[0][3]))
+        quit()
+
     # Run our timing code
     t1 = current_milli_time()
     for i in range(num_iterations):
-        ret, yaw, pitch, roll = sdk.estimate_head_orientation(img, fb)
+        ret, yaw, pitch, roll, rotation_vec, translation_vec = sdk.estimate_head_orientation(img, fb, landmarks)
     t2 = current_milli_time()
 
     if ret != tfsdk.ERRORCODE.NO_ERROR:

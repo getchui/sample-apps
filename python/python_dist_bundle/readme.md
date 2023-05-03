@@ -48,9 +48,6 @@ Any sample app ending in `_live_streaming.py` requires you to have a camera (phy
 ### Facial Landmarks
 - `face_landmarks_live_streaming.py` uses OpenCV to grab frames from the webcam, runs face detection on the frame, then gets the 106 facial landmarks for each of the detected faces. Finally, the facial landmarks are drawn on the video frame which is then displayed.
 
-### Batch Enroll Identities
-- `enroll_in_database_batch.py` demonstrate the case of batch identities enrollment in a structured folder. It enrolls all the photos in the folder and display any file that does not pass the image quality check.
-
 ### Active Spoof Detection
 - `active_spoof.py` demonstrates how to run active spoof. 
   Active spoof works by analyzing the way a persons face changes as they move closer to a camera. 

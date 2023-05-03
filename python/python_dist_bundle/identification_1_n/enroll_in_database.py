@@ -159,8 +159,12 @@ for path, identity in image_identities:
 
     # We can check the orientation of the head and ensure that it is facing forward
     # To see the effect of yaw and pitch on match score, refer to: https://reference.trueface.ai/cpp/dev/latest/py/face.html#tfsdk.SDK.estimate_head_orientation
+    ret, landmarks = sdk.get_face_landmarks(img, faceBoxAndLandmarks)
+    if (ret != tfsdk.ERRORCODE.NO_ERROR):
+        print("Unable to get face landmarks, not enrolling")
+        continue
 
-    res, yaw, pitch, roll = sdk.estimate_head_orientation(img, faceBoxAndLandmarks)
+    res, yaw, pitch, roll, rot_vec, trans_vec = sdk.estimate_head_orientation(img, faceBoxAndLandmarks, landmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to compute head orientation, not enrolling{Style.RESET_ALL}")
         continue
@@ -168,11 +172,11 @@ for path, identity in image_identities:
     yaw_deg = yaw * 180 / 3.14
     pitch_deg = pitch * 180 / 3.14
 
-    if abs(yaw_deg) > 50:
+    if abs(yaw_deg) > 30:
         print(f"{Fore.RED}Enrollment image has too extreme a yaw, not enrolling{Style.RESET_ALL}")
         continue
 
-    if abs(pitch_deg) > 35:
+    if abs(pitch_deg) > 30:
         print(f"{Fore.RED}Enrollment image has too extreme a pitch, not enrolling{Style.RESET_ALL}")
         continue
 
