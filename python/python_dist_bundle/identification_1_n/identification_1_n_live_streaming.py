@@ -105,6 +105,19 @@ if (cap.isOpened()== False):
     print(f"{Fore.RED}Error opening video stream{Style.RESET_ALL}")
     os._exit(1)
 
+
+# Get the original video resolution
+res_w  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+res_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+print("Original resolution: (", res_w, "x", res_h, ")")
+
+# Try to use HD resolution, will use closes available resolution to this
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+res_w  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+res_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+print("Set resolution to: (", res_w, "x", res_h, ")")
+
 while(True):
     # To skip some frames, uncomment the following
     # cap.grab()
