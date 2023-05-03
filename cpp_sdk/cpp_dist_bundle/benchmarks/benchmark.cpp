@@ -359,12 +359,21 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
         return;
     }
 
+    Landmarks landmarks;
+    errorCode = tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to detect landmarks" << std::endl;
+        return;
+    }
+
     float yaw, pitch, roll;
+    std::array<double, 3> rotationVec, translationVec;
 
     // Time the head orientation
     auto t1 = Clock::now();
     for (size_t i = 0; i < numIterations; ++i) {
-        tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, yaw, pitch, roll);
+        tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotationVec, translationVec);
     }
     auto t2 = Clock::now();
     double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
