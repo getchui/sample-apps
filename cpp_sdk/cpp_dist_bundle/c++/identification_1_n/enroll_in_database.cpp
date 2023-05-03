@@ -198,8 +198,17 @@ int main() {
 
         // We can check the orientation of the head and ensure that it is facing forward
         // To see the effect of yaw and pitch on the match score, refer to: https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
+        Landmarks landmarks;
+        errorCode = tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << "Unable to get head landmarks\n";
+            std::cout << errorCode << std::endl;
+            return -1;
+        }
+
         float yaw, pitch, roll;
-        errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, yaw, pitch, roll);
+        std::array<double, 3> rotationVec, translationVec;
+        errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotationVec, translationVec);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute head orientation\n";
             std::cout << errorCode << std::endl;
@@ -210,13 +219,13 @@ int main() {
         float pitchDeg = pitch * 180 / 3.14;
 
         // Ensure the head is approximately neutral
-        if (std::abs(yawDeg) > 50) {
+        if (std::abs(yawDeg) > 30) {
             std::cout << "Enrollment image has too extreme a yaw: " << yawDeg <<
                       " deg. Please choose a higher quality enrollment image." << std::endl;
             return -1;
         }
 
-        if (std::abs(pitchDeg) > 35) {
+        if (std::abs(pitchDeg) > 30) {
             std::cout << "Enrollment image has too extreme a pitch: " << pitchDeg <<
                       " deg. Please choose a higher quality enrollment image." << std::endl;
             return -1;
