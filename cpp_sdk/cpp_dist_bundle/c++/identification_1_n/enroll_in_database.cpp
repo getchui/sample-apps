@@ -106,8 +106,8 @@ int main() {
 
     // Since our collection is empty, lets populate the collection with some identities
     std::vector<std::pair<std::string, std::string>> identitiesVec = {
-            {"../../images/brad_pitt_2.jpg", "Brad Pitt"},
-            {"../../images/brad_pitt_3.jpg", "Brad Pitt"}, // Can add the same identity more than once
+            {"../../images/brad_pitt_1.jpg", "Brad Pitt"},
+            {"../../images/brad_pitt_2.jpg", "Brad Pitt"}, // Can add the same identity more than once
             {"../../images/tom_cruise_1.jpg", "Tom Cruise"}
     };
 

@@ -91,8 +91,8 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 
 # Since our collection is empty, lets populate the collection with some identities
 image_identities = [
-    ("../images/brad_pitt_2.jpg", "Brad Pitt"),
-    ("../images/brad_pitt_3.jpg", "Brad Pitt"), # Can add the same identity more than once
+    ("../images/brad_pitt_1.jpg", "Brad Pitt"),
+    ("../images/brad_pitt_2.jpg", "Brad Pitt"), # Can add the same identity more than once
     ("../images/tom_cruise_1.jpg", "Tom Cruise")
 ]
 
