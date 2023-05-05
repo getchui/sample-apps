@@ -225,10 +225,18 @@ int main() {
         return -1;
     }
 
+    Landmarks landmarks;
+    errorCode = tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to get face landmarks" << std::endl;
+        return -1;
+    }
+
     // As a final check, we can check the orientation of the head and ensure that it is facing forward
     // To see the effect of yaw and pitch on the match score, refer to: https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
     float yaw, pitch, roll;
-    errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, yaw, pitch, roll);
+    std::array<double, 3> rotMat, transMat;
+    errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotMat, transMat);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute head orientation\n";
         return -1;
