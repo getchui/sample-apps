@@ -25,6 +25,15 @@ public:
             throw std::runtime_error("Unable to open video capture");
         }
 
+        std::cout << "Original resolution to: (" << m_cap.get(cv::CAP_PROP_FRAME_WIDTH) << ", "
+                  << m_cap.get(cv::CAP_PROP_FRAME_HEIGHT) << ")" << std::endl;
+
+        m_cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);//Setting the width of the video
+        m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);//Setting the height of the video
+
+        std::cout << "Set resolution to: (" << m_cap.get(cv::CAP_PROP_FRAME_WIDTH) << ", "
+        << m_cap.get(cv::CAP_PROP_FRAME_HEIGHT) << ")" << std::endl;
+
         // Launch a thread to start grab the newest frame from the frame buffer
         m_rtspThread = std::make_unique<std::thread>(&StreamController::rtspThreadFunc, this);
     }
@@ -65,27 +74,9 @@ private:
     cv::VideoCapture m_cap;
 };
 
-// Utility class used for computing the running average
-class RunningAvg {
-public:
-    explicit RunningAvg(size_t maxElem);
-    float addVal(float val);
-private:
-    const size_t m_maxElem;
-    std::vector<float> m_data;
-    size_t m_pos = 0;
-};
-
 int main() {
     std::atomic<bool> run {true};
     StreamController streamController(run);
-
-    // Set the number of frames we want to average for yaw, pitch, and roll to remove noise
-    // The higher the number, the less responsive the arrows become
-    const size_t NUM_ELEM = 10;
-    RunningAvg yawAvg(NUM_ELEM);
-    RunningAvg pitchAvg(NUM_ELEM);
-    RunningAvg rollAvg(NUM_ELEM);
 
     // Start by specifying the configuration options to be used.
     // Can choose to use default configuration options if preferred by calling the default SDK constructor.
@@ -166,43 +157,34 @@ int main() {
 
         // Get the landmarks for the largest face
         bool found;
-        FaceBoxAndLandmarks landmarks;
-        tfSdk.detectLargestFace(img, landmarks, found);
+        FaceBoxAndLandmarks face;
+        tfSdk.detectLargestFace(img, face, found);
 
         // Use the landmark locations to obtain the yaw, pitch, and roll
         if (found) {
+            Landmarks landmarks;
 
-            // Compute the yaw, pitch, roll
-            float yaw, pitch, roll;
-            auto retCode = tfSdk.estimateHeadOrientation(img, landmarks, yaw, pitch, roll);
+            auto retCode = tfSdk.getFaceLandmarks(img, face, landmarks);
             if (retCode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to compute orientation\n";
                 continue;
             }
 
-            // Get the running average of the values
-            yaw = yawAvg.addVal(yaw);
-            pitch = pitchAvg.addVal(pitch);
-            roll = rollAvg.addVal(roll);
+            // Compute the yaw, pitch, roll
+            float yaw, pitch, roll;
+            std::array<double, 3> rotMat, transMat;
+            retCode = tfSdk.estimateHeadOrientation(img, face, landmarks, yaw, pitch, roll, rotMat, transMat);
+            if (retCode != ErrorCode::NO_ERROR) {
+                std::cout << "Unable to compute orientation\n";
+                continue;
+            }
 
-            // Center point for the axis we will draw
-            const cv::Point origin(100, 100);
+            // Draw the head box
+            tfSdk.drawHeadOrientationBox(img, rotMat, transMat);
 
-            // Compute 3D rotation axis from yaw, pitch, roll
-            // https://stackoverflow.com/a/32133715/4943329
-            const auto x1 = 100 * cos(yaw) * cos(roll);
-            const auto y1 = 100 * (cos(pitch) * sin(roll) + cos(roll) * sin(pitch) * sin(yaw));
-
-            const auto x2 = 100 * (-1 * cos(yaw) * sin(roll));
-            const auto y2 = 100 * (cos(pitch) * cos(roll) - sin(pitch) * sin(yaw) * sin(roll));
-
-            const auto x3 = 100 * sin(yaw);
-            const auto y3 = 100 * (-1 * cos(yaw) * sin(pitch));
-
-            // Draw the arrows on the screen
-            cv::arrowedLine(frame, origin, cv::Point(x1 + origin.x, y1 + origin.y), cv::Scalar(255, 0, 0), 4, cv::LINE_AA);
-            cv::arrowedLine(frame, origin, cv::Point(x2 + origin.x, y2 + origin.y), cv::Scalar(0, 255, 0), 4, cv::LINE_AA);
-            cv::arrowedLine(frame, origin, cv::Point(x3 + origin.x, y3 + origin.y), cv::Scalar(0, 0, 255), 4, cv::LINE_AA);
+            // Modify the frame
+            frame = cv::Mat(img->getHeight(), img->getWidth(), CV_8UC3, img->getData());
+            cv::cvtColor(frame, frame, cv::COLOR_RGB2BGR);
         }
 
         cv::imshow("frame", frame);
@@ -214,27 +196,4 @@ int main() {
     }
 
     return 0;
-}
-
-RunningAvg::RunningAvg(size_t maxElem)
-        : m_maxElem (maxElem)
-{}
-
-// Use circular buffer to compute the average
-float RunningAvg::addVal(float val) {
-    if (m_data.size() <= m_maxElem) {
-        m_data.emplace_back(val);
-    } else {
-        m_data[m_pos++] = val;
-    }
-
-    if (m_pos == m_maxElem)
-        m_pos = 0;
-
-    float sum = 0;
-    for (const auto& x: m_data) {
-        sum += x;
-    }
-
-    return sum / m_data.size();
 }
