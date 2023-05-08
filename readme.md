@@ -8,6 +8,8 @@ For support, please visit https://trueface.freshdesk.com/
 ## Sample Apps
 * [SDK - C++ API](./cpp_sdk/)
 * [SDK - Python Bindings](./python/)
+* [SDK - iOS](./isamples/)
+* [SDK - Android](https://trueface-libraries-docs.web.app/)
 * [Visionbox](./visionbox_apps/)
 * [Elevated Body Temperature](./EBT/)
 
