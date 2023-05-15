@@ -37,6 +37,7 @@ open isamples.xcodeproj
     - face_landmark_detector_v2.trueface.enc
     - face_recognition_cpu_lite_v2.trueface.enc
     - mask_detector_cpu_v3.trueface.enc
+    - spoof_v4.trueface.enc
 
 
 ## Usage
