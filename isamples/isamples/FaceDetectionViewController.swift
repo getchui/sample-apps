@@ -202,11 +202,14 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             case .portrait:
                 connection.videoOrientation = .portrait
             case .portraitUpsideDown:
-                connection.videoOrientation = .portraitUpsideDown
+                // connection.videoOrientation = .portraitUpsideDown
+                connection.videoOrientation = .portrait
             case .landscapeLeft:
-                connection.videoOrientation = .landscapeRight
+                // connection.videoOrientation = .landscapeRight
+                connection.videoOrientation = .portrait
             case .landscapeRight:
-                connection.videoOrientation = .landscapeLeft
+                // connection.videoOrientation = .landscapeLeft
+                connection.videoOrientation = .portrait
             default:
                 break
             }
@@ -215,34 +218,36 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
     
     // Process the image buffer and detect faces using the SDK.
     func processImageBuffer(_ imageBuffer: CVImageBuffer) {
-        let ciimage = CIImage(cvPixelBuffer: imageBuffer)
-        self.frame = convert(cmage: ciimage)
-        let height = CVPixelBufferGetHeight(imageBuffer)
-        let width = CVPixelBufferGetWidth(imageBuffer)
-        
-        guard let tfimage = sdk.preprocessImage(self.frame) else { return }
-        let face = sdk.detectLargestFace(tfimage)
-        
-        DispatchQueue.main.async {
-            self.previewView.subviews.forEach({ $0.removeFromSuperview() })
-            self.faceRectLayer?.removeFromSuperlayer()
-            self.faceRectLayer = nil
-        }
-        
-        if face != nil {
+        autoreleasepool {
+            let ciimage = CIImage(cvPixelBuffer: imageBuffer)
+            self.frame = convert(cmage: ciimage)
+            let height = CVPixelBufferGetHeight(imageBuffer)
+            let width = CVPixelBufferGetWidth(imageBuffer)
+            
+            guard let tfimage = sdk.preprocessImage(self.frame) else { return }
+            let face = sdk.detectLargestFace(tfimage)
+            
             DispatchQueue.main.async {
-                self.processFace(tfimage: tfimage, face: face!, width: width, height: height)
+                self.previewView.subviews.forEach({ $0.removeFromSuperview() })
+                self.faceRectLayer?.removeFromSuperlayer()
+                self.faceRectLayer = nil
             }
-        }
-        
-        defer {
-            // tfimage.destroy()
-        }
-
-        if face != nil {
-            onFaceDetected?(sdk, tfimage, face!)
-        } else {
-            onFaceNotDetected?(sdk, tfimage)
+            
+            if face != nil {
+                DispatchQueue.main.async {
+                    self.processFace(tfimage: tfimage, face: face!, width: width, height: height)
+                }
+            }
+            
+            defer {
+                // tfimage.destroy()
+            }
+            
+            if face != nil {
+                onFaceDetected?(sdk, tfimage, face!)
+            } else {
+                onFaceNotDetected?(sdk, tfimage)
+            }
         }
     }
     

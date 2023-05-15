@@ -65,6 +65,9 @@ class FRViewController: FaceDetectionViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         pauseCamera()
+        let uninitializeModule = TFUninitializeModule()
+        uninitializeModule.faceRecognizer = true
+        self.sdk.uninitializeModule(uninitializeModule)
     }
 
 }

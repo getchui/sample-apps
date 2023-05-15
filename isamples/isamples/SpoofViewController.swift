@@ -83,6 +83,14 @@ class SpoofViewController: FaceDetectionViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         pauseCamera()
+        print("uninitializeModule")
+        let uninitializeModule = TFUninitializeModule()
+        uninitializeModule.activeSpoof = true
+        uninitializeModule.passiveSpoof = true
+        uninitializeModule.maskDetector = true
+        uninitializeModule.liveness = true
+        uninitializeModule.landmarkDetector = true
+        self.sdk.uninitializeModule(uninitializeModule)
     }
     
 }
