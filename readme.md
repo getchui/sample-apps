@@ -3,7 +3,7 @@
 
 For documentation, please visit https://docs.trueface.ai/
 <br />
-For support, please visit https://trueface.freshdesk.com/
+For support, please create a ticket by emailing support@pangiam.com
 
 ## Sample Apps
 * [SDK - C++ API](./cpp_sdk/)
