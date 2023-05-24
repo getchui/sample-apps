@@ -89,7 +89,7 @@ if (is_valid == False):
 # Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
 cap = cv2.VideoCapture(0)
 if (cap.isOpened()== False): 
-    print(f"{Fore.RED}Unable to create database connection{Style.RESET_ALL}")
+    print(f"{Fore.RED}Unable to open video stream{Style.RESET_ALL}")
     quit()
 
 # Get the original video resolution
