@@ -36,7 +36,7 @@ ELSE()
     set(LIB_TF tf)
 ENDIF()
 
-set(LINKER_LIBS ${LIB_TF})
+set(LINKER_LIBS ${LIB_TF} onnxruntime)
 if (CMAKE_CROSSCOMPILING)
     # If we are cross compiling for arm and using the shared Trueface SDK library (libtf.so),
     # then we require ${CMAKE_DL_LIBS} as well
