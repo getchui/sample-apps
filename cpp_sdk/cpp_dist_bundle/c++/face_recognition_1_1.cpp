@@ -13,7 +13,7 @@ int main() {
     // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
     // The face recognition model to use. Use the most accurate face recognition model.
-    options.frModel = FacialRecognitionModel::TFV5;
+    options.frModel = FacialRecognitionModel::TFV5_2;
     // The object detection model to use.
     options.objModel = ObjectDetectionModel::ACCURATE;
     // The face detection filter.

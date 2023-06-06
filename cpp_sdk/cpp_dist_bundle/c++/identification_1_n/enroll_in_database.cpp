@@ -18,14 +18,14 @@ int main() {
     // Can choose to use default configuration options if preferred by calling the default SDK constructor.
     // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
-    // The face recognition model to use. Use the most accurate face recognition model.
-    options.frModel = FacialRecognitionModel::TFV5;
+// The face recognition model to use. TFV5_2 balances accuracy and speed.
+    options.frModel = FacialRecognitionModel::TFV5_2;
     // The object detection model to use.
     options.objModel = ObjectDetectionModel::ACCURATE;
     // The face detection filter.
     options.fdFilter = FaceDetectionFilter::BALANCED;
     // Smallest face height in pixels for the face detector.
-    options.smallestFaceHeight = -1;
+    options.smallestFaceHeight = 80; // Filter out faces smaller than 80 pixels as we want to ensure we only enroll high quality images
     // The path specifying the directory where the model files have been downloaded
     options.modelsPath = "./";
     auto modelsPath = std::getenv("MODELS_PATH");
@@ -152,14 +152,6 @@ int main() {
         // We want to only enroll high quality images into the database / collection
         // For more information, refer to the section titled "Selecting the Best Enrollment Images"
         // https://reference.trueface.ai/cpp/dev/latest/usage/identification.html
-
-        // Therefore, ensure that the face height is at least 100px
-        auto faceHeight = faceBoxAndLandmarks.bottomRight.y - faceBoxAndLandmarks.topLeft.y;
-        std::cout << "Face height: " << faceHeight << std::endl;
-        if (faceHeight < 100) {
-            std::cout << "The face is too small in the image for a high quality enrollment." << std::endl;
-            continue;
-        }
 
         // Ensure that the image is not overly bright or dark, and that the exposure if good for face recognition
         FaceImageQuality quality;

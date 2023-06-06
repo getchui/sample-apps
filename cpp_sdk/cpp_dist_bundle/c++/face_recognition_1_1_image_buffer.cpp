@@ -15,8 +15,8 @@ int main() {
     // Can choose to use default configuration options if preferred by calling the default SDK constructor.
     // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
-    // The face recognition model to use. Use the most accurate face recognition model.
-    options.frModel = FacialRecognitionModel::TFV5;
+// The face recognition model to use. TFV5_2 balances accuracy and speed.
+    options.frModel = FacialRecognitionModel::TFV5_2;
     // The object detection model to use.
     options.objModel = ObjectDetectionModel::ACCURATE;
     // The face detection filter.
@@ -100,13 +100,14 @@ int main() {
     // Calling preprocessImage creates a copy of the data, therefore we can deallocate the input buffer
     stbi_image_free(rgb_image);
 
-    // Can instead use preprocessRgbImage to load the image, if the image is already in rgb format.
     rgb_image = stbi_load("../../images/tom_cruise_1.jpg", &width, &height, &channels, 3);
-    errorCode = tfSdk.preprocessRgbImage(rgb_image, width, height, img3);
+    errorCode = tfSdk.preprocessImage(rgb_image, width, height, ColorCode::rgb, img3);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << errorCode << std::endl;
         return 1;
     }
+
+    stbi_image_free(rgb_image);
 
     // Note, when calling this version of the function, the data is not copied, but referenced.
     // We therefore cannot deallocate the buffer until we are done using it.
@@ -144,9 +145,6 @@ int main() {
         std::cout << "Unable to find face in image" << std::endl;
         return 1;
     }
-
-    // Now that we are done with the image which was loaded using preprocessRgbBuffer, we can deallocate the buffer.
-    stbi_image_free(rgb_image);
 
     // Compute the similarity between the two images of the same face
     float similarityScore;

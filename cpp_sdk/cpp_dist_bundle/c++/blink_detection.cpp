@@ -14,8 +14,8 @@ int main() {
     // Can choose to use default configuration options if preferred by calling the default SDK constructor.
     // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
-    // The face recognition model to use. Use the most accurate face recognition model.
-    options.frModel = FacialRecognitionModel::TFV5;
+// The face recognition model to use. TFV5_2 balances accuracy and speed.
+    options.frModel = FacialRecognitionModel::TFV5_2;
     // The object detection model to use.
     options.objModel = ObjectDetectionModel::ACCURATE;
     // The face detection filter.
@@ -43,7 +43,7 @@ int main() {
     // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
     // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
     InitializeModule initializeModule;
-    initializeModule.liveness = true;
+    initializeModule.blinkDetector = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
