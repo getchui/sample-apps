@@ -9,8 +9,8 @@ from colorama import Style
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
-# The face recognition model to use. Use the most accurate model TFV5.
-options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5
+# The face recognition model to use. TFV5_2 balances speed and accuracy.
+options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5_2
 # The object detection model to use.
 options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.

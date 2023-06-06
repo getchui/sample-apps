@@ -29,8 +29,8 @@ def draw_label(image, point, label, color,
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
-# The face recognition model to use. Use the most accurate model TFV5.
-options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5
+# The face recognition model to use. TFV5_2 balances speed and accuracy.
+options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5_2
 # The object detection model to use.
 options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.
@@ -55,7 +55,7 @@ options.encrypt_database.key = "TODO: Your encryption key here"
 # This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
 # The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
 # Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
-options.initialize_module.liveness = True
+options.initialize_module.blink_detector = True
 
 # Options for enabling GPU
 # We will disable GPU inference, but you can easily enable it by modifying the following options

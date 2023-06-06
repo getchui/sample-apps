@@ -13,15 +13,14 @@ from colorama import Style
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
-# The face recognition model to use. Use the most accurate model TFV5.
-options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5
+# The face recognition model to use. TFV5_2 balances speed and accuracy.
+options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5_2
 # The object detection model to use.
 options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
-# Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = -1 
+options.smallest_face_height = 80 # Set this to 80 because we only want to enroll high quality images 
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -123,14 +122,6 @@ for path, identity in image_identities:
     # We want to only enroll high quality images into the database / collection
     # For more information, refer to the section titled "Selecting the Best Enrollment Images"
     # https://reference.trueface.ai/cpp/dev/latest/py/identification.html
-
-    # Therefore, ensure that the face height is at least 100px
-    faceHeight = faceBoxAndLandmarks.bottom_right.y - faceBoxAndLandmarks.top_left.y
-    print(f"Face height: {faceHeight} pixels")
-
-    if faceHeight < 100:
-        print(f"{Fore.RED}The face is too small in the image for a high quality enrollment, not enrolling{Style.RESET_ALL}")
-        continue
 
     # Ensure that the image is not too bright or dark, and that the exposure is optimal for face recognition
     res, quality = sdk.check_face_image_exposure(img, faceBoxAndLandmarks)
