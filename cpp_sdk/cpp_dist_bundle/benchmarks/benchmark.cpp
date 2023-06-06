@@ -1,5 +1,5 @@
 // The following code runs speed benchmarks for the different modules
-// The first inference speed for each module is discarded due to lazy initialization of models
+// The first few inferences are discarded to ensure caching is hot
 
 #include <chrono>
 #include <iostream>
@@ -14,6 +14,28 @@ using namespace Trueface;
 
 typedef std::chrono::high_resolution_clock Clock;
 
+// Stopwatch Utility
+template <typename Clock = std::chrono::high_resolution_clock>
+class Stopwatch
+{
+    typename Clock::time_point start_point;
+public:
+    Stopwatch() :start_point(Clock::now()){}
+
+    // Returns elapsed time
+    template <typename Rep = typename Clock::duration::rep, typename Units = typename Clock::duration>
+    Rep elapsedTime() const {
+        std::atomic_thread_fence(std::memory_order_relaxed);
+        auto counted_time = std::chrono::duration_cast<Units>(Clock::now() - start_point).count();
+        std::atomic_thread_fence(std::memory_order_relaxed);
+        return static_cast<Rep>(counted_time);
+    }
+};
+
+using preciseStopwatch = Stopwatch<>;
+using systemStopwatch = Stopwatch<std::chrono::system_clock>;
+using monotonicStopwatch = Stopwatch<std::chrono::steady_clock>;
+
 void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
 void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
@@ -23,6 +45,9 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
 void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
+
+bool warmup = true; // Warmup inference to ensure caching is hot
+int numWarmup = 10;
 
 int main() {
     const std::string license = TRUEFACE_TOKEN;
@@ -70,12 +95,12 @@ int main() {
     }
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, 1,  40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, 1,  40 * multFactor);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5, gpuOptions, 1,  40 * multFactor);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::FULL, gpuOptions, 1,  40 * multFactor);
+    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5_2, gpuOptions, 1,  40 * multFactor);
 
     // Benchmarks with batching.
     // On CPU, should be the same speed as a batch size of 1.
     // On GPU, will increase the throughput.
+    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5_2, gpuOptions, batchSize, 40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, batchSize, 40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, batchSize, 40 * multFactor);
     benchmarkMaskDetection(license, gpuOptions, batchSize, 100 * multFactor);
@@ -84,14 +109,12 @@ int main() {
 }
 
 std::string getModelName(FacialRecognitionModel model) {
-    if (model == FacialRecognitionModel::TFV5) {
-        return "TFV5";
+    if (model == FacialRecognitionModel::TFV5_2) {
+        return "TFV5_2";
     } else if (model == FacialRecognitionModel::TFV6) {
         return "TFV6";
     } else if (model == FacialRecognitionModel::TFV7) {
         return "TFV7";
-    } else if (model == FacialRecognitionModel::FULL) {
-        return "FULL";
     } else if (model == FacialRecognitionModel::LITE) {
         return "LITE";
     } else if (model == FacialRecognitionModel::LITE_V2) {
@@ -136,10 +159,18 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
     // Obtain the aligned chip
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found;
-    tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: Unable to detect face when benchmarking face recognition model" << std::endl;
+        return;
+    }
 
     TFFacechip facechip;
-    tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
+    errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: Unable to extract aligned face when benchmarking face recognition model" << std::endl;
+        return;
+    }
 
     std::vector<TFFacechip> facechips;
     for (size_t i = 0; i < batchSize; ++i) {
@@ -148,17 +179,25 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
 
     std::vector<Faceprint> faceprints;
 
-    // Time the creation of the feature vector
-    auto t1 = Clock::now();
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.getFaceFeatureVectors(facechips, faceprints);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to run face recognition" << std::endl;
+                return;
+            }
+        }
+    }
+
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.getFaceFeatureVectors(facechips, faceprints);
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time face recognition " << getModelName(model) << ": " << totalTime / numIterations / static_cast<float>(batchSize)
               << " ms | batch size = " << batchSize << " | " << numIterations << " iterations" << std::endl;
-
 }
 
 void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
@@ -195,14 +234,23 @@ void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuO
 
     std::vector<BoundingBox> boundingBoxes;
 
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.detectObjects(img, boundingBoxes);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Could not run object detection!" << std::endl;
+                return;
+            }
+        }
+    }
+
     // Time the creation of the feature vector
-    auto t1 = Clock::now();
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.detectObjects(img, boundingBoxes);
 
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     const std::string mode = (options.objModel == ObjectDetectionModel::FAST) ? "fast" : "accurate";
 
@@ -242,20 +290,23 @@ void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuO
 
     // Run once to ensure everything works
     TFImage img;
-    auto errorcode = tfSdk.preprocessImage(buffer, img);
-    if (errorcode != ErrorCode::NO_ERROR) {
-        std::cout << "Unable to preprocess the image" << std::endl;
-        return;
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            auto errorcode = tfSdk.preprocessImage(buffer, img);
+            if (errorcode != ErrorCode::NO_ERROR) {
+                std::cout << "Unable to preprocess the image" << std::endl;
+                return;
+            }
+        }
     }
 
     // Time the preprocessImage function
-    auto t1 = Clock::now();
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         TFImage newImg;
         tfSdk.preprocessImage(buffer, newImg);
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time preprocessImage (" << img->getWidth() << "x" << img->getHeight() << "): " <<
     totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
@@ -304,13 +355,22 @@ void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOpt
 
     Landmarks landmarks;
 
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to get detailed landmarks" << std::endl;
+                return;
+            }
+        }
+    }
+
     // Time the landmark detection
-    auto t1 = Clock::now();
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time 106 face landmark detection: " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
@@ -370,13 +430,22 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
     float yaw, pitch, roll;
     std::array<double, 3> rotationVec, translationVec;
 
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotationVec, translationVec);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Unable to run head orientation method" << std::endl;
+                return;
+            }
+        }
+    }
+
     // Time the head orientation
-    auto t1 = Clock::now();
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotationVec, translationVec);
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time head orientation: " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
@@ -426,7 +495,11 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
     }
 
     TFFacechip facechip;
-    tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
+    errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: Unable to extract aligned face for mask detection" << std::endl;
+        return;
+    }
 
     std::vector<TFFacechip> facechips;
     for (size_t i = 0; i < batchSize; ++i) {
@@ -435,13 +508,22 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
 
     std::vector<MaskLabel> maskLabels;
 
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.detectMasks(facechips, maskLabels);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to run mask detection" << std::endl;
+                return;
+            }
+        }
+    }
+
     // Time the mask detector
-    auto t1 = Clock::now();
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.detectMasks(facechips, maskLabels);
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time mask detection: " << totalTime / numIterations / static_cast<float>(batchSize)
               << " ms | batch size = " << batchSize << " | " << numIterations << " iterations" << std::endl;
@@ -462,7 +544,7 @@ void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOp
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
-    initializeModule.liveness = true;
+    initializeModule.blinkDetector = true;
     options.initializeModule = initializeModule;
 
     SDK tfSdk(options);
@@ -492,13 +574,22 @@ void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOp
 
     BlinkState blinkstate;
 
+    if (warmup) {
+        for (int i = 0; i < numWarmup; +i) {
+            errorCode = tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to run blink detection" << std::endl;
+                return;
+            }
+        }
+    }
+
     // Time the blink detector
-    auto t1 = Clock::now();
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time blink detection: " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
@@ -550,20 +641,23 @@ void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOp
     float spoofScore;
     SpoofLabel label;
 
-    errorCode = tfSdk.detectSpoof(img, faceBoxAndLandmarks, label, spoofScore);
-    if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Spoof function failed" << std::endl;
-        std::cout << errorCode << std::endl;
-        return;
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.detectSpoof(img, faceBoxAndLandmarks, label, spoofScore);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Spoof function failed" << std::endl;
+                std::cout << errorCode << std::endl;
+                return;
+            }
+        }
     }
 
     // Time the spoof detector
-    auto t1 = Clock::now();
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.detectSpoof(img, faceBoxAndLandmarks, label, spoofScore);
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time spoof detection: " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
@@ -604,13 +698,22 @@ void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions
     FaceBoxAndLandmarks faceBoxAndLandmarks;
     bool found = false;
 
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to run face detection" << std::endl;
+                return;
+            }
+        }
+    }
+
     // Time the face detection
-    auto t1 = Clock::now();
+    preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
     }
-    auto t2 = Clock::now();
-    double totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time face and landmark detection: " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
