@@ -575,7 +575,7 @@ void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOp
     BlinkState blinkstate;
 
     if (warmup) {
-        for (int i = 0; i < numWarmup; +i) {
+        for (int i = 0; i < numWarmup; ++i) {
             errorCode = tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to run blink detection" << std::endl;
