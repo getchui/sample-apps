@@ -45,7 +45,8 @@ void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuO
 void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
 void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
+void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 500);
+void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
 
 bool warmup = true; // Warmup inference to ensure caching is hot
 int numWarmup = 10;
@@ -68,6 +69,11 @@ int main() {
     gpuOptions.faceRecognizerGPUOptions = gpuModuleOptions;
     gpuOptions.maskDetectorGPUOptions = gpuModuleOptions;
     gpuOptions.objectDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceLandmarkDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceOrientationDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceBlurDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.spoofDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.blinkDetectorGPUOptions = gpuModuleOptions;
 
     if (gpuOptions.enableGPU) {
         std::cout << "Using GPU for inference" << std::endl;
@@ -81,12 +87,13 @@ int main() {
     }
 
     benchmarkPreprocessImage(license, gpuOptions, 200);
-    benchmarkFaceLandmarkDetection(license, gpuOptions);
-    benchmarkDetailedLandmarkDetection(license, gpuOptions);
-    benchmarkBlinkDetection(license, gpuOptions);
-    benchmarkSpoofDetection(license, gpuOptions);
+    benchmarkFaceLandmarkDetection(license, gpuOptions, 100 * multFactor);
+    benchmarkDetailedLandmarkDetection(license, gpuOptions, 100 * multFactor);
+    benchmarkHeadOrientation(license, gpuOptions, 500 * multFactor);
+    benchmarkFaceImageBlurDetection(license, gpuOptions, 200 * multFactor);
+    benchmarkBlinkDetection(license, gpuOptions, 100 * multFactor);
     benchmarkMaskDetection(license, gpuOptions, 1, 100 * multFactor);
-    benchmarkHeadOrientation(license, gpuOptions);
+    benchmarkSpoofDetection(license, gpuOptions, 100 * multFactor);
     benchmarkObjectDetection(license, gpuOptions, 100 * multFactor);
 
     if (!gpuOptions.enableGPU) {
@@ -501,6 +508,78 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
     std::cout << "Average time head orientation: " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
 
+
+}
+
+void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations ) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
+    options.gpuOptions = gpuOptions;
+    options.smallestFaceHeight = 40;
+
+    // Since we initialize the module, we do not need to discard the first inference time.
+    InitializeModule initializeModule;
+    initializeModule.faceBlurDetector = true;
+    options.initializeModule = initializeModule;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Load the image
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not load the image" << std::endl;
+        return;
+    }
+
+    FaceBoxAndLandmarks faceBoxAndLandmarks;
+    bool found = false;
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+    if (errorCode != ErrorCode::NO_ERROR || !found) {
+        std::cout << "Unable to detect face in image" << std::endl;
+        return;
+    }
+
+    TFFacechip facechip;
+    errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: Unable to extract aligned face for mask detection" << std::endl;
+        return;
+    }
+
+    FaceImageQuality quality;
+
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.detectFaceImageBlur(facechip, quality);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to detect face image blur" << std::endl;
+                return;
+            }
+        }
+    }
+
+    // Time the mask detector
+    preciseStopwatch stopwatch;
+    for (size_t i = 0; i < numIterations; ++i) {
+        tfSdk.detectFaceImageBlur(facechip, quality);
+    }
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+
+    std::cout << "Average time face image blur detection: " << totalTime / numIterations
+              << " ms  | " << numIterations << " iterations" << std::endl;
 
 }
 
