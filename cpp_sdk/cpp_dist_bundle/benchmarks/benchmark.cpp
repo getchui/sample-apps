@@ -77,11 +77,15 @@ int main() {
     gpuOptions.spoofDetectorGPUOptions = gpuModuleOptions;
     gpuOptions.blinkDetectorGPUOptions = gpuModuleOptions;
 
+    std::cout << "==========================" << std::endl;
+    std::cout << "==========================" << std::endl;
     if (gpuOptions.enableGPU) {
         std::cout << "Using GPU for inference" << std::endl;
     } else {
         std::cout << "Using CPU for inference" << std::endl;
     }
+    std::cout << "==========================" << std::endl;
+    std::cout << "==========================" << std::endl;
 
     int multFactor = 1;
     if (gpuOptions.enableGPU) {
