@@ -348,15 +348,11 @@ void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuO
     std::cout << "Average time preprocessImage encoded JPG image in memory (" << img->getWidth() << "x" << img->getHeight() << "): " <<
     totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
 
-    // Now repeat the same experiment with a decoded image
-    buffer.resize(img->getHeight() * img->getWidth() * img->getChannels());
-    const auto height = img->getHeight();
-    const auto width = img->getWidth();
-    memcpy(buffer.data(), img->getData(), buffer.size());
-
+    // Now repeat with already decoded imgages (ex. you grab an image from your video stream).
+    TFImage newImg;
     if (warmup) {
         for (int i = 0; i < 10; ++i) {
-            auto errorCode = tfSdk.preprocessImage(buffer.data(), width, height, ColorCode::rgb, img);
+            auto errorCode = tfSdk.preprocessImage(img->getData(), img->getWidth(), img->getHeight(), ColorCode::rgb, newImg);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to preprocess image" << std::endl;
                 return;
@@ -366,13 +362,12 @@ void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuO
 
     preciseStopwatch stopwatch2;
     for (size_t i = 0; i < numIterations; ++i) {
-        TFImage newImg;
-        tfSdk.preprocessImage(buffer, newImg);
+        tfSdk.preprocessImage(img->getData(), img->getWidth(), img->getHeight(), ColorCode::rgb, newImg);
     }
-    totalTime = stopwatch2.elapsedTime<float, std::chrono::microseconds>();
+    totalTime = stopwatch2.elapsedTime<float, std::chrono::milliseconds>();
 
     std::cout << "Average time preprocessImage RGB pixel array in memory (" << img->getWidth() << "x" << img->getHeight() << "): " <<
-              totalTime / numIterations << " us | " << numIterations << " iterations" << std::endl;
+              totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
 }
 
 void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
