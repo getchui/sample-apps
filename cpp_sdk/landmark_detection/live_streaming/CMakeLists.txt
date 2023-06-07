@@ -38,4 +38,4 @@ else()
 endif()
 
 add_executable(cpp_sample_apps_landmark_detection_live_streaming src/main.cpp)
-target_link_libraries(cpp_sample_apps_landmark_detection_live_streaming tf ${OpenCV_LIBS})
+target_link_libraries(cpp_sample_apps_landmark_detection_live_streaming tf ${OpenCV_LIBS} onnxruntime ${CMAKE_DL_LIBS})

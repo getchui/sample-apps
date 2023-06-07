@@ -32,4 +32,4 @@ include_directories(${TRUEFACE_SDK_DIR}/include)
 link_directories(${TRUEFACE_SDK_DIR}/lib)
 
 add_executable(cpp_sample_app_fr_1_1 src/main.cpp)
-target_link_libraries(cpp_sample_app_fr_1_1 tf)
+target_link_libraries(cpp_sample_app_fr_1_1 tf onnxruntime ${CMAKE_DL_LIBS})

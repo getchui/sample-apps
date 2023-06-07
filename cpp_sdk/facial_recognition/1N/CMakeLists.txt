@@ -38,4 +38,4 @@ else()
 endif()
 
 add_executable(cpp_sample_app_fr_1_N src/main.cpp)
-target_link_libraries(cpp_sample_app_fr_1_N tf ${OpenCV_LIBS})
+target_link_libraries(cpp_sample_app_fr_1_N tf ${OpenCV_LIBS} onnxruntime ${CMAKE_DL_LIBS})

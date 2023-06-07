@@ -38,4 +38,4 @@ else()
 endif()
 
 add_executable(cpp_sample_apps_landmark_detection_draw_landmarks_save_images src/main.cpp)
-target_link_libraries(cpp_sample_apps_landmark_detection_draw_landmarks_save_images tf ${OpenCV_LIBS} stdc++fs)
+target_link_libraries(cpp_sample_apps_landmark_detection_draw_landmarks_save_images tf ${OpenCV_LIBS} stdc++fs onnxruntime ${CMAKE_DL_LIBS})
