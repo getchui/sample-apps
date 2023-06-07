@@ -38,7 +38,7 @@ using systemStopwatch = Stopwatch<std::chrono::system_clock>;
 using monotonicStopwatch = Stopwatch<std::chrono::steady_clock>;
 
 void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
-void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
+void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, ObjectDetectionModel objModel, unsigned int numIterations = 100);
 void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
@@ -98,7 +98,8 @@ int main() {
     benchmarkMaskDetection(license, gpuOptions, 1, 100 * multFactor);
     benchmarkGlassesDetection(license, gpuOptions, 200);
     benchmarkSpoofDetection(license, gpuOptions, 100 * multFactor);
-    benchmarkObjectDetection(license, gpuOptions, 100 * multFactor);
+    benchmarkObjectDetection(license, gpuOptions, ObjectDetectionModel::FAST, 100 * multFactor);
+    benchmarkObjectDetection(license, gpuOptions, ObjectDetectionModel::ACCURATE, 40 * multFactor);
 
     if (!gpuOptions.enableGPU) {
         // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE and LITE_V2 models.
@@ -212,7 +213,7 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
               << " ms | batch size = " << batchSize << " | " << numIterations << " iterations" << std::endl;
 }
 
-void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, ObjectDetectionModel objModel, unsigned int numIterations) {
     // Initialize the SDK with the fast object detection model
     ConfigurationOptions options;
     options.modelsPath = "./";
@@ -221,7 +222,7 @@ void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuO
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.objModel = ObjectDetectionModel::FAST;
+    options.objModel = objModel;
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
