@@ -47,6 +47,7 @@ void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOp
 void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
 void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 500);
 void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
+void benchmarkFaceImageOrientationDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 50);
 
 bool warmup = true; // Warmup inference to ensure caching is hot
 int numWarmup = 10;
@@ -87,6 +88,7 @@ int main() {
     }
 
     benchmarkPreprocessImage(license, gpuOptions, 200);
+    benchmarkFaceImageOrientationDetection(license, gpuOptions, 50 * multFactor);
     benchmarkFaceLandmarkDetection(license, gpuOptions, 100 * multFactor);
     benchmarkDetailedLandmarkDetection(license, gpuOptions, 100 * multFactor);
     benchmarkHeadOrientation(license, gpuOptions, 500 * multFactor);
@@ -508,6 +510,62 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
     std::cout << "Average time head orientation: " << totalTime / numIterations
               << " ms | " << numIterations << " iterations" << std::endl;
 
+
+}
+
+void benchmarkFaceImageOrientationDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
+    options.gpuOptions = gpuOptions;
+    options.smallestFaceHeight = 40;
+
+    // Since we initialize the module, we do not need to discard the first inference time.
+    InitializeModule initializeModule;
+    initializeModule.faceOrientationDetector = true;
+    options.initializeModule = initializeModule;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Load the image
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not load the image" << std::endl;
+        return;
+    }
+
+    RotateFlags flags;
+
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.getFaceImageRotation(img, flags);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to compute face image orientation" << std::endl;
+                return;
+            }
+        }
+    }
+
+    // Time the mask detector
+    preciseStopwatch stopwatch;
+    for (size_t i = 0; i < numIterations; ++i) {
+        tfSdk.getFaceImageRotation(img, flags);
+    }
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+
+    std::cout << "Average time face image orientation detection: " << totalTime / numIterations
+              << " ms  | " << numIterations << " iterations" << std::endl;
 
 }
 
