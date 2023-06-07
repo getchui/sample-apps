@@ -48,6 +48,7 @@ void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOp
 void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 500);
 void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
 void benchmarkFaceImageOrientationDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 50);
+void benchmarkGlassesDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
 
 bool warmup = true; // Warmup inference to ensure caching is hot
 int numWarmup = 10;
@@ -95,6 +96,7 @@ int main() {
     benchmarkFaceImageBlurDetection(license, gpuOptions, 200 * multFactor);
     benchmarkBlinkDetection(license, gpuOptions, 100 * multFactor);
     benchmarkMaskDetection(license, gpuOptions, 1, 100 * multFactor);
+    benchmarkGlassesDetection(license, gpuOptions, 200);
     benchmarkSpoofDetection(license, gpuOptions, 100 * multFactor);
     benchmarkObjectDetection(license, gpuOptions, 100 * multFactor);
 
@@ -381,7 +383,6 @@ void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOpt
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
@@ -447,7 +448,6 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
@@ -522,7 +522,6 @@ void benchmarkFaceImageOrientationDetection(const std::string& license, const GP
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
@@ -578,7 +577,6 @@ void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOption
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
@@ -641,6 +639,71 @@ void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOption
 
 }
 
+void benchmarkGlassesDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+    // Initialize the SDK
+    ConfigurationOptions options;
+    options.modelsPath = "./";
+    auto modelsPath = std::getenv("MODELS_PATH");
+    if (modelsPath) {
+        options.modelsPath = modelsPath;
+    }
+    options.gpuOptions = gpuOptions;
+
+    // Since we initialize the module, we do not need to discard the first inference time.
+    InitializeModule initializeModule;
+    initializeModule.eyeglassDetector = true;
+    options.initializeModule = initializeModule;
+
+    SDK tfSdk(options);
+    bool valid = tfSdk.setLicense(license);
+
+    if (!valid) {
+        std::cout << "Error: the provided license is invalid." << std::endl;
+        exit (EXIT_FAILURE);
+    }
+
+    // Load the image
+    TFImage img;
+    ErrorCode errorCode = tfSdk.preprocessImage("../images/headshot.jpg", img);
+    if (errorCode != ErrorCode::NO_ERROR) {
+        std::cout << "Error: could not load the image" << std::endl;
+        return;
+    }
+
+    FaceBoxAndLandmarks faceBoxAndLandmarks;
+    bool found = false;
+    errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+
+    if (errorCode != ErrorCode::NO_ERROR || !found) {
+        std::cout << "Unable to detect face in image" << std::endl;
+        return;
+    }
+
+    GlassesLabel label;
+    float score;
+
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            errorCode = tfSdk.detectGlasses(img, faceBoxAndLandmarks, label, score);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to run glasses detection" << std::endl;
+                return;
+            }
+        }
+    }
+
+    // Time the mask detector
+    preciseStopwatch stopwatch;
+    for (size_t i = 0; i < numIterations; ++i) {
+        tfSdk.detectGlasses(img, faceBoxAndLandmarks, label, score);
+    }
+    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+
+    std::cout << "Average time glasses detection: " << totalTime / numIterations
+              << " ms | " << numIterations << " iterations" << std::endl;
+
+}
+
 void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int batchSize, unsigned int numIterations) {
     // Initialize the SDK
     ConfigurationOptions options;
@@ -650,7 +713,6 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
@@ -727,7 +789,6 @@ void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOp
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
@@ -793,7 +854,6 @@ void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOp
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.smallestFaceHeight = 40;
 
     // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
@@ -861,7 +921,6 @@ void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions
         options.modelsPath = modelsPath;
     }
     options.gpuOptions = gpuOptions;
-    options.smallestFaceHeight = 40;
 
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
