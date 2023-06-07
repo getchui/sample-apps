@@ -16,6 +16,7 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Ofast")
 # Require OpenMP for Linux and windows builds
 if (UNIX AND NOT APPLE OR WIN32)
+    # Need to explicitly link OpenMP when using static library version of trueface sdk
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 endif()
 
@@ -33,10 +34,13 @@ link_directories(${TRUEFACE_SDK_DIR}/lib)
 add_executable(run_benchmarks benchmark.cpp)
 add_executable(run_benchmarks_1N_identification benchmark_1N_identification.cpp)
 
+
+# Need to explicitly link onnxruntime and libdl when using static library version of trueface sdk
 IF (WIN32)
-    target_link_libraries(run_benchmarks libtf onnxruntime)
-    target_link_libraries(run_benchmarks_1N_identification libtf onnxruntime)
+    SET(LINKER_LIBS libtf onnxruntime ${CMAKE_DL_LIBS})
 ELSE()
-    target_link_libraries(run_benchmarks tf onnxruntime)
-    target_link_libraries(run_benchmarks_1N_identification tf onnxruntime)
+    set(LINKER_LIBS tf onnxruntime ${CMAKE_DL_LIBS})
 ENDIF()
+
+target_link_libraries(run_benchmarks ${LINKER_LIBS})
+target_link_libraries(run_benchmarks_1N_identification ${LINKER_LIBS})

@@ -20,7 +20,7 @@ if (NOT WIN32)
 endif()
 
 if (NOT APPLE)
-    # Require OpenMP for Linux and Windows builds
+    # Require OpenMP for when using static library version of Trueface SDK
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 endif()
 
@@ -36,7 +36,8 @@ ELSE()
     set(LIB_TF tf)
 ENDIF()
 
-set(LINKER_LIBS ${LIB_TF} onnxruntime)
+# Need to explicitly link onnxruntime and libdl when using static library version of trueface sdk  
+set(LINKER_LIBS ${LIB_TF} onnxruntime ${CMAKE_DL_LIBS})
 if (CMAKE_CROSSCOMPILING)
     # If we are cross compiling for arm and using the shared Trueface SDK library (libtf.so),
     # then we require ${CMAKE_DL_LIBS} as well

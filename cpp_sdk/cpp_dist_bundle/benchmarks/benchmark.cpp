@@ -5,7 +5,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdlib> 
+#include <cstdlib>
+#include <cstring>
 
 #include "tf_sdk.h"
 #include <fstream>
@@ -277,22 +278,14 @@ void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuO
         exit (EXIT_FAILURE);
     }
 
-    // Read the encoded image into memory
-    std::ifstream file("../images/headshot.jpg", std::ios::binary | std::ios::ate);
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
+    const std::string imgPath = "../images/headshot.jpg";
 
-    std::vector<uint8_t> buffer(size);
-    if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
-        std::cout << "Unable to load the image" << std::endl;
-        return;
-    }
-
+    // First run the benchmark for an image on disk
     // Run once to ensure everything works
     TFImage img;
     if (warmup) {
         for (int i = 0; i < numWarmup; ++i) {
-            auto errorcode = tfSdk.preprocessImage(buffer, img);
+            auto errorcode = tfSdk.preprocessImage(imgPath, img);
             if (errorcode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to preprocess the image" << std::endl;
                 return;
@@ -304,12 +297,70 @@ void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuO
     preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
         TFImage newImg;
-        tfSdk.preprocessImage(buffer, newImg);
+        tfSdk.preprocessImage(imgPath, img);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
-    std::cout << "Average time preprocessImage (" << img->getWidth() << "x" << img->getHeight() << "): " <<
+    std::cout << "Average time preprocessImage JPG image from disk (" << img->getWidth() << "x" << img->getHeight() << "): " <<
+              totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
+
+    // Now repeat with encoded image in memory
+    std::ifstream file(imgPath, std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<uint8_t> buffer(size);
+    if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+        std::cout << "Unable to load the image" << std::endl;
+        return;
+    }
+
+    if (warmup) {
+        for (int i = 0; i < numWarmup; ++i) {
+            auto errorcode = tfSdk.preprocessImage(buffer, img);
+            if (errorcode != ErrorCode::NO_ERROR) {
+                std::cout << "Unable to preprocess the image" << std::endl;
+                return;
+            }
+        }
+    }
+
+    // Time the preprocessImage function
+    preciseStopwatch stopwatch1;
+    for (size_t i = 0; i < numIterations; ++i) {
+        TFImage newImg;
+        tfSdk.preprocessImage(buffer, newImg);
+    }
+    totalTime = stopwatch1.elapsedTime<float, std::chrono::milliseconds>();
+
+    std::cout << "Average time preprocessImage encoded JPG image in memory (" << img->getWidth() << "x" << img->getHeight() << "): " <<
     totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
+
+    // Now repeat the same experiment with a decoded image
+    buffer.resize(img->getHeight() * img->getWidth() * img->getChannels());
+    const auto height = img->getHeight();
+    const auto width = img->getWidth();
+    memcpy(buffer.data(), img->getData(), buffer.size());
+
+    if (warmup) {
+        for (int i = 0; i < 10; ++i) {
+            auto errorCode = tfSdk.preprocessImage(buffer.data(), width, height, ColorCode::rgb, img);
+            if (errorCode != ErrorCode::NO_ERROR) {
+                std::cout << "Error: Unable to preprocess image" << std::endl;
+                return;
+            }
+        }
+    }
+
+    preciseStopwatch stopwatch2;
+    for (size_t i = 0; i < numIterations; ++i) {
+        TFImage newImg;
+        tfSdk.preprocessImage(buffer, newImg);
+    }
+    totalTime = stopwatch2.elapsedTime<float, std::chrono::microseconds>();
+
+    std::cout << "Average time preprocessImage RGB pixel array in memory (" << img->getWidth() << "x" << img->getHeight() << "): " <<
+              totalTime / numIterations << " us | " << numIterations << " iterations" << std::endl;
 }
 
 void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
