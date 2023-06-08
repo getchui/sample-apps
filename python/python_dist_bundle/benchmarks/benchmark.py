@@ -125,7 +125,7 @@ def benchmark_blink_detection(license, gpu_options, num_iterations = 100):
 
     options.smallest_face_height = 40
     options.initialize_module.face_detector = True
-    options.initialize_module.liveness = True
+    options.initialize_module.blink_detector = True
 
     sdk = tfsdk.SDK(options)
 
@@ -427,9 +427,9 @@ if gpu_options.enable_GPU == False:
     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, 1, 200)
     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, 1, 200)
 
+benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, 1, 40 * mult_factor)
 benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, 1, 40 * mult_factor)
-benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5, gpu_options, 1, 40 * mult_factor)
-benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.FULL, gpu_options, 1, 40 * mult_factor)
+benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, 1, 40 * mult_factor)
 
 # TODO Cyrus: Add Object detection benchmarking coe
 
@@ -437,5 +437,6 @@ benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.FULL, gpu_optio
 # Benchmarks with batching.
 # On CPU, should be the same speed as a batch size of 1.
 # On GPU, will increase the throughput.
+benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, batch_size, 40 * mult_factor)
 benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 40 * mult_factor)
 benchmark_mask_detection(license, gpu_options, batch_size, 40 * mult_factor)
