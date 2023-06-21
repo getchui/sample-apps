@@ -37,7 +37,8 @@ add_executable(run_benchmarks_1N_identification benchmark_1N_identification.cpp)
 
 # Need to explicitly link onnxruntime and libdl when using static library version of trueface sdk
 IF (WIN32)
-    SET(LINKER_LIBS libtf onnxruntime ${CMAKE_DL_LIBS})
+    # Don't require onnxruntime for windows
+    SET(LINKER_LIBS libtf ${CMAKE_DL_LIBS})
 ELSE()
     set(LINKER_LIBS tf onnxruntime ${CMAKE_DL_LIBS})
 ENDIF()

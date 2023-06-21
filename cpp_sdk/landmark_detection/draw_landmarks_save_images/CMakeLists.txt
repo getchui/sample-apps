@@ -37,5 +37,9 @@ else()
     find_package( OpenCV REQUIRED)
 endif()
 
+if(NOT WIN32)
+    set(ONNXRUNTIME_LIB onnxruntime)
+endif()
+
 add_executable(cpp_sample_apps_landmark_detection_draw_landmarks_save_images src/main.cpp)
-target_link_libraries(cpp_sample_apps_landmark_detection_draw_landmarks_save_images tf ${OpenCV_LIBS} stdc++fs onnxruntime ${CMAKE_DL_LIBS})
+target_link_libraries(cpp_sample_apps_landmark_detection_draw_landmarks_save_images tf ${OpenCV_LIBS} stdc++fs ${ONNXRUNTIME_LIB} ${CMAKE_DL_LIBS})

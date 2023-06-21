@@ -37,5 +37,9 @@ else()
     find_package( OpenCV REQUIRED)
 endif()
 
+if(NOT WIN32)
+    set(ONNXRUNTIME_LIB onnxruntime)
+endif()
+
 add_executable(cpp_sample_app_fr_1_N src/main.cpp)
-target_link_libraries(cpp_sample_app_fr_1_N tf ${OpenCV_LIBS} onnxruntime ${CMAKE_DL_LIBS})
+target_link_libraries(cpp_sample_app_fr_1_N tf ${OpenCV_LIBS} ${ONNXRUNTIME_LIB} ${CMAKE_DL_LIBS})

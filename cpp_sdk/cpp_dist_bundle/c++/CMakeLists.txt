@@ -36,8 +36,14 @@ ELSE()
     set(LIB_TF tf)
 ENDIF()
 
-# Need to explicitly link onnxruntime and libdl when using static library version of trueface sdk  
-set(LINKER_LIBS ${LIB_TF} onnxruntime ${CMAKE_DL_LIBS})
+# Need to explicitly link onnxruntime and libdl when using static library version of trueface sdk
+if (WIN32)
+    # Don't need to link onnxruntime for windows
+    set(LINKER_LIBS ${LIB_TF} ${CMAKE_DL_LIBS})
+else()
+    set(LINKER_LIBS ${LIB_TF} onnxruntime ${CMAKE_DL_LIBS})
+endif()
+
 if (CMAKE_CROSSCOMPILING)
     # If we are cross compiling for arm and using the shared Trueface SDK library (libtf.so),
     # then we require ${CMAKE_DL_LIBS} as well

@@ -31,5 +31,9 @@ set(TRUEFACE_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}/../../trueface_sdk")
 include_directories(${TRUEFACE_SDK_DIR}/include)
 link_directories(${TRUEFACE_SDK_DIR}/lib)
 
+if(NOT WIN32)
+    set(ONNXRUNTIME_LIB onnxruntime)
+endif()
+
 add_executable(cpp_sample_app_fr_1_1 src/main.cpp)
-target_link_libraries(cpp_sample_app_fr_1_1 tf onnxruntime ${CMAKE_DL_LIBS})
+target_link_libraries(cpp_sample_app_fr_1_1 tf ${ONNXRUNTIME_LIB} ${CMAKE_DL_LIBS})
