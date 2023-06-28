@@ -63,9 +63,9 @@ int main() {
     GPUModuleOptions gpuModuleOptions;
     gpuModuleOptions.precision = Precision::FP16;
 
-    int32_t batchSize = 4;
+    int32_t batchSize = 16;
     gpuModuleOptions.maxBatchSize = batchSize;
-    gpuModuleOptions.optBatchSize = batchSize;
+    gpuModuleOptions.optBatchSize = 1;
 
     gpuOptions.faceDetectorGPUOptions = gpuModuleOptions;
     gpuOptions.faceRecognizerGPUOptions = gpuModuleOptions;
