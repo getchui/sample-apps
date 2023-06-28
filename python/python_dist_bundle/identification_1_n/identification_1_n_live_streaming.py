@@ -167,8 +167,8 @@ while(True):
             if (res != tfsdk.ERRORCODE.NO_ERROR):
                 print(f"{Fore.RED}Unable to draw candidate label and bounding box{Style.RESET_ALL}")
 
-        # Convert the annotated frame back to a OpenCV frame
-        frame = img.as_numpy_array()
+    # Convert the annotated frame back to a OpenCV frame
+    frame = img.as_numpy_array()
 
 
     cv2.imshow(filename, frame)

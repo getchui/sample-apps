@@ -124,8 +124,8 @@ while(True):
             print(f"{Fore.RED}Unable to draw face landmarks{Style.RESET_ALL}")
             continue
 
-        # Now converted the annotated frame back to the OpenCV frame
-        frame = img.as_numpy_array()
+    # Now converted the annotated frame back to the OpenCV frame
+    frame = img.as_numpy_array()
 
     # Display the resulting frame
     cv2.imshow('frame', frame)

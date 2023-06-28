@@ -26,7 +26,7 @@ If building on Windows, be sure to first read our guide [here](https://reference
 - `cmake -A x64 ..`
 - `cmake --build . --config release --parallel 4`
 - After building the executables, you will need to copy them from `build/Release` to `build/` before running them.
-- Additionally, you must ensure that `libtf.dll` and `libpq.dll` are in the same directory as your executables. 
+- Additionally, you must copy over all `.dll` libs located in `../trueface_sdk/lib` to the build directory. 
 
 At this point, you are ready to run the sample apps. 
 Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
@@ -63,7 +63,7 @@ The 1 to N identification sample app consists of two parts:
   
 Note, `enroll_in_database` must be run before you can run `identification_1_n`.
 
-### Object Detection ##
+### Object Detection 
 - `object_detection.cpp` demonstrates how to run object detection on an image, then prints the label for all the detected objects.
 
 ### Liveness

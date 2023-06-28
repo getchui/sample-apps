@@ -135,8 +135,8 @@ while(True):
                 print(f"{Fore.RED}Unable to draw orientation box.{Style.RESET_ALL}")
                 continue           
 
-        # Convert the annotated image back to OpenCV Mat
-        frame = img.as_numpy_array()
+    # Convert the annotated image back to OpenCV Mat
+    frame = img.as_numpy_array()
 
 
     # Display the resulting frame
