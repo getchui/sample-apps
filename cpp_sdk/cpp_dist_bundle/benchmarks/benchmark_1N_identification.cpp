@@ -15,7 +15,7 @@ int main() {
     const std::string license = TRUEFACE_TOKEN;
 
     ConfigurationOptions options;
-    options.frModel = FacialRecognitionModel::TFV5_2;
+    options.frModel = FacialRecognitionModel::TFV7;
     options.dbms = DatabaseManagementSystem::NONE;
 
     options.modelsPath = "./";
