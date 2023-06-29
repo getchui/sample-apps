@@ -110,10 +110,10 @@ int main() {
         benchmarkFaceRecognition(license, FacialRecognitionModel::LITE, gpuOptions, 1,  200);
         benchmarkFaceRecognition(license, FacialRecognitionModel::LITE_V2, gpuOptions, 1,  200);
     }
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, 1,  40 * multFactor);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, 1,  40 * multFactor);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5_2, gpuOptions, 1,  40 * multFactor);
 
+    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5_2, gpuOptions, 1,  40 * multFactor);
+    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, 1,  40 * multFactor);
+    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, 1,  40 * multFactor);
     // Benchmarks with batching.
     // On CPU, should be the same speed as a batch size of 1.
     // On GPU, will increase the throughput.
