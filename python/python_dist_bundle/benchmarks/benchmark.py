@@ -431,9 +431,6 @@ benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_optio
 benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, 1, 40 * mult_factor)
 benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, 1, 40 * mult_factor)
 
-# TODO Cyrus: Add Object detection benchmarking coe
-
-
 # Benchmarks with batching.
 # On CPU, should be the same speed as a batch size of 1.
 # On GPU, will increase the throughput.
