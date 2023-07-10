@@ -13,7 +13,7 @@ The templates are then compared to generate a similarity score.
 * Download the appropriate face recognition model using the download scripts which come bundled with the SDK. 
 * Export your Trueface token to your environment as `TRUEFACE_TOKEN`.
   Alternatively, open the `CMakeLists.txt` file and edit this line here: `add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")`.
-  Replace `YOUR_TOKEN_HERE` with the license token you were provided with. If you have not yet received a token, contact sales@trueface.ai.
+  Replace `YOUR_TOKEN_HERE` with the license token you were provided with. If you have not yet received a token, contact support@pangiam.com.
 * `mkdir build && cd build`
 * `cmake ..`
 * `make`
