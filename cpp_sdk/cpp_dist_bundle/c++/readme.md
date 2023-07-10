@@ -22,7 +22,7 @@ Run the following commands to compile and link the sample apps:
 - `make -j $(nproc)`
 
 Before you can run the sample apps, you must add the aboslute path to the directory containing ONNX Runtime (`../../trueface_sdk/lib/`) to your `LD_LIBRARY_PATH` environment variable. So for example:
-- `cd ../../trueface_sdk/lib/`
+- `cd ../../../trueface_sdk/lib/`
 - `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)`
 - `cd -`
 
@@ -34,7 +34,7 @@ Run the following commands to compile and link the sample apps:
 - `make -j $(nproc)`
 
 Before you can run the sample apps, you must add the aboslute path to the directory containing ONNX Runtime (`../../trueface_sdk/lib/`) to your `DYLD_FALLBACK_LIBRARY_PATH` environment variable. So for example:
-- `cd ../../trueface_sdk/lib/`
+- `cd ../../../trueface_sdk/lib/`
 - `export DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:$(pwd)`
 - `cd -`
 
