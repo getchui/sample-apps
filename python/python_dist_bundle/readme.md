@@ -3,15 +3,16 @@
 ## Prerequisites
 
 In order to run the sample apps, you must place the python bindings library in the same directory as the python script. 
-Alternatively, you can add the path to the directory containing the python bindings library to your `PYTHONPATH` environment variable.
-If using the GPU SDK, you will need to add the directory containing `libmxnet.so` to your `LD_LIBRARY_PATH` environment variable to ensure the supporting shared libraries are found.
+Alternatively, you can add the absolute path to the directory containing the python bindings library to your `PYTHONPATH` environment variable.
+You must also add the aboslute path to the directory containing the provided ONNX Runtime dependency library to your `LD_LIBRARY_PATH` environment variable if using Linux or `DYLD_FALLBACK_LIBRARY_PATH` if using MacOS.
+
 You can add to an environment variable as follows: `export PYTHONPATH=$PYTHONPATH:/path/to/directory/containing/tfsdk...`.
 
 The following dependencies may need to be installed for some sample apps:
 - `pip install numpy`
 - `pip install colorama`
 - `pip install opencv-python`
-- `pip install cupy` (required for `face_recognition_vram.py` sample app)
+- Optional: `pip install cupy` (required for `face_recognition_vram.py` sample app)
 
 If you are are using the GPU SDK, be sure to read [this guide](https://reference.trueface.ai/cpp/dev/latest/index.html#gpu-sdk-dependencies) on installing GPU dependencies.
 
@@ -25,8 +26,9 @@ To benchmark GPU inference, change [this](https://github.com/getchui/sample-apps
 Start by exporting your provided token as an envionrmnet variable with the key `TRUEFACE_TOKEN`. 
 ex. `export TRUEFACE_TOKEN=<YOUR_TOKEN_HERE>`
 
-Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
+Most Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
 The model files can be downloaded by running `./download_models/download_all_models.sh`. 
+You can also choose to download only the models files required for your application by running the individual scripts provided in that directory.
 If you download the model files to a directory other than the run directory, you must specify the path to the directory using the `tfsdk.ConfigurationOptions.models_path` configuration option.
 
 The sample code can be run by calling `python3 sample_code_name.py`.

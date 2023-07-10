@@ -15,7 +15,7 @@ If building for windows, run:
 * `cmake -A x64 ..`
 * `cmake --build . --config release --parallel 2`
 * After building the executables, you will need to copy them from `build/Release` to `build/` before running them.
-* Additionally, you must ensure that `libtf.dll` and `libpq.dll` are in the same directory as your executables.
+* Additionally, you must copy over all `.dll` libs located in `../trueface_sdk/lib` to the build directory.
 
 The benchmarks will require you to download all the model files.
 The model files can be downloaded by running `../../download_models/download_all_models.sh`. If you download the model files to a directory other than the build directory, you must specify the path to the directory using the `Trueface::ConfigurationOptions.modelsPath` configuration option.
