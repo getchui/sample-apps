@@ -1,7 +1,7 @@
 # Trueface SDK
 
 ## Overview
-The sdk library and the header files `tf_sdk.h` and `tf_data_types.h` can be found in `./trueface_sdk/`.
+The Trueface sdk library, dependency libraries, and header files `tf_sdk.h` and `tf_data_types.h` can be found in `./trueface_sdk/`.
 
 ## C++ Sample Code
 Navigate to `c++/` and consult the readme file for build instructions.
@@ -9,8 +9,8 @@ The sample code demonstrates the basic functionality of the SDK, and provides a 
 To explore full functionality, please consult the header files and the documentation.
 
 ## Model Files
-Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
-The model files can be downloaded by running `./download_models/download_all_models.sh`. 
+The sample apps require certain models files to be downloaded (they will throw an exception if the model file is not detected).
+The model files can be downloaded by running `./download_models/download_all_models.sh`. You can alternatively run individual scripts in that directory to download only the models you require. 
 If you download the model files to a directory other than the build directory, you must specify the path to the directory using the `Trueface::ConfigurationOptions.modelsPath` configuration option.
 
 ## Documentation

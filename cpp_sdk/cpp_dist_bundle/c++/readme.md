@@ -11,7 +11,7 @@ Export your Trueface token to your environment as `TRUEFACE_TOKEN`.
 Be sure to wrap the token in quotes `"`. 
 So for example, `export TRUEFACE_TOKEN="YOUR_TOKEN_HERE"`. 
 Alternatively, open the `CMakeLists.txt` file and edit this line here: `add_definitions(-DTRUEFACE_TOKEN="YOUR_TOKEN_HERE")`.
-Replace `YOUR_TOKEN_HERE` with the license token you were provided with. If you have not yet received a token, contact sales@trueface.ai. 
+Replace `YOUR_TOKEN_HERE` with the license token you were provided with. If you have not yet received a token, contact support@pangiam.com. 
 This will insert your token into all the sample apps. Alternatively, you can edit each individual sample app and enter your token manually. 
 
 Next, run the following commands:
