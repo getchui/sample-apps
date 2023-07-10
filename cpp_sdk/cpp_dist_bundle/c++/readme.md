@@ -14,12 +14,31 @@ Alternatively, open the `CMakeLists.txt` file and edit this line here: `add_defi
 Replace `YOUR_TOKEN_HERE` with the license token you were provided with. If you have not yet received a token, contact support@pangiam.com. 
 This will insert your token into all the sample apps. Alternatively, you can edit each individual sample app and enter your token manually. 
 
-Next, run the following commands:
+### Linux
+Run the following commands to compile and link the sample apps:
 - `mkdir build`
 - `cd build`
 - `cmake ..`
 - `make -j $(nproc)`
 
+Before you can run the sample apps, you must add the aboslute path to the directory containing ONNX Runtime (`../../trueface_sdk/lib/`) to your `LD_LIBRARY_PATH` environment variable. So for example:
+- `cd ../../trueface_sdk/lib/`
+- `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)`
+- `cd -`
+
+### MacOS
+Run the following commands to compile and link the sample apps:
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make -j $(nproc)`
+
+Before you can run the sample apps, you must add the aboslute path to the directory containing ONNX Runtime (`../../trueface_sdk/lib/`) to your `DYLD_FALLBACK_LIBRARY_PATH` environment variable. So for example:
+- `cd ../../trueface_sdk/lib/`
+- `export DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:$(pwd)`
+- `cd -`
+
+### Windows
 If building on Windows, be sure to first read our guide [here](https://reference.trueface.ai/cpp/dev/latest/index.html#windows-sdk). Next, you will need to run the following commands:
 - `mkdir build`
 - `cd build`
@@ -27,15 +46,17 @@ If building on Windows, be sure to first read our guide [here](https://reference
 - `cmake --build . --config release --parallel 4`
 - After building the executables, you will need to copy them from `build/Release` to `build/` before running them.
 - Additionally, you must copy over all `.dll` libs located in `../trueface_sdk/lib` to the build directory. 
+- A peculiarity about Window's is that when an exception is thrown, no error message is printed to the console. You may therefore choose to wrap the sample code in try catch statements, printing the exception messages. As an example, if the appropriate model file is not found, the SDK will throw an exception.
 
+## Running the Sample Apps
 At this point, you are ready to run the sample apps. 
-Some sample apps may require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
-The model files can be downloaded by running `../../download_models/download_all_models.sh`. If you download the model files to a directory other than the build directory, you must specify the path to the directory using the `Trueface::ConfigurationOptions.modelsPath` configuration option. 
+Most sample apps require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
+All the model files can be downloaded by running `../../download_models/download_all_models.sh`. You can also choose to download only the models files required for your application by running the individual scripts provided in that directory. If you download the model files to a directory other than the build directory, you must specify the path to the directory using the `Trueface::ConfigurationOptions.modelsPath` configuration option. 
 
 ## Note
 - When compiling your application, be sure to use the `-Ofast` compiler flag. 
 
-## CMake Options
+## Other CMake Options
 - `BUILD_GPU`: Builds sample apps involving GPU specific functions. Will need the GPU SDK in order to run these sample apps. ex. `cmake -DBUILD_GPU=ON ..`
 - `BUILD_GPU_OPENCV`: Builds the sample app which demonstrates loading images directly from GPU VRAM. ex. `cmake -DBUILD_GPU_OPENCV=ON`. 
   Enabling this option will also enable `BUILD_GPU`. 
