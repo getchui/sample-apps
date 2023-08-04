@@ -377,7 +377,7 @@ def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, n
     total_time = t2 - t1
     avg_time = total_time / num_iterations / batch_size
 
-    print("Average time face recognition: {} ms | batch size = {} | {} iterations".format(fr_model.name, avg_time, batch_size, num_iterations))
+    print("Average time face recognition {}: {} ms | batch size = {} | {} iterations".format(fr_model.name, avg_time, batch_size, num_iterations))
 
 # ********************************************************************************************************
 # ********************************************************************************************************
