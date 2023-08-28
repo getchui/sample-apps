@@ -106,11 +106,11 @@ int main() {
     benchmarkObjectDetection(license, gpuOptions, ObjectDetectionModel::ACCURATE, 40 * multFactor);
 
     if (!gpuOptions.enableGPU) {
-        // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE and LITE_V2 models.
+        // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE model.
         benchmarkFaceRecognition(license, FacialRecognitionModel::LITE, gpuOptions, 1,  200);
-        benchmarkFaceRecognition(license, FacialRecognitionModel::LITE_V2, gpuOptions, 1,  200);
     }
 
+    benchmarkFaceRecognition(license, FacialRecognitionModel::LITE_V2, gpuOptions, 1,  200);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5_2, gpuOptions, 1,  40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, 1,  40 * multFactor);
     benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, 1,  40 * multFactor);
