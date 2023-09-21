@@ -77,6 +77,8 @@ Any sample app ending in `_live_streaming.py` requires you to have a camera (phy
 - `identification_1_n/identification_1_n_live_streaming.py` is the same as `identification_1_n/identification_1_n.py`, but uses OpenCV to grab frames from the webcam and runs search queries using those images. 
 The annotated video is then displayed in real time. 
 
+- `identification_1_n/identification_multiple_collections.py` demonstrates how to load multiple collections into memory and how to perform operations (enrollment, identification) on those collections.
+
 Note, `enroll_in_database.py` must be run before you can run `identification_1_n.py` or `identification_1_n_live_streaming.py`.
 
 ### Object Detection
