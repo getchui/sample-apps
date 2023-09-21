@@ -124,7 +124,7 @@ for path, identity in image_identities:
     # https://reference.trueface.ai/cpp/dev/latest/py/identification.html
 
     # Ensure that the image is not too bright or dark, and that the exposure is optimal for face recognition
-    res, quality = sdk.check_face_image_exposure(img, faceBoxAndLandmarks)
+    res, quality, percentImageBright, percentImageDark, percentFaceBright = sdk.check_face_image_exposure(img, faceBoxAndLandmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to get the face image exposure, not enrolling{Style.RESET_ALL}")
         continue

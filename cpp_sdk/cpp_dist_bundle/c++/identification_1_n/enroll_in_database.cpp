@@ -155,7 +155,8 @@ int main() {
 
         // Ensure that the image is not overly bright or dark, and that the exposure if good for face recognition
         FaceImageQuality quality;
-        errorCode = tfSdk.checkFaceImageExposure(img, faceBoxAndLandmarks, quality);
+        float percentImageBright, percentImageDark, percentFaceBright;
+        errorCode = tfSdk.checkFaceImageExposure(img, faceBoxAndLandmarks, quality, percentImageBright, percentImageDark, percentFaceBright);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to run exposure check on the image" << std::endl;
             continue;
