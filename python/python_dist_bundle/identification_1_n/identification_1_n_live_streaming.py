@@ -158,12 +158,12 @@ while(True):
 
         if (res != tfsdk.ERRORCODE.NO_ERROR or not match_found):
             # Draw a red rectangle around the face
-            ret = sdk.draw_face_box_and_landmarks(img, facebox, False, tfsdk.ColorRGB(255, 0, 0), 2)
+            res = sdk.draw_face_box_and_landmarks(img, facebox, False, tfsdk.ColorRGB(255, 0, 0), 2)
             if (res != tfsdk.ERRORCODE.NO_ERROR):
                 print(f"{Fore.RED}Unable to draw bounding box{Style.RESET_ALL}")
         else:
             # Draw a rectangle with the ID and match score
-            ret = sdk.draw_candidate_bounding_box_and_label(img, facebox, candidate)
+            res = sdk.draw_candidate_bounding_box_and_label(img, facebox, candidate)
             if (res != tfsdk.ERRORCODE.NO_ERROR):
                 print(f"{Fore.RED}Unable to draw candidate label and bounding box{Style.RESET_ALL}")
 
