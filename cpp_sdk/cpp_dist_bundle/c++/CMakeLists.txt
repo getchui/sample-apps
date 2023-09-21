@@ -90,13 +90,18 @@ target_link_libraries(blink_detection ${LINKER_LIBS})
 add_executable(enroll_in_database identification_1_n/enroll_in_database.cpp)
 target_link_libraries(enroll_in_database ${LINKER_LIBS})
 
+# Face Recognition, 1 to N Matching
+add_executable(identification_1_n identification_1_n/identification_1_n.cpp)
+target_link_libraries(identification_1_n ${LINKER_LIBS})
+
+# Face Recognition, 1 to N Matching, multiple collections
+add_executable(identification_multiple_collections identification_1_n/multiple_collections.cpp)
+target_link_libraries(identification_multiple_collections ${LINKER_LIBS})
+
 # Active spoof
 add_executable(active_spoof active_spoof.cpp)
 target_link_libraries(active_spoof ${LINKER_LIBS})
 
-# Face Recognition, 1 to N Matching
-add_executable(identification_1_n identification_1_n/identification_1_n.cpp)
-target_link_libraries(identification_1_n ${LINKER_LIBS})
 
 if (BUILD_GPU AND NOT WIN32 AND NOT APPLE)
     # GPU SDK only supported by Linux.

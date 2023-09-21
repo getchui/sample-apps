@@ -84,6 +84,8 @@ The 1 to N identification sample app consists of two parts:
   
 Note, `enroll_in_database` must be run before you can run `identification_1_n`.
 
+- `identification_1_n/multiple_collections.cpp` demonstrates how to load multiple collections into memory at once, and how to perform operations (enrollment, identification) on said collections. 
+
 ### Object Detection 
 - `object_detection.cpp` demonstrates how to run object detection on an image, then prints the label for all the detected objects.
 
