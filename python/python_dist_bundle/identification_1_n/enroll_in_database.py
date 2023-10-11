@@ -132,14 +132,14 @@ for path, identity in image_identities:
     if (quality != tfsdk.FACEIMAGEQUALITY.GOOD):
         print(f"{Fore.RED}The face image is over or under exposed, not enrolling{Style.RESET_ALL}")
         continue
-    
+
 
     # Get the aligned chip so we can compute the image blur
     face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
 
 
     # Ensure the face image is not too blurry
-    res, quality = sdk.detect_face_image_blur(face)
+    res, quality, score = sdk.detect_face_image_blur(face)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}There was an error computing the image blur, not enrolling{Style.RESET_ALL}")
         continue
