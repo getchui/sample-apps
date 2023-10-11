@@ -749,10 +749,11 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
     }
 
     std::vector<MaskLabel> maskLabels;
+    std::vector<float> maskScores;
 
     if (warmup) {
         for (int i = 0; i < numWarmup; ++i) {
-            errorCode = tfSdk.detectMasks(facechips, maskLabels);
+            errorCode = tfSdk.detectMasks(facechips, maskLabels, maskScores);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to run mask detection" << std::endl;
                 return;
@@ -763,7 +764,7 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
     // Time the mask detector
     preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
-        tfSdk.detectMasks(facechips, maskLabels);
+        tfSdk.detectMasks(facechips, maskLabels, maskScores);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 

@@ -226,7 +226,8 @@ int main() {
 
         // Finally, ensure the user is not wearing a mask
         MaskLabel masklabel;
-        errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, masklabel);
+        float maskScore;
+        errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, masklabel, maskScore);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Error: Unable to compute mask score" << std::endl;
             std::cout << errorCode << std::endl;

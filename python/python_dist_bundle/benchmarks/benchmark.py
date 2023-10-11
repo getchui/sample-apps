@@ -1,4 +1,4 @@
-# Run benchmarks 
+# Run benchmarks
 
 import tfsdk
 import os
@@ -41,7 +41,7 @@ def benchmark_preprocess_image(license, gpu_options, num_iterations = 200):
     avg_time = total_time / num_iterations
 
     print("Average time to preprocess image ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
-    
+
 def benchmark_face_landmark_detection(license, gpu_options, num_iterations = 100):
     options = tfsdk.ConfigurationOptions()
     options.models_path = os.getenv('MODELS_PATH') or './'
@@ -74,7 +74,7 @@ def benchmark_face_landmark_detection(license, gpu_options, num_iterations = 100
     avg_time = total_time / num_iterations
 
     print("Average time face and landmark detection ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
-    
+
 def benchmark_detailed_landmark_detection(license, gpu_options, num_iterations = 100):
     options = tfsdk.ConfigurationOptions()
     options.models_path = os.getenv('MODELS_PATH') or './'
@@ -239,7 +239,7 @@ def benchmark_mask_detection(license, gpu_options, batch_size = 1, num_iteration
     # Run our timing code
     t1 = current_milli_time()
     for i in range(num_iterations):
-        ret, mask_labels = sdk.detect_masks(chips)
+        ret, mask_labels, mask_score = sdk.detect_masks(chips)
     t2 = current_milli_time()
 
     if ret != tfsdk.ERRORCODE.NO_ERROR:
@@ -390,7 +390,7 @@ def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, n
 license = os.environ['TRUEFACE_TOKEN']
 
 gpu_options = tfsdk.GPUOptions()
-gpu_options.enable_GPU = False # TODO: Set this to true to benchmark on GPU. 
+gpu_options.enable_GPU = False # TODO: Set this to true to benchmark on GPU.
 gpu_options.device_index = 0
 
 gpu_module_options = tfsdk.GPUModuleOptions()
