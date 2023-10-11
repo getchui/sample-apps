@@ -9,7 +9,7 @@ import os
 from colorama import Fore
 from colorama import Style
 
-# Start by specifying the configuration options to be used. 
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -20,7 +20,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
-options.smallest_face_height = 80 # Set this to 80 because we only want to enroll high quality images 
+options.smallest_face_height = 80 # Set this to 80 because we only want to enroll high quality images
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -172,7 +172,7 @@ for path, identity in image_identities:
         continue
 
     # Finally ensure the user is not wearing a mask
-    error_code, mask_label = sdk.detect_mask(img, faceBoxAndLandmarks)
+    error_code, mask_label, mask_score = sdk.detect_mask(img, faceBoxAndLandmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to run mask detection, not enrolling{Style.RESET_ALL}")
         continue
