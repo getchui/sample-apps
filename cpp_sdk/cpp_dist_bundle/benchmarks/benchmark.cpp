@@ -152,7 +152,6 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
     options.gpuOptions = gpuOptions;
     options.frModel = model;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.faceRecognizer = true;
     options.initializeModule = initializeModule;
@@ -228,7 +227,6 @@ void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuO
     options.gpuOptions = gpuOptions;
     options.objModel = objModel;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.objectDetector = true;
     options.initializeModule = initializeModule;
@@ -384,7 +382,6 @@ void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOpt
     }
     options.gpuOptions = gpuOptions;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.landmarkDetector = true;
     options.initializeModule = initializeModule;
@@ -449,7 +446,6 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
     }
     options.gpuOptions = gpuOptions;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     options.initializeModule = initializeModule;
@@ -523,7 +519,6 @@ void benchmarkFaceImageOrientationDetection(const std::string& license, const GP
     }
     options.gpuOptions = gpuOptions;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.faceOrientationDetector = true;
     options.initializeModule = initializeModule;
@@ -578,7 +573,6 @@ void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOption
     }
     options.gpuOptions = gpuOptions;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.faceBlurDetector = true;
     options.initializeModule = initializeModule;
@@ -650,7 +644,6 @@ void benchmarkGlassesDetection(const std::string& license, const GPUOptions& gpu
     }
     options.gpuOptions = gpuOptions;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.eyeglassDetector = true;
     options.initializeModule = initializeModule;
@@ -715,7 +708,6 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
     }
     options.gpuOptions = gpuOptions;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     options.initializeModule = initializeModule;
@@ -791,7 +783,6 @@ void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOp
     }
     options.gpuOptions = gpuOptions;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.blinkDetector = true;
@@ -856,7 +847,6 @@ void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOp
     }
     options.gpuOptions = gpuOptions;
 
-    // Since we initialize the module, we do not need to discard the first inference time.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.passiveSpoof = true;
