@@ -616,10 +616,11 @@ void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOption
     }
 
     FaceImageQuality quality;
+    float score{};
 
     if (warmup) {
         for (int i = 0; i < numWarmup; ++i) {
-            errorCode = tfSdk.detectFaceImageBlur(facechip, quality);
+            errorCode = tfSdk.detectFaceImageBlur(facechip, quality, score);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to detect face image blur" << std::endl;
                 return;
@@ -630,7 +631,7 @@ void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOption
     // Time the mask detector
     preciseStopwatch stopwatch;
     for (size_t i = 0; i < numIterations; ++i) {
-        tfSdk.detectFaceImageBlur(facechip, quality);
+        tfSdk.detectFaceImageBlur(facechip, quality, score);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
 
