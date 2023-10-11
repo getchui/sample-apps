@@ -1,9 +1,9 @@
 # Sample code: Generate face recognition templates using GPU batching.
 
-# This sample app demonstrates how to use batching with the GPU SDK. 
+# This sample app demonstrates how to use batching with the GPU SDK.
 # First, we extract the face chip for several images
 # Next, we generate face recognition templates in batch.
-# Batching increases the GPU throughput. 
+# Batching increases the GPU throughput.
 # Finally, we generate the similarity scores.
 
 import tfsdk
@@ -14,7 +14,7 @@ from colorama import Style
 # In this sample app, will use a batch size of 3
 batch_size = 3
 
-# Start by specifying the configuration options to be used. 
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -26,7 +26,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 40 
+options.smallest_face_height = 40
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -80,7 +80,7 @@ if (is_valid == False):
 # List of images to use for our batch template generation
 images = [
     "../images/brad_pitt_1.jpg",
-    "../images/brad_pitt_2.jpg", 
+    "../images/brad_pitt_2.jpg",
     "../images/brad_pitt_3.jpg"
 ]
 
@@ -101,26 +101,26 @@ for image in images:
     if not found:
         print(f"{Fore.RED}Could not find face in image!{Style.RESET_ALL}")
         quit()
-        
+
 
     face_chip = sdk.extract_aligned_face(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to extract aligned face{Style.RESET_ALL}")
         quit()
 
-    face_chips.append(face_chip)    
+    face_chips.append(face_chip)
 
 # Run mask detection in batch
-res, mask_labels = sdk.detect_masks(face_chips)
+res, mask_labels, mask_scores = sdk.detect_masks(face_chips)
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to run mask detection{Style.RESET_ALL}")
     quit()
 
-for mask_label in mask_labels:
+for mask_label, mask_score in zip(mask_labels, mask_scores):
     if mask_label == tfsdk.MASKLABEL.MASK:
-        print("Masked image detected")
+        print(f"Masked image detected with probability of {1.0-mask_score:0.3f}")
     else:
-        print("Unmasked image detected")
+        print(f"Unmasked image detected with probability of {mask_score:0.3f}")
 
 # Now that we have generated the face chips, we can go ahead and batch generate the FR templates.
 res, faceprints = sdk.get_face_feature_vectors(face_chips)

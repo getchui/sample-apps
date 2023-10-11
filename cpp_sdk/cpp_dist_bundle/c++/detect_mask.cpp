@@ -61,7 +61,7 @@ int main() {
     options.gpuOptions.faceDetectorGPUOptions = moduleOptions;
     options.gpuOptions.maskDetectorGPUOptions = moduleOptions;
     options.gpuOptions.objectDetectorGPUOptions = moduleOptions;
-    
+
     SDK tfSdk(options);
     // TODO: Either input your token in the CMakeLists.txt file, or insert it below directly
     bool valid = tfSdk.setLicense(TRUEFACE_TOKEN);
@@ -96,7 +96,8 @@ int main() {
 
     // Run mask detection
     MaskLabel maskLabel;
-    errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, maskLabel);
+    float maskScore;
+    errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, maskLabel, maskScore);
 
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout<<"Error: could not run mask detection"<<std::endl;
@@ -105,9 +106,9 @@ int main() {
     }
 
     if (maskLabel == MaskLabel::MASK) {
-        std::cout << "Mask detected" << std::endl;
+        std::cout << "Mask detected with probability of " << 1.0f - maskScore << std::endl;
     } else {
-        std::cout << "No mask detected" << std::endl;
+        std::cout << "No mask detected with probability of " << maskScore << std::endl;
     }
 
     // Load the non mask image and detect largest face.
@@ -132,17 +133,17 @@ int main() {
 
 
     // Run mask detection
-    errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, maskLabel);
+    errorCode = tfSdk.detectMask(img, faceBoxAndLandmarks, maskLabel, maskScore);
 
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout<<"Error: could not run mask detection"<<std::endl;
+        std::cout << "Error: could not run mask detection" << std::endl;
         std::cout << errorCode << std::endl;
         return 1;
     }
 
     if (maskLabel == MaskLabel::MASK) {
-        std::cout << "Mask detected" << std::endl;
+        std::cout << "Mask detected with probability of " << 1.0f - maskScore << std::endl;
     } else {
-        std::cout << "No mask detected" << std::endl;
+        std::cout << "No mask detected with probability of " << maskScore << std::endl;
     }
 }

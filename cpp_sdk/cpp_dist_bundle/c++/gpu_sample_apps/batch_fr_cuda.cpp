@@ -109,17 +109,21 @@ int main() {
 
 
     std::vector<MaskLabel> maskLabels;
-    auto res = tfSdk.detectMasks(facechips, maskLabels);
+    std::vector<float> maskScores;
+    auto res = tfSdk.detectMasks(facechips, maskLabels, maskScores);
     if (res != ErrorCode::NO_ERROR) {
         std::cout << "Unable to run mask detection" << std::endl;
         return 1;
     }
 
-    for (auto maskLabel: maskLabels) {
+    for (size_t idx=0; idx < maskLabels.size(); ++idx) {
+        auto& maskLabel = maskLabel.at(idx);
+        auto& maskScore = maskScores.at(idx);
+
         if (maskLabel == MaskLabel::MASK) {
-            std::cout << "Masked face detected" << std::endl;
+            std::cout << "Masked face detected with probability of " << 1.0 - maskScore << std::endl;
         } else {
-            std::cout << "Unmasked face detected" << std::endl;
+            std::cout << "Unmasked face detected with probability of " << maskScore << std::endl;
         }
     }
 
