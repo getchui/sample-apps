@@ -9,38 +9,115 @@ import inspect
 
 import time
 
+NUM_WARMUP = 10
+DO_WARMUP = True
+
+class Stopwatch:
+    def __init__(self):
+        self.start_point = time.time_ns()
+
+    def elapsedTime(self):
+        return time.time_ns() - self.start_point
+
+    def elapsedTimeMilliSeconds(self):
+        now = time.time_ns()
+        return now / (10 ** 6) - self.start_point / (10**6)
+
+
 def current_milli_time():
     return round(time.time() * 1000)
 
 def benchmark_preprocess_image(license, gpu_options, num_iterations = 200):
+    # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
-    options.models_path = os.getenv('MODELS_PATH') or './'
+
+    options.models_path = "./"
+    models_path = os.getenv('MODELS_PATH')
+    if models_path:
+        options.models_path = models_path
+
     options.GPU_options = gpu_options
 
     sdk = tfsdk.SDK(options)
 
-    is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
-    if (is_valid == False):
-        print(f"{Fore.RED}Invalid License Provided{Style.RESET_ALL}")
-        print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
-        quit()
+    is_valid = sdk.set_license(license)
+    if (is_valid is False):
+        print('Error: the provided license is invalid.')
+        exit(1)
 
+    img_path = './headshot.jpg'
 
-    ret, img = sdk.preprocess_image("./headshot.jpg")
-    if (ret != tfsdk.ERRORCODE.NO_ERROR):
-        print("There was an error setting the image in the benchmark_preprocess_image method")
-        quit()
+    # First run the benchmark for an image on disk
+    # Run once to ensure everything works
+    if DO_WARMUP:
+        for _ in range(NUM_WARMUP):
+            error_code, img = sdk.preprocess_image(img_path)
+            if error_code != tfsdk.ERRORCODE.NO_ERROR:
+                print("Unable to preprocess the image")
+                return
 
+    # Time the preprocess_image function
     # Run our timing code
-    t1 = current_milli_time()
-    for i in range(num_iterations):
-        ret, img = sdk.preprocess_image("./headshot.jpg")
-    t2 = current_milli_time()
-
-    total_time = t2 - t1
+    stop_watch = Stopwatch()
+    for _ in range(num_iterations):
+        sdk.preprocess_image("./headshot.jpg")
+    total_time = stop_watch.elapsedTimeMilliSeconds()
     avg_time = total_time / num_iterations
 
-    print("Average time to preprocess image ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
+    print("Average time preprocess_image JPG image from disk ({}x{}): {} ms | {} iterations".format(
+        img.get_width(), img.get_height(), avg_time, num_iterations))
+
+    print('here')
+    # Now repeat with encoded image in memory
+    size = os.path.getsize(img_path)
+    with open(img_path, 'rb') as infile:
+        data = infile.read(size)
+
+    buffer = []
+    for b in data:
+        buffer.append(b)
+
+    if DO_WARMUP:
+        for _ in range(NUM_WARMUP):
+            error_code, img = sdk.preprocess_image(buffer)
+            if error_code != tfsdk.ERRORCODE.NO_ERROR:
+                print("Unable to preprocess the image")
+                return
+
+    # Time the preprocess_image function
+    stop_watch = Stopwatch()
+    for _ in range(num_iterations):
+        sdk.preprocess_image(buffer)
+    total_time = stop_watch.elapsedTimeMilliSeconds()
+    avg_time = total_time / num_iterations
+
+    print("Average time preprocess_image JPG image in memory ({}x{}): {} ms | {} iterations".format(
+        img.get_width(), img.get_height(), avg_time, num_iterations))
+
+    # Now repeat with already decoded imgages (ex. you grab an image from your video stream).
+    # @todo SDK-235 img.get_data is not implemented. i think this will require a
+    # wrapper around the pointer, but i haven't fully grokked pybind11.
+    return
+
+    if DO_WARMUP:
+        for i in range(10):
+            error_code = sdk.preprocess_image(
+                img.get_data(), img.get_width(), img.get_height(),
+                tfsdk.COLORCODE.rgb)
+            if error_code != tfsdk.ERRORCODE.NO_ERROR:
+                print("Unable to preprocess the image")
+                return
+
+    stop_watch = Stopwatch()
+    for _ in range(num_iterations):
+        sdk.preprocess_image(
+                buffer, img.get_width(), img.get_height(), tfsdk.COLORCODE.bgr)
+    total_time = stop_watch.elapsedTimeMilliSeconds()
+    avg_time = total_time / num_iterations
+
+    print("Average time preprocess_image JPG image in memory ({}x{}): {} ms | {} iterations".format(
+        img.get_width(), img.get_height(), avg_time, num_iterations))
+
 
 def benchmark_face_landmark_detection(license, gpu_options, num_iterations = 100):
     options = tfsdk.ConfigurationOptions()
@@ -387,53 +464,71 @@ def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, n
 # ********************************************************************************************************
 # ********************************************************************************************************
 
-license = os.environ['TRUEFACE_TOKEN']
+def main():
+    license = os.environ['TRUEFACE_TOKEN']
 
-gpu_options = tfsdk.GPUOptions()
-gpu_options.enable_GPU = False # TODO: Set this to true to benchmark on GPU.
-gpu_options.device_index = 0
+    gpu_options = tfsdk.GPUOptions()
+    gpu_options.enable_GPU = False # TODO: Set this to true to benchmark on GPU.
+    gpu_options.device_index = 0
 
-gpu_module_options = tfsdk.GPUModuleOptions()
-gpu_module_options.precision = tfsdk.PRECISION.FP16
+    gpu_module_options = tfsdk.GPUModuleOptions()
+    gpu_module_options.precision = tfsdk.PRECISION.FP16
 
-batch_size = 4
-gpu_module_options.max_batch_size = batch_size
-gpu_module_options.opt_batch_size = batch_size
+    batch_size = 16
+    gpu_module_options.max_batch_size = batch_size
+    gpu_module_options.opt_batch_size = 1
 
-gpu_options.face_detector_GPU_options = gpu_module_options
-gpu_options.face_recognizer_GPU_options = gpu_module_options
-gpu_options.mask_detector_GPU_options = gpu_module_options
-gpu_options.object_detector_GPU_options = gpu_module_options
+    gpu_options.face_detector_GPU_options = gpu_module_options
+    gpu_options.face_recognizer_GPU_options = gpu_module_options
+    gpu_options.mask_detector_GPU_options = gpu_module_options
+    gpu_options.object_detector_GPU_options = gpu_module_options
+    gpu_options.face_landmark_detector_GPU_options = gpu_module_options
+    gpu_options.face_orientation_detector_GPU_options = gpu_module_options
+    gpu_options.face_blur_detector_GPU_options = gpu_module_options
+    gpu_options.spoof_detector_GPU_options = gpu_module_options
+    gpu_options.blink_detector_GPU_options = gpu_module_options
 
-mult_factor = 1
+    print("==========================")
+    print("==========================")
+    if gpu_options.enable_GPU is True:
+        print("Using GPU for inference")
+    else:
+        print("Using CPU for inference")
+    print("==========================")
+    print("==========================")
 
-if (gpu_options.enable_GPU):
-    print("Using GPU for inference")
-    mult_factor = 10
-else:
-    print("Using CPU for inference")
+    mult_factor = 1
+    if gpu_options.enable_GPU is True:
+        mult_factor = 10
 
-benchmark_preprocess_image(license, gpu_options)
-benchmark_face_landmark_detection(license, gpu_options)
-benchmark_detailed_landmark_detection(license, gpu_options)
-benchmark_blink_detection(license, gpu_options)
-benchmark_spoof_detection(license, gpu_options)
-benchmark_mask_detection(license, gpu_options, 1, 100 * mult_factor)
-benchmark_head_orientation(license, gpu_options)
-benchmark_object_detection(license, gpu_options, 100 * mult_factor)
+    benchmark_preprocess_image(license, gpu_options, 200)
 
-if gpu_options.enable_GPU == False:
-    # get_face_feature_vectors method is not support by the LITE and LITE_V2 models
-    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, 1, 200)
-    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, 1, 200)
 
-benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, 1, 40 * mult_factor)
-benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, 1, 40 * mult_factor)
-benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, 1, 40 * mult_factor)
+if __name__ == '__main__':
+    main()
 
-# Benchmarks with batching.
-# On CPU, should be the same speed as a batch size of 1.
-# On GPU, will increase the throughput.
-benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, batch_size, 40 * mult_factor)
-benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 40 * mult_factor)
-benchmark_mask_detection(license, gpu_options, batch_size, 40 * mult_factor)
+
+
+# benchmark_face_landmark_detection(license, gpu_options)
+# benchmark_detailed_landmark_detection(license, gpu_options)
+# benchmark_blink_detection(license, gpu_options)
+# benchmark_spoof_detection(license, gpu_options)
+# benchmark_mask_detection(license, gpu_options, 1, 100 * mult_factor)
+# benchmark_head_orientation(license, gpu_options)
+# benchmark_object_detection(license, gpu_options, 100 * mult_factor)
+
+# if gpu_options.enable_GPU == False:
+#     # get_face_feature_vectors method is not support by the LITE and LITE_V2 models
+#     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, 1, 200)
+#     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, 1, 200)
+
+# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, 1, 40 * mult_factor)
+# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, 1, 40 * mult_factor)
+# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, 1, 40 * mult_factor)
+
+# # Benchmarks with batching.
+# # On CPU, should be the same speed as a batch size of 1.
+# # On GPU, will increase the throughput.
+# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, batch_size, 40 * mult_factor)
+# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 40 * mult_factor)
+# benchmark_mask_detection(license, gpu_options, batch_size, 40 * mult_factor)
