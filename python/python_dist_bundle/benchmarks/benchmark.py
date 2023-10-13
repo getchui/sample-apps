@@ -416,6 +416,62 @@ def benchmark_mask_detection(license, gpu_options, batch_size, num_iterations):
         avg_time, batch_size, num_iterations))
 
 
+def benchmark_glasses_detection(license, gpu_options, num_iterations):
+    # Initialize the SDK
+    options = tfsdk.ConfigurationOptions()
+
+    options.models_path = "./"
+    models_path = os.getenv('MODELS_PATH')
+    if models_path:
+        options.models_path = models_path
+
+    options.GPU_options = gpu_options
+
+    initialize_module = tfsdk.InitializeModule()
+    initialize_module.eyeglass_detector = True
+    options.initialize_module = initialize_module
+
+    sdk = tfsdk.SDK(options)
+
+    is_valid = sdk.set_license(license)
+    if is_valid is False:
+        print('Error: the provided license is invalid.')
+        exit(1)
+
+    # Load the image
+    ret, img = sdk.preprocess_image("./headshot.jpg")
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print('Error: could not load the image')
+        return
+
+    #
+    # @todo: SDK-235 pybinding does not return an error code, should we add
+    #        to match others in the SDK?
+    #
+    found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if found is False:
+        print('Unable to detect face in image')
+        return
+
+    if DO_WARMUP:
+        for _ in range(NUM_WARMUP):
+            error_code, glasses_label, glasses_score = \
+                sdk.detect_glasses(img, face_box_and_landmarks)
+            if error_code != tfsdk.ERRORCODE.NO_ERROR:
+                print('Error: Unable to run glasses detection')
+                return
+
+    # Time the glasses detector
+    stop_watch = Stopwatch()
+    for _ in range(num_iterations):
+        sdk.detect_glasses(img, face_box_and_landmarks)
+    total_time = stop_watch.elapsedTimeMilliSeconds()
+    avg_time = total_time / num_iterations
+
+    print('Average time glasses detection:',
+          avg_time, 'ms |', num_iterations, 'iterations')
+
+
 def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
     # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
@@ -674,6 +730,7 @@ def main():
     benchmark_face_image_blur_detection(license, gpu_options, 200*mult_factor)
     benchmark_blink_detection(license, gpu_options, 100*mult_factor)
     benchmark_mask_detection(license, gpu_options, 1, 100*mult_factor)
+    benchmark_glasses_detection(license, gpu_options, 200)
 
 
 if __name__ == '__main__':
