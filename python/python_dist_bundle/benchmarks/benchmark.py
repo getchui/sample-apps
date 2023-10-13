@@ -454,6 +454,67 @@ def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
     print("Average time head orientation: {} ms | {} iterations".format(avg_time, num_iterations))
 
 
+def benchmark_face_image_blur_detection(license, gpu_options, num_iterations):
+    # Initialize the SDK
+    options = tfsdk.ConfigurationOptions()
+
+    options.models_path = "./"
+    models_path = os.getenv('MODELS_PATH')
+    if models_path:
+        options.models_path = models_path
+
+    options.GPU_options = gpu_options
+
+    initialize_module = tfsdk.InitializeModule()
+    initialize_module.face_blur_detector = True
+    options.initialize_module = initialize_module
+
+    sdk = tfsdk.SDK(options)
+
+    is_valid = sdk.set_license(license)
+    if is_valid is False:
+        print('Error: the provided license is invalid.')
+        exit(1)
+
+    # Load the image
+    ret, img = sdk.preprocess_image("./headshot.jpg")
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print('Error: could not load the image')
+        return
+
+    #
+    # @todo: SDK-235 pybinding does not return an error code, should we add
+    #        to match others in the SDK?
+    #
+    found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if found is False:
+        print('Unable to detect face in image')
+        return
+
+    #
+    # @todo: SDK-235 the pybinding throws a runtime exception instead
+    #        of returning an error_code. Given other API calls, this
+    #        is probably an oversight.
+    face_chip = sdk.extract_aligned_face(img, face_box_and_landmarks)
+
+    if DO_WARMUP:
+        for _ in range(NUM_WARMUP):
+            error_code, quality, score = sdk.detect_face_image_blur(face_chip)
+            if error_code != tfsdk.ERRORCODE.NO_ERROR:
+                print('Error: Unable to detect face image blur')
+                return
+
+    # Time the mask detector
+    stop_watch = Stopwatch()
+    for _ in range(num_iterations):
+        sdk.detect_face_image_blur(face_chip)
+    total_time = stop_watch.elapsedTimeMilliSeconds()
+    avg_time = total_time / num_iterations
+
+    print('Average time face image blur detection:',
+          avg_time, 'ms  |', num_iterations, 'iterations')
+
+
 def benchmark_object_detection(license, gpu_options, num_iterations = 100):
     options = tfsdk.ConfigurationOptions()
     options.models_path = os.getenv('MODELS_PATH') or './'
@@ -586,6 +647,7 @@ def main():
     benchmark_face_landmark_detection(license, gpu_options, 100*mult_factor)
     benchmark_detailed_landmark_detection(license, gpu_options, 100*mult_factor)
     benchmark_head_orientation(license, gpu_options, 500*mult_factor)
+    benchmark_face_image_blur_detection(license, gpu_options, 200*mult_factor)
 
 
 if __name__ == '__main__':
