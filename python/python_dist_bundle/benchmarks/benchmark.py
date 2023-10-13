@@ -2,11 +2,6 @@
 
 import tfsdk
 import os
-from colorama import Fore
-from colorama import Style
-from time import time
-import inspect
-
 import time
 
 NUM_WARMUP = 10
@@ -23,9 +18,6 @@ class Stopwatch:
         now = time.time_ns()
         return now / (10 ** 6) - self.start_point / (10**6)
 
-
-def current_milli_time():
-    return round(time.time() * 1000)
 
 def benchmark_preprocess_image(license, gpu_options, num_iterations = 200):
     # Initialize the SDK
@@ -86,30 +78,6 @@ def benchmark_preprocess_image(license, gpu_options, num_iterations = 200):
     stop_watch = Stopwatch()
     for _ in range(num_iterations):
         sdk.preprocess_image(buffer)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / num_iterations
-
-    print("Average time preprocess_image JPG image in memory ({}x{}): {} ms | {} iterations".format(
-        img.get_width(), img.get_height(), avg_time, num_iterations))
-
-    # Now repeat with already decoded imgages (ex. you grab an image from your video stream).
-    # @todo SDK-235 img.get_data is not implemented. i think this will require a
-    # wrapper around the pointer, but i haven't fully grokked pybind11.
-    return
-
-    if DO_WARMUP:
-        for i in range(10):
-            error_code = sdk.preprocess_image(
-                img.get_data(), img.get_width(), img.get_height(),
-                tfsdk.COLORCODE.rgb)
-            if error_code != tfsdk.ERRORCODE.NO_ERROR:
-                print("Unable to preprocess the image")
-                return
-
-    stop_watch = Stopwatch()
-    for _ in range(num_iterations):
-        sdk.preprocess_image(
-                buffer, img.get_width(), img.get_height(), tfsdk.COLORCODE.bgr)
     total_time = stop_watch.elapsedTimeMilliSeconds()
     avg_time = total_time / num_iterations
 
@@ -188,10 +156,6 @@ def benchmark_face_landmark_detection(license, gpu_options, num_iterations = 100
 
     if DO_WARMUP:
         for _ in range(NUM_WARMUP):
-            #
-            # @todo: SDK-235 pybinding does not return an error code, should we add
-            #        to match others in the SDK?
-            #
             found, face_box_and_landmarks = sdk.detect_largest_face(img)
 
     # Time the face detection
@@ -233,10 +197,6 @@ def benchmark_detailed_landmark_detection(license, gpu_options, num_iterations =
         print('Error: could not load the image')
         return
 
-    #
-    # @todo: SDK-235 pybinding does not return an error code, should we add
-    #        to match others in the SDK?
-    #
     found, face_box_and_landmarks = sdk.detect_largest_face(img)
     if found is False:
         print('Unable to detect face in image')
@@ -289,10 +249,6 @@ def benchmark_blink_detection(license, gpu_options, num_iterations = 100):
         print('Error: could not load the image')
         return
 
-    #
-    # @todo: SDK-235 pybinding does not return an error code, should we add
-    #        to match others in the SDK?
-    #
     found, face_box_and_landmarks = sdk.detect_largest_face(img)
     if found is False:
         print('Unable to detect face in image')
@@ -344,10 +300,6 @@ def benchmark_spoof_detection(license, gpu_options, num_iterations = 100):
         print('Error: could not load the image')
         return
 
-    #
-    # @todo: SDK-235 pybinding does not return an error code, should we add
-    #        to match others in the SDK?
-    #
     found, face_box_and_landmarks = sdk.detect_largest_face(img)
     if found is False:
         print('Unable to detect face in image')
@@ -399,10 +351,6 @@ def benchmark_mask_detection(license, gpu_options, batch_size, num_iterations):
         print('Error: could not load the image')
         return
 
-    #
-    # @todo: SDK-235 pybinding does not return an error code, should we add
-    #        to match others in the SDK?
-    #
     found, face_box_and_landmarks = sdk.detect_largest_face(img)
     if found is False:
         print('Unable to detect face in image')
@@ -457,10 +405,6 @@ def benchmark_glasses_detection(license, gpu_options, num_iterations):
         print('Error: could not load the image')
         return
 
-    #
-    # @todo: SDK-235 pybinding does not return an error code, should we add
-    #        to match others in the SDK?
-    #
     found, face_box_and_landmarks = sdk.detect_largest_face(img)
     if found is False:
         print('Unable to detect face in image')
@@ -512,10 +456,6 @@ def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
         print('Error: could not load the image')
         return
 
-    #
-    # @todo: SDK-235 pybinding does not return an error code, should we add
-    #        to match others in the SDK?
-    #
     found, face_box_and_landmarks = sdk.detect_largest_face(img)
     if found is False:
         print('Unable to detect face in image')
@@ -528,12 +468,6 @@ def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
 
     if DO_WARMUP:
         for _ in range(NUM_WARMUP):
-            #
-            # @todo: SDK-235 the pybindings are wrong in variable
-            #        names: they swap the order of the rotation_vec
-            #        and translation_vec! Thankfully, they both have
-            #        the same type
-            #
             error_code, yaw, pitch, roll, rotation_vec, translation_vec = \
                 sdk.estimate_head_orientation(img, face_box_and_landmarks, landmarks)
 
@@ -575,19 +509,11 @@ def benchmark_face_image_blur_detection(license, gpu_options, num_iterations):
         print('Error: could not load the image')
         return
 
-    #
-    # @todo: SDK-235 pybinding does not return an error code, should we add
-    #        to match others in the SDK?
-    #
     found, face_box_and_landmarks = sdk.detect_largest_face(img)
     if found is False:
         print('Unable to detect face in image')
         return
 
-    #
-    # @todo: SDK-235 the pybinding throws a runtime exception instead
-    #        of returning an error_code. Given other API calls, this
-    #        is probably an oversight.
     face_chip = sdk.extract_aligned_face(img, face_box_and_landmarks)
 
     if DO_WARMUP:
@@ -765,7 +691,7 @@ def main():
     benchmark_object_detection(license, gpu_options, tfsdk.OBJECTDETECTIONMODEL.ACCURATE, 40*mult_factor)
 
     if gpu_options.enable_GPU is False:
-        # get_face_feature_vectors method is not support by the LITE and LITE_V2 models
+        # get_face_feature_vectors is not supported by the LITE model
         benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, 1, 200)
 
     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, 1, 200)
