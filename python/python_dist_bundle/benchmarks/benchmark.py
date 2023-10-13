@@ -653,51 +653,58 @@ def benchmark_object_detection(license, gpu_options, obj_model, num_iterations =
 
 
 def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, num_iterations = 100):
+    # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
-    options.models_path = os.getenv('MODELS_PATH') or './'
+
+    options.models_path = "./"
+    models_path = os.getenv('MODELS_PATH')
+    if models_path:
+        options.models_path = models_path
+
     options.GPU_options = gpu_options
     options.fr_model = fr_model
 
-    options.initialize_module.face_recognizer = True
+    initialize_module = tfsdk.InitializeModule()
+    initialize_module.face_recognizer = True
+    options.initialize_module = initialize_module
 
     sdk = tfsdk.SDK(options)
 
-    is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
-    if (is_valid == False):
-        print(f"{Fore.RED}Invalid License Provided{Style.RESET_ALL}")
-        print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
-        quit()
+    is_valid = sdk.set_license(license)
+    if is_valid is False:
+        print('Error: the provided license is invalid.')
+        exit(1)
 
-
+    # Load the image
     ret, img = sdk.preprocess_image("./headshot.jpg")
-    if (ret != tfsdk.ERRORCODE.NO_ERROR):
-        print("There was an error setting the image in the {} method".format(inspect.stack()[0][3]))
-        quit()
-
-    found, fb = sdk.detect_largest_face(img)
-    if found == False:
-        print("Unable to find face in {} method".format(inspect.stack()[0][3]))
-        quit()
-
-    chip = sdk.extract_aligned_face(img, fb)
-    chips = []
-
-    for i in range(batch_size):
-        chips.append(chip)
-
-    # Run our timing code
-    t1 = current_milli_time()
-    for i in range(num_iterations):
-        ret, faceprints = sdk.get_face_feature_vectors(chips)
-    t2 = current_milli_time()
-
     if ret != tfsdk.ERRORCODE.NO_ERROR:
-        print("Unable to run face recognition in {} method".format(inspect.stack()[0][3]))
+        print('Error: could not load the image')
+        return
 
-    total_time = t2 - t1
+    found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if found is False:
+        print('Error: Unable to detect face when benchmarking face recognition model')
+        return
+
+    chip = sdk.extract_aligned_face(img, face_box_and_landmarks)
+    chips = batch_size*[chip]
+
+    if DO_WARMUP:
+        for _ in range(NUM_WARMUP):
+            error_code, faceprints = sdk.get_face_feature_vectors(chips)
+            if error_code != tfsdk.ERRORCODE.NO_ERROR:
+                print('Error: Unable to run face recognition')
+                return
+
+    stop_watch = Stopwatch()
+    for _ in range(num_iterations):
+        sdk.get_face_feature_vectors(chips)
+    total_time = stop_watch.elapsedTimeMilliSeconds()
     avg_time = total_time / num_iterations / batch_size
 
-    print("Average time face recognition {}: {} ms | batch size = {} | {} iterations".format(fr_model.name, avg_time, batch_size, num_iterations))
+    print("Average time face recognition {}: {} ms | batch size = {} | {} iterations".format(
+        fr_model.name, avg_time, batch_size, num_iterations))
+
 
 # ********************************************************************************************************
 # ********************************************************************************************************
@@ -757,24 +764,24 @@ def main():
     benchmark_object_detection(license, gpu_options, tfsdk.OBJECTDETECTIONMODEL.FAST, 100*mult_factor)
     benchmark_object_detection(license, gpu_options, tfsdk.OBJECTDETECTIONMODEL.ACCURATE, 40*mult_factor)
 
+    if gpu_options.enable_GPU is False:
+        # get_face_feature_vectors method is not support by the LITE and LITE_V2 models
+        benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, 1, 200)
+
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, 1, 200)
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, 1, 40*mult_factor)
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, 1, 40*mult_factor)
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, 1, 40*mult_factor)
+    # Benchmarks with batching.
+    # On CPU, should be the same speed as a batch size of 1.
+    # On GPU, will increase the throughput.
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, batch_size, 40*mult_factor)
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 40*mult_factor)
+    benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, batch_size, 40*mult_factor)
+
 
 if __name__ == '__main__':
     main()
 
 
-
-# if gpu_options.enable_GPU == False:
-#     # get_face_feature_vectors method is not support by the LITE and LITE_V2 models
-#     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, 1, 200)
-#     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, 1, 200)
-
-# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, 1, 40 * mult_factor)
-# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, 1, 40 * mult_factor)
-# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, 1, 40 * mult_factor)
-
-# # Benchmarks with batching.
-# # On CPU, should be the same speed as a batch size of 1.
-# # On GPU, will increase the throughput.
-# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, batch_size, 40 * mult_factor)
-# benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 40 * mult_factor)
 # benchmark_mask_detection(license, gpu_options, batch_size, 40 * mult_factor)
