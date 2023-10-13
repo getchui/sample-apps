@@ -718,7 +718,7 @@ def main():
     license = os.environ['TRUEFACE_TOKEN']
 
     gpu_options = tfsdk.GPUOptions()
-    gpu_options.enable_GPU = True # TODO: Set this to true to benchmark on GPU.
+    gpu_options.enable_GPU = False # TODO: Set this to true to benchmark on GPU.
     gpu_options.device_index = 0
 
     gpu_module_options = tfsdk.GPUModuleOptions()
@@ -779,9 +779,8 @@ def main():
     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 40*mult_factor)
     benchmark_face_recognition(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, batch_size, 40*mult_factor)
 
+    benchmark_mask_detection(license, gpu_options, batch_size, 100*mult_factor)
+
 
 if __name__ == '__main__':
     main()
-
-
-# benchmark_mask_detection(license, gpu_options, batch_size, 40 * mult_factor)
