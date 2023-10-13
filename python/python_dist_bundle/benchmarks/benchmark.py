@@ -608,39 +608,48 @@ def benchmark_face_image_blur_detection(license, gpu_options, num_iterations):
           avg_time, 'ms  |', num_iterations, 'iterations')
 
 
-def benchmark_object_detection(license, gpu_options, num_iterations = 100):
+def benchmark_object_detection(license, gpu_options, obj_model, num_iterations = 100):
+    # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
-    options.models_path = os.getenv('MODELS_PATH') or './'
-    options.GPU_options = gpu_options
 
-    options.obj_model = tfsdk.OBJECTDETECTIONMODEL.FAST
-    options.initialize_module.object_detector = True
+    options.models_path = "./"
+    models_path = os.getenv('MODELS_PATH')
+    if models_path:
+        options.models_path = models_path
+
     options.GPU_options = gpu_options
+    options.obj_model = obj_model
+
+    initialize_module = tfsdk.InitializeModule()
+    initialize_module.object_detector = True
+    options.initialize_module = initialize_module
 
     sdk = tfsdk.SDK(options)
 
-    is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
-    if (is_valid == False):
-        print(f"{Fore.RED}Invalid License Provided{Style.RESET_ALL}")
-        print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
-        quit()
+    is_valid = sdk.set_license(license)
+    if is_valid is False:
+        print('Error: the provided license is invalid.')
+        exit(1)
 
+    # Load the image
+    ret, img = sdk.preprocess_image("./headshot.jpg")
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print('Error: could not load the image')
+        return
 
-    ret, img = sdk.preprocess_image("./bike.jpg")
-    if (ret != tfsdk.ERRORCODE.NO_ERROR):
-        print("There was an error setting the image in the {} method".format(inspect.stack()[0][3]))
-        quit()
+    if DO_WARMUP:
+        for _ in range(NUM_WARMUP):
+            objects = sdk.detect_objects(img)
 
-    # Run our timing code
-    t1 = current_milli_time()
-    for i in range(num_iterations):
-        objects = sdk.detect_objects(img)
-    t2 = current_milli_time()
-
-    total_time = t2 - t1
+    # Time the creation of the feature vector
+    stop_watch = Stopwatch()
+    for _ in range(num_iterations):
+        sdk.detect_objects(img)
+    total_time = stop_watch.elapsedTimeMilliSeconds()
     avg_time = total_time / num_iterations
 
-    print("Average time object detection ({}x{}): {} ms | {} iterations".format(img.get_width(), img.get_height(), avg_time, num_iterations))
+    print('Average time object detection ({}): {} ms | {} iterations'.format(
+        obj_model.name, avg_time, num_iterations))
 
 
 def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, num_iterations = 100):
@@ -745,13 +754,14 @@ def main():
     benchmark_mask_detection(license, gpu_options, 1, 100*mult_factor)
     benchmark_glasses_detection(license, gpu_options, 200)
     benchmark_spoof_detection(license, gpu_options, 100*mult_factor)
+    benchmark_object_detection(license, gpu_options, tfsdk.OBJECTDETECTIONMODEL.FAST, 100*mult_factor)
+    benchmark_object_detection(license, gpu_options, tfsdk.OBJECTDETECTIONMODEL.ACCURATE, 40*mult_factor)
 
 
 if __name__ == '__main__':
     main()
 
 
-# benchmark_object_detection(license, gpu_options, 100 * mult_factor)
 
 # if gpu_options.enable_GPU == False:
 #     # get_face_feature_vectors method is not support by the LITE and LITE_V2 models
