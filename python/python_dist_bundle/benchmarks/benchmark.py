@@ -192,7 +192,7 @@ def benchmark_face_landmark_detection(license, gpu_options, num_iterations = 100
             # @todo: SDK-235 pybinding does not return an error code, should we add
             #        to match others in the SDK?
             #
-            face_box_and_landmarks, found = sdk.detect_largest_face(img)
+            found, face_box_and_landmarks = sdk.detect_largest_face(img)
 
     # Time the face detection
     stop_watch = Stopwatch()
@@ -206,47 +206,59 @@ def benchmark_face_landmark_detection(license, gpu_options, num_iterations = 100
 
 
 def benchmark_detailed_landmark_detection(license, gpu_options, num_iterations = 100):
+    # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
-    options.models_path = os.getenv('MODELS_PATH') or './'
+
+    options.models_path = "./"
+    models_path = os.getenv('MODELS_PATH')
+    if models_path:
+        options.models_path = models_path
+
     options.GPU_options = gpu_options
 
-    options.smallest_face_height = 40
-    options.initialize_module.face_detector = True
-    options.initialize_module.landmark_detector = True
+    initialize_module = tfsdk.InitializeModule()
+    initialize_module.face_detector = True
+    initialize_module.landmark_detector = True
+    options.initialize_module = initialize_module
 
     sdk = tfsdk.SDK(options)
 
-    is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
-    if (is_valid == False):
-        print(f"{Fore.RED}Invalid License Provided{Style.RESET_ALL}")
-        print(f"{Fore.RED}Be sure to export your license token as TRUEFACE_TOKEN{Style.RESET_ALL}")
-        quit()
-
+    is_valid = sdk.set_license(license)
+    if is_valid is False:
+        print('Error: the provided license is invalid.')
+        exit(1)
 
     ret, img = sdk.preprocess_image("./headshot.jpg")
-    if (ret != tfsdk.ERRORCODE.NO_ERROR):
-        print("There was an error setting the image in the {} method".format(inspect.stack()[0][3]))
-        quit()
-
-    found, fb = sdk.detect_largest_face(img)
-    if found == False:
-        print("Unable to find face in {} method".format(inspect.stack()[0][3]))
-        quit()
-
-    # Run our timing code
-    t1 = current_milli_time()
-    for i in range(num_iterations):
-        ret, landmarks = sdk.get_face_landmarks(img, fb)
-    t2 = current_milli_time()
-
     if ret != tfsdk.ERRORCODE.NO_ERROR:
-        print("Unable to run 106 face landmark detection in {} method".format(inspect.stack()[0][3]))
-        quit()
+        print('Error: could not load the image')
+        return
 
-    total_time = t2 - t1
+    #
+    # @todo: SDK-235 pybinding does not return an error code, should we add
+    #        to match others in the SDK?
+    #
+    found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if found is False:
+        print('Unable to detect face in image')
+        return
+
+    if DO_WARMUP:
+        for _ in range(NUM_WARMUP):
+            error_code, landmarks = sdk.get_face_landmarks(img, face_box_and_landmarks)
+            if error_code != tfsdk.ERRORCODE.NO_ERROR:
+                print('Error: Unable to get detailed landmarks')
+                return
+
+    # Time the landmark detection
+    stop_watch = Stopwatch()
+    for i in range(num_iterations):
+        sdk.get_face_landmarks(img, face_box_and_landmarks)
+    total_time = stop_watch.elapsedTimeMilliSeconds()
     avg_time = total_time / num_iterations
 
-    print("Average time 106 face landmark detection: {} ms | {} iterations".format(avg_time, num_iterations))
+    print("Average time 106 face landmark detection: {} ms | {} iterations".format(
+        avg_time, num_iterations))
+
 
 def benchmark_blink_detection(license, gpu_options, num_iterations = 100):
     options = tfsdk.ConfigurationOptions()
@@ -521,7 +533,7 @@ def main():
     license = os.environ['TRUEFACE_TOKEN']
 
     gpu_options = tfsdk.GPUOptions()
-    gpu_options.enable_GPU = False # TODO: Set this to true to benchmark on GPU.
+    gpu_options.enable_GPU = True # TODO: Set this to true to benchmark on GPU.
     gpu_options.device_index = 0
 
     gpu_module_options = tfsdk.GPUModuleOptions()
@@ -557,14 +569,12 @@ def main():
     benchmark_preprocess_image(license, gpu_options, 200)
     benchmark_face_image_orientation_detection(license, gpu_options, 50*mult_factor)
     benchmark_face_landmark_detection(license, gpu_options, 100*mult_factor)
+    benchmark_detailed_landmark_detection(license, gpu_options, 100*mult_factor)
 
 if __name__ == '__main__':
     main()
 
 
-
-
-# benchmark_detailed_landmark_detection(license, gpu_options)
 # benchmark_blink_detection(license, gpu_options)
 # benchmark_spoof_detection(license, gpu_options)
 # benchmark_mask_detection(license, gpu_options, 1, 100 * mult_factor)
