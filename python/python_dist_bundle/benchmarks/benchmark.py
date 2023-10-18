@@ -565,7 +565,10 @@ def benchmark_object_detection(license, gpu_options, obj_model, num_iterations =
 
     if DO_WARMUP:
         for _ in range(NUM_WARMUP):
-            objects = sdk.detect_objects(img)
+            ret, objects = sdk.detect_objects(img)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print('Error: Could not run object detection!')
+                return
 
     # Time the creation of the feature vector
     stop_watch = Stopwatch()
