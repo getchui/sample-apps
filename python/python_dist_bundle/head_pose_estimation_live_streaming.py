@@ -11,7 +11,7 @@ draw_box = True
 draw_axes = False
 
 
-# Start by specifying the configuration options to be used. 
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -23,7 +23,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 40 
+options.smallest_face_height = 40
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -73,7 +73,7 @@ if (is_valid == False):
 
 # Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
 cap = cv2.VideoCapture(0)
-if (cap.isOpened()== False): 
+if (cap.isOpened()== False):
     print(f"{Fore.RED}Error opening video stream{Style.RESET_ALL}")
     os._exit(1)
 
@@ -93,7 +93,7 @@ print("Set resolution to: (", res_w, "x", res_h, ")")
 while(True):
     # To skip some frames, uncomment the following
     # cap.grab()
-    
+
     ret, frame = cap.read()
     if ret == False:
         continue
@@ -104,10 +104,14 @@ while(True):
         print(f"{Fore.RED}Unable to set frame.{Style.RESET_ALL}")
         continue
 
-    # Detect the faces 
-    faces = sdk.detect_faces(img)
+    # Detect the faces
+    res, faces = sdk.detect_faces(img)
+    if res != tfsdk.ERRORCODE.NO_ERROR:
+        print(f'{Fore.RED}Unable to detect faces: {res.name}{Style.RESET_ALL}')
+        continue
+
     for face in faces:
-        # Obtain the face landmarks 
+        # Obtain the face landmarks
         ret, landmarks = sdk.get_face_landmarks(img, face)
         if ret != tfsdk.ERRORCODE.NO_ERROR:
             print(f"{Fore.RED}Unable to get face landmarks.{Style.RESET_ALL}")
@@ -126,14 +130,14 @@ while(True):
             ret = sdk.draw_head_orientation_axes(img, face, yaw, pitch, roll, 2)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print(f"{Fore.RED}Unable to draw orientation arrows.{Style.RESET_ALL}")
-                continue           
+                continue
 
         if draw_box:
             # Use the orientation to draw the orientation axes
             ret = sdk.draw_head_orientation_box(img, rot_vec, trans_vec, 2)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print(f"{Fore.RED}Unable to draw orientation box.{Style.RESET_ALL}")
-                continue           
+                continue
 
     # Convert the annotated image back to OpenCV Mat
     frame = img.as_numpy_array()
