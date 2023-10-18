@@ -139,8 +139,8 @@ for path in image_paths:
         continue
 
     # Detect the largest face in the image
-    found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
-    if found == False:
+    res, found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
+    if res != tfsdk.ERRORCODE.NO_ERROR or found == False:
         print(f"{Fore.RED}No face detected in image: {path}, not enrolling{Style.RESET_ALL}")
         continue
 

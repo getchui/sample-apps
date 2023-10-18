@@ -156,7 +156,10 @@ def benchmark_face_landmark_detection(license, gpu_options, num_iterations = 100
 
     if DO_WARMUP:
         for _ in range(NUM_WARMUP):
-            found, face_box_and_landmarks = sdk.detect_largest_face(img)
+            ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+            if ret != tfsdk.ERRORCODE.NO_ERROR:
+                print('Error: Unable to run face detection')
+                return
 
     # Time the face detection
     stop_watch = Stopwatch()
@@ -197,8 +200,8 @@ def benchmark_detailed_landmark_detection(license, gpu_options, num_iterations =
         print('Error: could not load the image')
         return
 
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
-    if found is False:
+    ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
         print('Unable to detect face in image')
         return
 
@@ -249,8 +252,8 @@ def benchmark_blink_detection(license, gpu_options, num_iterations = 100):
         print('Error: could not load the image')
         return
 
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
-    if found is False:
+    ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
         print('Unable to detect face in image')
         return
 
@@ -300,8 +303,8 @@ def benchmark_spoof_detection(license, gpu_options, num_iterations = 100):
         print('Error: could not load the image')
         return
 
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
-    if found is False:
+    ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
         print('Unable to detect face in image')
         return
 
@@ -351,8 +354,8 @@ def benchmark_mask_detection(license, gpu_options, batch_size, num_iterations):
         print('Error: could not load the image')
         return
 
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
-    if found is False:
+    ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
         print('Unable to detect face in image')
         return
 
@@ -409,8 +412,8 @@ def benchmark_glasses_detection(license, gpu_options, num_iterations):
         print('Error: could not load the image')
         return
 
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
-    if found is False:
+    ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
         print('Unable to detect face in image')
         return
 
@@ -460,8 +463,8 @@ def benchmark_head_orientation(license, gpu_options, num_iterations = 200):
         print('Error: could not load the image')
         return
 
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
-    if found is False:
+    ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
         print('Unable to detect face in image')
         return
 
@@ -513,8 +516,8 @@ def benchmark_face_image_blur_detection(license, gpu_options, num_iterations):
         print('Error: could not load the image')
         return
 
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
-    if found is False:
+    ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
         print('Unable to detect face in image')
         return
 
@@ -617,8 +620,8 @@ def benchmark_face_recognition(license, fr_model, gpu_options, batch_size = 1, n
         print('Error: could not load the image')
         return
 
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
-    if found is False:
+    ret, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
         print('Error: Unable to detect face when benchmarking face recognition model')
         return
 

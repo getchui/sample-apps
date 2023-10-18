@@ -71,7 +71,11 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
     quit()
 
 # detect the largest face
-found, face_bounding_box = sdk.detect_largest_face(img)
+res, found, face_bounding_box = sdk.detect_largest_face(img)
+if res != tfsdk.ERRORCODE.NO_ERROR:
+    print(f'{Fore.RED}Unable to detect face: {res.name}{Style.RESET_ALL}')
+    quit()
+
 if found:
     # Run mask detection
     res, mask_label, score = sdk.detect_mask(img, face_bounding_box)
@@ -92,7 +96,11 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
     quit()
 
 # detect the largest face
-found, face_bounding_box = sdk.detect_largest_face(img)
+res, found, face_bounding_box = sdk.detect_largest_face(img)
+if res != tfsdk.ERRORCODE.NO_ERROR:
+    print(f'{Fore.RED}Unable to detect face: {res.name}{Style.RESET_ALL}')
+    quit()
+
 if found:
     # Run mask detection
     res, mask_label, score = sdk.detect_mask(img, face_bounding_box)

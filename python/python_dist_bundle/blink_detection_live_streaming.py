@@ -25,7 +25,7 @@ def draw_label(image, point, label, color,
         (0, 0, 0), thickness, cv2.LINE_AA)
 
 
-# Start by specifying the configuration options to be used. 
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -37,7 +37,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 100 # Only want to run blink detection on large faces to ensure we get more accurate results 
+options.smallest_face_height = 100 # Only want to run blink detection on large faces to ensure we get more accurate results
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -88,7 +88,7 @@ if (is_valid == False):
 
 # Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
 cap = cv2.VideoCapture(0)
-if (cap.isOpened()== False): 
+if (cap.isOpened()== False):
     print(f"{Fore.RED}Unable to open video stream{Style.RESET_ALL}")
     quit()
 
@@ -107,7 +107,7 @@ print("Set resolution to: (", res_w, "x", res_h, ")")
 while(True):
     # To skip some frames, uncomment the following
     # cap.grab()
-    
+
     ret, frame = cap.read()
     if ret == False:
         continue
@@ -119,7 +119,10 @@ while(True):
         continue
 
     # Run face detection
-    found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    res, found, face_box_and_landmarks = sdk.detect_largest_face(img)
+    if res != tfsdk.ERRORCODE.NO_ERROR:
+        print(f'{Fore.RED}Unable to detect face: {res.name}{Style.RESET_ALL}')
+        continue
 
     if not found:
         # No face was found in the frame
