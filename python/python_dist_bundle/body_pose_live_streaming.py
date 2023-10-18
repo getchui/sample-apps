@@ -110,7 +110,11 @@ while(True):
         continue
 
     if (len(bounding_boxes) > 0) :
-        body_landmarks = sdk.estimate_pose(img, bounding_boxes)
+        res, body_landmarks = sdk.estimate_pose(img, bounding_boxes)
+        if res != tfsdk.ERRORCODE.NO_ERROR:
+            print(f'{Fore.RED}Unable to estimate pose: {res.name}{Style.RESET_ALL}')
+            continue
+
         if len(body_landmarks) > 0 :
             ret = sdk.draw_pose(img, body_landmarks)
             if ret != tfsdk.ERRORCODE.NO_ERROR:

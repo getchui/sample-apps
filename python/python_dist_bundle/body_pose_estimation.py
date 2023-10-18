@@ -75,13 +75,17 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 res, bounding_boxes = sdk.detect_objects(img)
 if res != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}Unable to run object detection: {res.name}{Style.RESET_ALL}")
+    quit()
 
 if len(bounding_boxes) == 0:
     print(f"{Fore.RED}Unable to detect objects in image{Style.RESET_ALL}")
     quit()
 
 # Do not need to check if the detected object is a person, the estimate_pose function will do that for us
-body_landmarks = sdk.estimate_pose(img, bounding_boxes)
+res, body_landmarks = sdk.estimate_pose(img, bounding_boxes)
+if res != tfsdk.ERRORCODE.NO_ERROR:
+    print(f'{Fore.RED}Unable to estimate pose: {res.name}{Style.RESET_ALL}')
+    quit()
 
 # Now draw the pose on the image and save the file to disk
 sdk.draw_pose(img, body_landmarks)
