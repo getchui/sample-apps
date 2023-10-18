@@ -6,7 +6,7 @@ from colorama import Fore
 from colorama import Style
 import cv2
 
-# Start by specifying the configuration options to be used. 
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -18,7 +18,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 40 
+options.smallest_face_height = 40
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -76,8 +76,11 @@ found, face_bounding_box = sdk.detect_largest_face(img)
 
 
 if found:
-    face = sdk.extract_aligned_face(img, face_bounding_box)
-    
+    res, face = sdk.extract_aligned_face(img, face_bounding_box)
+    if res != tfsdk.ERRORCODE.NO_ERROR:
+        print(f'{Fore.RED}Unable to extract aligned face: {res.name}{Style.RESET_ALL}')
+        quit()
+
     # Save the chip to disk
     face.save_image("facechip.jpg")
 else:
@@ -118,4 +121,4 @@ p5.y = 397.987305
 
 fb.landmarks = [p1, p2, p3, p4, p5]
 
-face = sdk.extract_aligned_face(img, fb)
+error_code, face = sdk.extract_aligned_face(img, fb)

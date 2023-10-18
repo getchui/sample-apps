@@ -135,7 +135,10 @@ for path, identity in image_identities:
 
 
     # Get the aligned chip so we can compute the image blur
-    face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+    res, face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}Unable to extract aligned face: {res.name}, not entrolling{Style.RESET_ALL}")
+        continue
 
 
     # Ensure the face image is not too blurry

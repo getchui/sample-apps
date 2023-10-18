@@ -6,7 +6,7 @@
 # Next, we generate face recognition templates in batch and enroll those templates into the collection.
 # Note, after running this sample app, you can run the identification_1_n sample app.
 
-# For this sample app, we will assume the image name is the identity we want to enroll. 
+# For this sample app, we will assume the image name is the identity we want to enroll.
 
 import tfsdk
 import os
@@ -37,7 +37,7 @@ def generate_feature_vectors(face_chips, face_identities):
 # Consult our benchmarks page: https://docs.trueface.ai/benchmarks
 batch_size = 32
 
-# Start by specifying the configuration options to be used. 
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -49,7 +49,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 40 
+options.smallest_face_height = 40
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -145,7 +145,10 @@ for path in image_paths:
         continue
 
     # Get the aligned chip
-    face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+    res, face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+    if res != tfsdk.ERRORCODE.NO_ERROR:
+        print(f'{Fore.RED}Unable to extract aligned face: {res.name}, not enrolling{Style.RESET_ALL}')
+        continue
 
     # Add the face chip to our array for processing
     face_chips.append(face)
