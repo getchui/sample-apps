@@ -34,9 +34,9 @@ def draw_rectangle_fb(frame, bounding_box, color):
     cv2.rectangle(frame,
                   (int(bounding_box.top_left.x), int(bounding_box.top_left.y)),
                   (int(bounding_box.bottom_right.x), int(bounding_box.bottom_right.y)), color, 3)
-        
 
-# Start by specifying the configuration options to be used. 
+
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -48,7 +48,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 40 
+options.smallest_face_height = 40
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -101,7 +101,7 @@ print("Face must be as large as yellow oval")
 
 # Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
 cap = cv2.VideoCapture(0)
-if (cap.isOpened()== False): 
+if (cap.isOpened()== False):
     print(f"{Fore.RED}Error opening video stream{Style.RESET_ALL}")
     os._exit(1)
 
@@ -121,7 +121,7 @@ print("Set resolution to: (", res_w, "x", res_h, ")")
 while(True):
     # To skip some frames, uncomment the following
     # cap.grab()
-    
+
     ret, frame = cap.read()
     if ret == False:
         continue
@@ -133,7 +133,11 @@ while(True):
         continue
 
     # Detect the largest face in the image
-    found, fb = sdk.detect_largest_face(img)
+    res, found, fb = sdk.detect_largest_face(img)
+    if res != tfsdk.ERRORCODE.NO_ERROR:
+        print(f'{Fore.RED}Unable to detect face: {res.name}{Style.RESET_ALL}')
+        quit()
+
     if found == True:
         draw_rectangle_fb(frame, fb, (255, 255, 255))
 
@@ -150,13 +154,13 @@ while(True):
                 label = "Fake: {:.2f}".format(score)
                 draw_label(frame, (0, 30), label, (0, 0, 255))
 
-    
+
     # Face must be within the cyan rectangle
     img_height = img.get_height()
     img_width = img.get_width()
 
     c_x = img_width / 2
-    c_y = img_height / 2 
+    c_y = img_height / 2
 
     y_offset = img_height * 0.55 * 2.0 / 3.0
     x_offset = img_height * 0.55 * 0.5
@@ -173,7 +177,7 @@ while(True):
         x1 = c_x - x_offset
         x2 = c_x + x_offset
 
-    draw_rectangle(frame, (int(x1), int(y1)), 
+    draw_rectangle(frame, (int(x1), int(y1)),
         (int(x2), int(y2)), (255, 255, 0))
 
 
@@ -183,11 +187,11 @@ while(True):
     length = int(guide_height / 2)
     width = int(guide_height / 3)
 
-    cv2.ellipse(frame, 
-        (int(c_x), int(c_y)), 
-        (width, length), 
-        0, 0, 360, 
-        (0, 255, 255), 
+    cv2.ellipse(frame,
+        (int(c_x), int(c_y)),
+        (width, length),
+        0, 0, 360,
+        (0, 255, 255),
         3)
 
     # Display the resulting frame

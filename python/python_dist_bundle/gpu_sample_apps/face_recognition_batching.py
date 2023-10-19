@@ -96,16 +96,19 @@ for image in images:
 
 
      # Detect the largest face in the image
-    found, face_bounding_box = sdk.detect_largest_face(img)
+    res, found, face_bounding_box = sdk.detect_largest_face(img)
+    if res != tfsdk.ERRORCODE.NO_ERROR:
+        print(f'{Fore.RED}Unable to detect face: {res.name}{Style.RESET_ALL}')
+        quit()
 
     if not found:
         print(f"{Fore.RED}Could not find face in image!{Style.RESET_ALL}")
         quit()
 
 
-    face_chip = sdk.extract_aligned_face(img, face_bounding_box)
+    res, face_chip = sdk.extract_aligned_face(img, face_bounding_box)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}Unable to extract aligned face{Style.RESET_ALL}")
+        print(f"{Fore.RED}Unable to extract aligned face: {res.name}{Style.RESET_ALL}")
         quit()
 
     face_chips.append(face_chip)

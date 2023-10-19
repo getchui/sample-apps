@@ -2,7 +2,7 @@
 
 # This sample app demonstrates how to use 1N identification. First, an existing collection (created by running enroll_in_database) is loaded from disk.
 # Next, 1N identification is run to determine the identity of an anonymous template.
-# Note, you must run enroll_in_database before being able to run this sample app. 
+# Note, you must run enroll_in_database before being able to run this sample app.
 
 # Note: you will need to have the opencv-python module installed
 
@@ -14,7 +14,7 @@ import time
 from colorama import Fore
 from colorama import Style
 
-# Start by specifying the configuration options to be used. 
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -26,7 +26,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 40 
+options.smallest_face_height = 40
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -101,7 +101,7 @@ filename = "my_window"
 
 # Use the default camera (TODO: Can change the camera source, for example to an RTSP stream)
 cap = cv2.VideoCapture(0)
-if (cap.isOpened()== False): 
+if (cap.isOpened()== False):
     print(f"{Fore.RED}Error opening video stream{Style.RESET_ALL}")
     os._exit(1)
 
@@ -121,7 +121,7 @@ print("Set resolution to: (", res_w, "x", res_h, ")")
 while(True):
     # To skip some frames, uncomment the following
     # cap.grab()
-    
+
     ret, frame = cap.read()
     if ret == False:
         continue
@@ -136,7 +136,14 @@ while(True):
             break
         continue
 
-    faceboxes = sdk.detect_faces(img)
+    res, faceboxes = sdk.detect_faces(img)
+    if res != tfsdk.ERRORCODE.NO_ERROR:
+        print(f'{Fore.RED}Unable to detect faces: {res.name}{Style.RESET_ALL}')
+        cv2.imshow(filename, frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        continue
+
     if not faceboxes or len(faceboxes) == 0:
         cv2.imshow(filename, frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -147,8 +154,8 @@ while(True):
     for facebox in faceboxes:
         # Extract the feature vector
         # We do not need to check the quality of the probe face templates
-        # We mainly want to ensure that the enrollment templates are high quality, 
-        # This is less of a concern with probe templates 
+        # We mainly want to ensure that the enrollment templates are high quality,
+        # This is less of a concern with probe templates
         res, faceprint = sdk.get_face_feature_vector(img, facebox)
         if (res != tfsdk.ERRORCODE.NO_ERROR):
             print("skipping facebox")

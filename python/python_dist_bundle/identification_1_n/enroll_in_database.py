@@ -114,8 +114,8 @@ for path, identity in image_identities:
     img.rotate(rotation)
 
     # Detect the largest face in the image
-    found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
-    if found == False:
+    res, found, faceBoxAndLandmarks = sdk.detect_largest_face(img)
+    if tfsdk.ERRORCODE.NO_ERROR or found == False:
         print(f"{Fore.RED}No face detected in image: {path}, not enrolling{Style.RESET_ALL}")
         continue
 
@@ -135,7 +135,10 @@ for path, identity in image_identities:
 
 
     # Get the aligned chip so we can compute the image blur
-    face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+    res, face = sdk.extract_aligned_face(img, faceBoxAndLandmarks)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}Unable to extract aligned face: {res.name}, not entrolling{Style.RESET_ALL}")
+        continue
 
 
     # Ensure the face image is not too blurry

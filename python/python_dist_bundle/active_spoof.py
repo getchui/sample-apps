@@ -13,7 +13,7 @@ import os
 from colorama import Fore
 from colorama import Style
 
-# Start by specifying the configuration options to be used. 
+# Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
 # Learn more about the configuration options: https://reference.trueface.ai/cpp/dev/latest/py/general.html
 options = tfsdk.ConfigurationOptions()
@@ -25,7 +25,7 @@ options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
-options.smallest_face_height = 40 
+options.smallest_face_height = 40
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -81,8 +81,8 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 
 
 # Next, must detect if there is a face in the image
-found, fb = sdk.detect_largest_face(img)
-if found == False:
+res, found, fb = sdk.detect_largest_face(img)
+if res != tfsdk.ERRORCODE.NO_ERROR or found == False:
     print(f"{Fore.RED}Unable to find face in real image, far shot{Style.RESET_ALL}")
     quit()
 
@@ -100,13 +100,13 @@ elif ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error with the real image, far face{Style.RESET_ALL}")
     quit()
 
-# Next, we need to obtain the 106 facial landmarks for the face. 
+# Next, we need to obtain the 106 facial landmarks for the face.
 ret, far_landmarks = sdk.get_face_landmarks(img,fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error obtaining the facial landmarks for the real image, far face{Style.RESET_ALL}")
-    quit()    
+    quit()
 
-# Finally, we can compute a face recognition template for the face, 
+# Finally, we can compute a face recognition template for the face,
 # and later use it to ensure the two active spoof images are from the same identity.
 ret, far_faceprint = sdk.get_face_feature_vector(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
@@ -114,14 +114,14 @@ if ret != tfsdk.ERRORCODE.NO_ERROR:
     quit()
 
 
-# Now at this point, we can repeat all the above steps, but for the near image now. 
+# Now at this point, we can repeat all the above steps, but for the near image now.
 res, img = sdk.preprocess_image("../images/near_shot_real_person.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set real image, near shot{Style.RESET_ALL}")
     quit()
 
-found, fb = sdk.detect_largest_face(img)
-if found == False:
+res, found, fb = sdk.detect_largest_face(img)
+if res != tfsdk.ERRORCODE.NO_ERROR or found == False:
     print(f"{Fore.RED}Unable to find face in real image, near shot{Style.RESET_ALL}")
     quit()
 
@@ -139,7 +139,7 @@ elif ret != tfsdk.ERRORCODE.NO_ERROR:
 ret, near_landmarks = sdk.get_face_landmarks(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error obtaining the facial landmarks for the real image, near face{Style.RESET_ALL}")
-    quit()    
+    quit()
 
 ret, near_faceprint = sdk.get_face_feature_vector(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
@@ -175,8 +175,8 @@ if (res != tfsdk.ERRORCODE.NO_ERROR):
 
 
 # Next, must detect if there is a face in the image
-found, fb = sdk.detect_largest_face(img)
-if found == False:
+res, found, fb = sdk.detect_largest_face(img)
+if res != tfsdk.ERRORCODE.NO_ERROR or found == False:
     print(f"{Fore.RED}Unable to find face in fake image, far shot{Style.RESET_ALL}")
     quit()
 
@@ -194,13 +194,13 @@ elif ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error with the fake image, far face{Style.RESET_ALL}")
     quit()
 
-# Next, we need to obtain the 106 facial landmarks for the face. 
+# Next, we need to obtain the 106 facial landmarks for the face.
 ret, far_landmarks = sdk.get_face_landmarks(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error obtaining the facial landmarks for the fake image, far face{Style.RESET_ALL}")
-    quit()    
+    quit()
 
-# Finally, we can compute a face recognition template for the face, 
+# Finally, we can compute a face recognition template for the face,
 # and later use it to ensure the two active spoof images are from the same identity.
 ret, far_faceprint = sdk.get_face_feature_vector(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
@@ -208,14 +208,14 @@ if ret != tfsdk.ERRORCODE.NO_ERROR:
     quit()
 
 
-# Now at this point, we can repeat all the above steps, but for the near image now. 
+# Now at this point, we can repeat all the above steps, but for the near image now.
 res, img = sdk.preprocess_image("../images/near_shot_fake_person.jpg")
 if (res != tfsdk.ERRORCODE.NO_ERROR):
     print(f"{Fore.RED}Unable to set real image, near shot{Style.RESET_ALL}")
     quit()
 
-found, fb = sdk.detect_largest_face(img)
-if found == False:
+res, found, fb = sdk.detect_largest_face(img)
+if res != tfsdk.ERRORCODE.NO_ERROR or found == False:
     print(f"{Fore.RED}Unable to find face in fake image, near shot{Style.RESET_ALL}")
     quit()
 
@@ -233,7 +233,7 @@ elif ret != tfsdk.ERRORCODE.NO_ERROR:
 ret, near_landmarks = sdk.get_face_landmarks(img, fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}There was an error obtaining the facial landmarks for the fake image, near face{Style.RESET_ALL}")
-    quit()    
+    quit()
 
 ret, near_faceprint = sdk.get_face_feature_vector(img,fb)
 if ret != tfsdk.ERRORCODE.NO_ERROR:
