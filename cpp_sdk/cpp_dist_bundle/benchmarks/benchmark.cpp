@@ -1,19 +1,18 @@
 // The following code runs speed benchmarks for the different modules
 // The first few inferences are discarded to ensure caching is hot
 
+
 #include <chrono>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdlib>
-#include <cstring>
 
 #include "tf_sdk.h"
-#include <fstream>
 
 using namespace Trueface;
-
-typedef std::chrono::high_resolution_clock Clock;
 
 // Stopwatch Utility
 template <typename Clock = std::chrono::high_resolution_clock>
@@ -37,25 +36,58 @@ using preciseStopwatch = Stopwatch<>;
 using systemStopwatch = Stopwatch<std::chrono::system_clock>;
 using monotonicStopwatch = Stopwatch<std::chrono::steady_clock>;
 
-void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
-void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, ObjectDetectionModel objModel, unsigned int numIterations = 100);
-void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int batchSize = 1, unsigned int numIterations = 100);
-void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 100);
-void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 500);
-void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
-void benchmarkFaceImageOrientationDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 50);
-void benchmarkGlassesDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations = 200);
-
 bool warmup = true; // Warmup inference to ensure caching is hot
 int numWarmup = 10;
 
-int main() {
-    const std::string license = TRUEFACE_TOKEN;
+class SDKFactory
+{
+public:
+    SDKFactory(const GPUOptions& gpuOptions) : gpuOptions_{gpuOptions}, modelsPath_{"./"}, license_{TRUEFACE_TOKEN} {
+        auto modelsPath = std::getenv("MODELS_PATH");
+        if (modelsPath) {
+            modelsPath_ = modelsPath;
+        }
+    }
 
+    SDK createSDK(ConfigurationOptions& options) const {
+        SDK tfSdk(options);
+        bool valid = tfSdk.setLicense(license_);
+        if (!valid) {
+            std::cout << "Error: the provided license is invalid." << std::endl;
+            exit (EXIT_FAILURE);
+        }
+
+        return tfSdk;
+    }
+
+    ConfigurationOptions createBasicConfiguration() const {
+        ConfigurationOptions options;
+        options.modelsPath = modelsPath_;
+        options.gpuOptions = gpuOptions_;
+        return options;
+    }
+
+private:
+
+    const GPUOptions& gpuOptions_;
+    std::string modelsPath_;
+    std::string license_;
+};
+
+void benchmarkFaceRecognition(FacialRecognitionModel model, const SDKFactory& sdkFactory, unsigned int batchSize = 1, unsigned int numIterations = 100);
+void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel objModel, unsigned int numIterations = 100);
+void benchmarkFaceLandmarkDetection(const SDKFactory& sdkFactory, unsigned int numIterations = 100);
+void benchmarkDetailedLandmarkDetection(const SDKFactory& sdkFactory, unsigned int numIterations = 100);
+void benchmarkPreprocessImage(const SDKFactory& sdkFactory, unsigned int numIterations = 100);
+void benchmarkMaskDetection(const SDKFactory& sdkFactory, unsigned int batchSize = 1, unsigned int numIterations = 100);
+void benchmarkBlinkDetection(const SDKFactory& sdkFactory, unsigned int numIterations = 100);
+void benchmarkSpoofDetection(const SDKFactory& sdkFactory, unsigned int numIterations = 100);
+void benchmarkHeadOrientation(const SDKFactory& sdkFactory, unsigned int numIterations = 500);
+void benchmarkFaceImageBlurDetection(const SDKFactory& sdkFactory, unsigned int numIterations = 200);
+void benchmarkFaceImageOrientationDetection(const SDKFactory& sdkFactory, unsigned int numIterations = 50);
+void benchmarkGlassesDetection(const SDKFactory& sdkFactory, unsigned int numIterations = 200);
+
+int main() {
     GPUOptions gpuOptions;
     gpuOptions.enableGPU = false; // TODO set this to true to benchmark on GPU
     gpuOptions.deviceIndex = 0;
@@ -92,35 +124,37 @@ int main() {
         multFactor = 10;
     }
 
-    benchmarkPreprocessImage(license, gpuOptions, 200);
-    benchmarkFaceImageOrientationDetection(license, gpuOptions, 50 * multFactor);
-    benchmarkFaceLandmarkDetection(license, gpuOptions, 100 * multFactor);
-    benchmarkDetailedLandmarkDetection(license, gpuOptions, 100 * multFactor);
-    benchmarkHeadOrientation(license, gpuOptions, 500 * multFactor);
-    benchmarkFaceImageBlurDetection(license, gpuOptions, 200 * multFactor);
-    benchmarkBlinkDetection(license, gpuOptions, 100 * multFactor);
-    benchmarkMaskDetection(license, gpuOptions, 1, 100 * multFactor);
-    benchmarkGlassesDetection(license, gpuOptions, 200);
-    benchmarkSpoofDetection(license, gpuOptions, 100 * multFactor);
-    benchmarkObjectDetection(license, gpuOptions, ObjectDetectionModel::FAST, 100 * multFactor);
-    benchmarkObjectDetection(license, gpuOptions, ObjectDetectionModel::ACCURATE, 40 * multFactor);
+    SDKFactory sdkFactory(gpuOptions);
+
+    benchmarkPreprocessImage(sdkFactory, 200);
+    benchmarkFaceImageOrientationDetection(sdkFactory, 50 * multFactor);
+    benchmarkFaceLandmarkDetection(sdkFactory, 100 * multFactor);
+    benchmarkDetailedLandmarkDetection(sdkFactory, 100 * multFactor);
+    benchmarkHeadOrientation(sdkFactory, 500 * multFactor);
+    benchmarkFaceImageBlurDetection(sdkFactory, 200 * multFactor);
+    benchmarkBlinkDetection(sdkFactory, 100 * multFactor);
+    benchmarkMaskDetection(sdkFactory, 1, 100 * multFactor);
+    benchmarkGlassesDetection(sdkFactory, 200);
+    benchmarkSpoofDetection(sdkFactory, 100 * multFactor);
+    benchmarkObjectDetection(sdkFactory, ObjectDetectionModel::FAST, 100 * multFactor);
+    benchmarkObjectDetection(sdkFactory, ObjectDetectionModel::ACCURATE, 40 * multFactor);
 
     if (!gpuOptions.enableGPU) {
         // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE model.
-        benchmarkFaceRecognition(license, FacialRecognitionModel::LITE, gpuOptions, 1,  200);
+        benchmarkFaceRecognition(FacialRecognitionModel::LITE, sdkFactory, 1,  200);
     }
 
-    benchmarkFaceRecognition(license, FacialRecognitionModel::LITE_V2, gpuOptions, 1,  200);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5_2, gpuOptions, 1,  40 * multFactor);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, 1,  40 * multFactor);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, 1,  40 * multFactor);
+    benchmarkFaceRecognition(FacialRecognitionModel::LITE_V2, sdkFactory, 1,  200);
+    benchmarkFaceRecognition(FacialRecognitionModel::TFV5_2, sdkFactory, 1,  40 * multFactor);
+    benchmarkFaceRecognition(FacialRecognitionModel::TFV6, sdkFactory, 1,  40 * multFactor);
+    benchmarkFaceRecognition(FacialRecognitionModel::TFV7, sdkFactory, 1,  40 * multFactor);
     // Benchmarks with batching.
     // On CPU, should be the same speed as a batch size of 1.
     // On GPU, will increase the throughput.
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV5_2, gpuOptions, batchSize, 40 * multFactor);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV6, gpuOptions, batchSize, 40 * multFactor);
-    benchmarkFaceRecognition(license, FacialRecognitionModel::TFV7, gpuOptions, batchSize, 40 * multFactor);
-    benchmarkMaskDetection(license, gpuOptions, batchSize, 100 * multFactor);
+    benchmarkFaceRecognition(FacialRecognitionModel::TFV5_2, sdkFactory, batchSize, 40 * multFactor);
+    benchmarkFaceRecognition(FacialRecognitionModel::TFV6, sdkFactory, batchSize, 40 * multFactor);
+    benchmarkFaceRecognition(FacialRecognitionModel::TFV7, sdkFactory, batchSize, 40 * multFactor);
+    benchmarkMaskDetection(sdkFactory, batchSize, 100 * multFactor);
 
     return 0;
 }
@@ -141,28 +175,13 @@ std::string getModelName(FacialRecognitionModel model) {
     }
 }
 
-void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel model, const GPUOptions& gpuOptions, unsigned int batchSize, unsigned int numIterations) {
+void benchmarkFaceRecognition(FacialRecognitionModel model, const SDKFactory& sdkFactory, unsigned int batchSize, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
     options.frModel = model;
+    options.initializeModule.faceRecognizer = true;
 
-    InitializeModule initializeModule;
-    initializeModule.faceRecognizer = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -216,28 +235,13 @@ void benchmarkFaceRecognition(const std::string& license, FacialRecognitionModel
               << " ms | batch size = " << batchSize << " | " << numIterations << " iterations" << std::endl;
 }
 
-void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuOptions, ObjectDetectionModel objModel, unsigned int numIterations) {
+void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel objModel, unsigned int numIterations) {
     // Initialize the SDK with the fast object detection model
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
     options.objModel = objModel;
+    options.initializeModule.objectDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.objectDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -274,24 +278,10 @@ void benchmarkObjectDetection(const std::string& license, const GPUOptions& gpuO
 
 }
 
-void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkPreprocessImage(const SDKFactory& sdkFactory, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
-
+    auto options = sdkFactory.createBasicConfiguration();
+    auto tfSdk = sdkFactory.createSDK(options);
     const std::string imgPath = "../images/headshot.jpg";
 
     // First run the benchmark for an image on disk
@@ -372,27 +362,12 @@ void benchmarkPreprocessImage(const std::string& license, const GPUOptions& gpuO
               totalTime / numIterations << " ms | " << numIterations << " iterations" << std::endl;
 }
 
-void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkDetailedLandmarkDetection(const SDKFactory& sdkFactory, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.landmarkDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.landmarkDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -436,27 +411,12 @@ void benchmarkDetailedLandmarkDetection(const std::string& license, const GPUOpt
 
 }
 
-void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkHeadOrientation(const SDKFactory& sdkFactory, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.faceDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.faceDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -509,27 +469,12 @@ void benchmarkHeadOrientation(const std::string& license, const GPUOptions& gpuO
 
 }
 
-void benchmarkFaceImageOrientationDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkFaceImageOrientationDetection(const SDKFactory& sdkFactory, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.faceOrientationDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.faceOrientationDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -563,27 +508,12 @@ void benchmarkFaceImageOrientationDetection(const std::string& license, const GP
 
 }
 
-void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations ) {
+void benchmarkFaceImageBlurDetection(const SDKFactory& sdkFactory, unsigned int numIterations ) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.faceBlurDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.faceBlurDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -634,27 +564,12 @@ void benchmarkFaceImageBlurDetection(const std::string& license, const GPUOption
 
 }
 
-void benchmarkGlassesDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkGlassesDetection(const SDKFactory& sdkFactory, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.eyeglassDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.eyeglassDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -698,27 +613,12 @@ void benchmarkGlassesDetection(const std::string& license, const GPUOptions& gpu
 
 }
 
-void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int batchSize, unsigned int numIterations) {
+void benchmarkMaskDetection(const SDKFactory& sdkFactory, unsigned int batchSize, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.faceDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.faceDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -774,28 +674,13 @@ void benchmarkMaskDetection(const std::string& license, const GPUOptions& gpuOpt
 
 }
 
-void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkBlinkDetection(const SDKFactory& sdkFactory, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.faceDetector = true;
+    options.initializeModule.blinkDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.faceDetector = true;
-    initializeModule.blinkDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -838,28 +723,13 @@ void benchmarkBlinkDetection(const std::string& license, const GPUOptions& gpuOp
 
 }
 
-void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkSpoofDetection(const SDKFactory& sdkFactory, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.faceDetector = true;
+    options.initializeModule.passiveSpoof = true;
 
-    InitializeModule initializeModule;
-    initializeModule.faceDetector = true;
-    initializeModule.passiveSpoof = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
@@ -904,27 +774,12 @@ void benchmarkSpoofDetection(const std::string& license, const GPUOptions& gpuOp
 
 }
 
-void benchmarkFaceLandmarkDetection(const std::string& license, const GPUOptions& gpuOptions, unsigned int numIterations) {
+void benchmarkFaceLandmarkDetection(const SDKFactory& sdkFactory, unsigned int numIterations) {
     // Initialize the SDK
-    ConfigurationOptions options;
-    options.modelsPath = "./";
-    auto modelsPath = std::getenv("MODELS_PATH");
-    if (modelsPath) {
-        options.modelsPath = modelsPath;
-    }
-    options.gpuOptions = gpuOptions;
+    auto options = sdkFactory.createBasicConfiguration();
+    options.initializeModule.faceDetector = true;
 
-    InitializeModule initializeModule;
-    initializeModule.faceDetector = true;
-    options.initializeModule = initializeModule;
-
-    SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license);
-
-    if (!valid) {
-        std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
-    }
+    auto tfSdk = sdkFactory.createSDK(options);
 
     // Load the image
     TFImage img;
