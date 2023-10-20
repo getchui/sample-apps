@@ -1,10 +1,9 @@
 // The following code runs speed benchmarks for the different modules
 // The first few inferences are discarded to ensure caching is hot
 
+#include "stopwatch.h"
+#include "sdkfactory.h"
 
-#include <chrono>
-#include <cstdlib>
-#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -14,65 +13,9 @@
 
 using namespace Trueface;
 
-// Stopwatch Utility
-template <typename Clock = std::chrono::high_resolution_clock>
-class Stopwatch
-{
-    typename Clock::time_point start_point;
-public:
-    Stopwatch() :start_point(Clock::now()){}
-
-    // Returns elapsed time
-    template <typename Rep = typename Clock::duration::rep, typename Units = typename Clock::duration>
-    Rep elapsedTime() const {
-        std::atomic_thread_fence(std::memory_order_relaxed);
-        auto counted_time = std::chrono::duration_cast<Units>(Clock::now() - start_point).count();
-        std::atomic_thread_fence(std::memory_order_relaxed);
-        return static_cast<Rep>(counted_time);
-    }
-};
-
-using preciseStopwatch = Stopwatch<>;
-using systemStopwatch = Stopwatch<std::chrono::system_clock>;
-using monotonicStopwatch = Stopwatch<std::chrono::steady_clock>;
-
 bool warmup = true; // Warmup inference to ensure caching is hot
 int numWarmup = 10;
 
-class SDKFactory
-{
-public:
-    SDKFactory(const GPUOptions& gpuOptions) : gpuOptions_{gpuOptions}, modelsPath_{"./"}, license_{TRUEFACE_TOKEN} {
-        auto modelsPath = std::getenv("MODELS_PATH");
-        if (modelsPath) {
-            modelsPath_ = modelsPath;
-        }
-    }
-
-    SDK createSDK(ConfigurationOptions& options) const {
-        SDK tfSdk(options);
-        bool valid = tfSdk.setLicense(license_);
-        if (!valid) {
-            std::cout << "Error: the provided license is invalid." << std::endl;
-            exit (EXIT_FAILURE);
-        }
-
-        return tfSdk;
-    }
-
-    ConfigurationOptions createBasicConfiguration() const {
-        ConfigurationOptions options;
-        options.modelsPath = modelsPath_;
-        options.gpuOptions = gpuOptions_;
-        return options;
-    }
-
-private:
-
-    const GPUOptions& gpuOptions_;
-    std::string modelsPath_;
-    std::string license_;
-};
 
 void benchmarkFaceRecognition(FacialRecognitionModel model, const SDKFactory& sdkFactory, unsigned int batchSize = 1, unsigned int numIterations = 100);
 void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel objModel, unsigned int numIterations = 100);
