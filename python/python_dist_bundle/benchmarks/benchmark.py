@@ -84,6 +84,22 @@ def benchmark_preprocess_image(license, gpu_options, num_iterations = 200):
     print("Average time preprocess_image JPG image in memory ({}x{}): {} ms | {} iterations".format(
         img.get_width(), img.get_height(), avg_time, num_iterations))
 
+    # Now repeat with already decoded images (ex. you grab an image from your video stream).
+    if DO_WARMUP:
+        for _ in range(NUM_WARMUP):
+            error_code, img = sdk.preprocess_image(img.get_data(), img.get_width(), img.get_height(), tfsdk.COLORCODE.rgb)
+            if error_code != tfsdk.ERRORCODE.NO_ERROR:
+                print('Error: Unable to preprocess image')
+                return
+
+    stop_watch = Stopwatch()
+    for _ in range(num_iterations):
+        sdk.preprocess_image(img.get_data(), img.get_width(), img.get_height(), tfsdk.COLORCODE.rgb)
+    total_time = stop_watch.elapsedTimeMilliSeconds()
+    avg_time = total_time / num_iterations
+
+    print("Average time preprocessImage RGB pixel array in memory ({}x{}): {} ms | {} iterations".format(
+        img.get_width(), img.get_height(), avg_time, num_iterations))
 
 def benchmark_face_image_orientation_detection(license, gpu_options, num_iterations):
     # Initialize the SDK
