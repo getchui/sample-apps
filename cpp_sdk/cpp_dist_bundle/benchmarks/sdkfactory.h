@@ -9,7 +9,6 @@
 class SDKFactory
 {
 public:
-
     SDKFactory(const Trueface::GPUOptions& gpuOptions) : gpuOptions_{gpuOptions}, modelsPath_{"./"}, license_{TRUEFACE_TOKEN} {
         auto modelsPath = std::getenv("MODELS_PATH");
         if (modelsPath) {
