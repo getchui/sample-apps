@@ -1,7 +1,6 @@
 #pragma once
 
 #include "sdkfactory.h"
-#include "tf_data_types.h"
 
 struct BenchmarkParams {
     bool doWarmup;
@@ -10,7 +9,20 @@ struct BenchmarkParams {
     unsigned int numIterations;
 };
 
-void benchmarkFaceRecognition(Trueface::FacialRecognitionModel, const SDKFactory&, BenchmarkParams);
+// fwd declarations
+namespace Trueface {
+    enum class FacialRecognitionModel;
+    enum class ObjectDetectionModel;
+} // namespace Trueface
+
+struct Observation {
+    std::string benchmark;
+    std::string benchmarkSubType;
+    BenchmarkParams params;
+    float timeInMs;
+};
+
+void benchmarkFaceRecognition(const SDKFactory&, Trueface::FacialRecognitionModel, BenchmarkParams);
 void benchmarkObjectDetection(const SDKFactory&, Trueface::ObjectDetectionModel objModel, BenchmarkParams);
 void benchmarkFaceLandmarkDetection(const SDKFactory&, BenchmarkParams);
 void benchmarkDetailedLandmarkDetection(const SDKFactory&, BenchmarkParams);

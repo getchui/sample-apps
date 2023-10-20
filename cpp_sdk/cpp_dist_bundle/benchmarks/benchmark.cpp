@@ -74,12 +74,12 @@ int main() {
         batchBenchmarkParams.batchSize = currentBatchSize;
         if (!gpuOptions.enableGPU) {
             // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE model.
-            benchmarkFaceRecognition(FacialRecognitionModel::LITE, sdkFactory, batchBenchmarkParams);
+            benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE, batchBenchmarkParams);
         }
-        benchmarkFaceRecognition(FacialRecognitionModel::LITE_V2, sdkFactory, batchBenchmarkParams);
-        benchmarkFaceRecognition(FacialRecognitionModel::TFV5_2, sdkFactory, batchBenchmarkParams);
-        benchmarkFaceRecognition(FacialRecognitionModel::TFV6, sdkFactory, batchBenchmarkParams);
-        benchmarkFaceRecognition(FacialRecognitionModel::TFV7, sdkFactory, batchBenchmarkParams);
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE_V2, batchBenchmarkParams);
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV5_2, batchBenchmarkParams);
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV6, batchBenchmarkParams);
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV7, batchBenchmarkParams);
         benchmarkMaskDetection(sdkFactory, batchBenchmarkParams);
     }
 

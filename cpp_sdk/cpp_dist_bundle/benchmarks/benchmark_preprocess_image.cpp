@@ -1,7 +1,11 @@
 #include "benchmark.h"
 #include "stopwatch.h"
 
+#include "tf_data_types.h"
+#include "tf_sdk.h"
+
 #include <fstream>
+#include <iostream>
 
 using namespace Trueface;
 

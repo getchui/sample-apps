@@ -1,6 +1,11 @@
 #include "benchmark.h"
 #include "stopwatch.h"
 
+#include "tf_data_types.h"
+#include "tf_sdk.h"
+
+#include <iostream>
+
 using namespace Trueface;
 
 std::string getModelName(FacialRecognitionModel model) {
@@ -19,7 +24,7 @@ std::string getModelName(FacialRecognitionModel model) {
     }
 }
 
-void benchmarkFaceRecognition(FacialRecognitionModel model, const SDKFactory& sdkFactory, BenchmarkParams params) {
+void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionModel model, BenchmarkParams params) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.frModel = model;

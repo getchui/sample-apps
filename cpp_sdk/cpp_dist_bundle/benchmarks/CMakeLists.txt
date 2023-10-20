@@ -32,6 +32,7 @@ include_directories(${TRUEFACE_SDK_DIR}/include)
 link_directories(${TRUEFACE_SDK_DIR}/lib)
 
 add_executable(run_benchmarks benchmark.cpp
+    sdkfactory.cpp
     benchmark_preprocess_image.cpp
     benchmark_face_image_orientation_detection.cpp
     benchmark_face_image_blur_detection.cpp
