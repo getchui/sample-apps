@@ -15,7 +15,8 @@
 using namespace Trueface;
 
 std::ostream& operator<<(std::ostream& out, const Observation& observation) {
-    out << (observation.isGpuEnabled ? "GPU" : "CPU") << ","
+    out << observation.version << ","
+        << (observation.isGpuEnabled ? "GPU" : "CPU") << ","
         << "\"" << observation.benchmark << "\","
         << "\"" << observation.benchmarkSubType << "\","
         << "\"" << observation.measurement << "\","
@@ -26,26 +27,13 @@ std::ostream& operator<<(std::ostream& out, const Observation& observation) {
 }
 
 int main() {
-    GPUOptions gpuOptions;
-    gpuOptions.enableGPU = false; // TODO set this to true to benchmark on GPU
-    gpuOptions.deviceIndex = 0;
-
-    GPUModuleOptions gpuModuleOptions;
-    gpuModuleOptions.precision = Precision::FP16;
-
     uint32_t batchSize = 16;
-    gpuModuleOptions.maxBatchSize = batchSize;
-    gpuModuleOptions.optBatchSize = 1;
-
-    gpuOptions.faceDetectorGPUOptions = gpuModuleOptions;
-    gpuOptions.faceRecognizerGPUOptions = gpuModuleOptions;
-    gpuOptions.maskDetectorGPUOptions = gpuModuleOptions;
-    gpuOptions.objectDetectorGPUOptions = gpuModuleOptions;
-    gpuOptions.faceLandmarkDetectorGPUOptions = gpuModuleOptions;
-    gpuOptions.faceOrientationDetectorGPUOptions = gpuModuleOptions;
-    gpuOptions.faceBlurDetectorGPUOptions = gpuModuleOptions;
-    gpuOptions.spoofDetectorGPUOptions = gpuModuleOptions;
-    gpuOptions.blinkDetectorGPUOptions = gpuModuleOptions;
+    GPUOptions gpuOptions = SDKFactory::createGPUOptions(
+        false,        // enableGPU,  NOTE: set this to true to benchmark on GPU
+        0,            // deviceIndex
+        batchSize,    // maxBatchSize
+        1             // optBatchSize
+    );
 
     std::cout << "==========================" << std::endl;
     std::cout << "==========================" << std::endl;

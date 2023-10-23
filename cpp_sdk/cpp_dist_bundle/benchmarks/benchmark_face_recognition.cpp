@@ -87,5 +87,5 @@ void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionMod
     std::cout << "Average time face recognition " << modelName << ": " << avgTime
               << " ms | batch size = " << params.batchSize << " | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, modelName, "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, modelName, "Average Time", params, avgTime);
 }

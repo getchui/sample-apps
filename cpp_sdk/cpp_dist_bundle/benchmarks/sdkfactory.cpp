@@ -33,6 +33,33 @@ ConfigurationOptions SDKFactory::createBasicConfiguration() const {
     return options;
 }
 
+GPUOptions
+SDKFactory::createGPUOptions(bool enableGPU, unsigned int deviceIndex,
+                             int32_t maxBatchSize, int32_t optBatchSize) {
+    GPUOptions gpuOptions;
+    gpuOptions.enableGPU = enableGPU;
+    gpuOptions.deviceIndex = deviceIndex;
+
+    GPUModuleOptions gpuModuleOptions;
+    gpuModuleOptions.precision = Precision::FP16;
+
+    gpuModuleOptions.maxBatchSize = maxBatchSize;
+    gpuModuleOptions.optBatchSize = optBatchSize;
+
+    gpuOptions.faceDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceRecognizerGPUOptions = gpuModuleOptions;
+    gpuOptions.maskDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.objectDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceLandmarkDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceOrientationDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceBlurDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.spoofDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.blinkDetectorGPUOptions = gpuModuleOptions;
+
+    return gpuOptions;
+}
+
+
 bool SDKFactory::isGpuEnabled() const {
     return gpuOptions_.enableGPU;
 }

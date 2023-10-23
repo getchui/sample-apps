@@ -58,5 +58,5 @@ void benchmarkGlassesDetection(const SDKFactory& sdkFactory, BenchmarkParams par
     std::cout << "Average time glasses detection: " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

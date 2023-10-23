@@ -18,9 +18,10 @@ struct BenchmarkParams {
 };
 
 struct Observation {
-    Observation(bool gpuEnabled, std::string b, std::string bt, std::string m, BenchmarkParams p, float t)
-        : isGpuEnabled{gpuEnabled}, benchmark{b}, benchmarkSubType{bt}, measurement{m}, params{p}, timeInMs{t} {}
+    Observation(std::string v, bool gpuEnabled, std::string b, std::string bt, std::string m, BenchmarkParams p, float t)
+        : version{v}, isGpuEnabled{gpuEnabled}, benchmark{b}, benchmarkSubType{bt}, measurement{m}, params{p}, timeInMs{t} {}
 
+    std::string version;
     bool isGpuEnabled;
     std::string benchmark;
     std::string benchmarkSubType;

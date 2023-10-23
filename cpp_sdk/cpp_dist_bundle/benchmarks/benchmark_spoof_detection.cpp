@@ -60,5 +60,5 @@ void benchmarkSpoofDetection(const SDKFactory& sdkFactory, BenchmarkParams param
     std::cout << "Average time spoof detection: " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

@@ -66,5 +66,5 @@ void benchmarkHeadOrientation(const SDKFactory& sdkFactory, BenchmarkParams para
     std::cout << "Average time head orientation: " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

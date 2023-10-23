@@ -47,5 +47,5 @@ void benchmarkFaceImageOrientationDetection(const SDKFactory& sdkFactory, Benchm
     std::cout << "Average time face image orientation detection: " << avgTime
               << " ms  | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

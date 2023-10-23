@@ -52,5 +52,5 @@ void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel
     std::cout << "Average time object detection (" + mode + " mode): " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, mode, "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, mode, "Average Time", params, avgTime);
 }

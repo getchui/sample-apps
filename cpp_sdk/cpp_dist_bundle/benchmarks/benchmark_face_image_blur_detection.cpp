@@ -65,5 +65,5 @@ void benchmarkFaceImageBlurDetection(const SDKFactory& sdkFactory, BenchmarkPara
     std::cout << "Average time face image blur detection: " << avgTime
               << " ms  | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

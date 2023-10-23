@@ -42,7 +42,7 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
     std::cout << "Average time preprocessImage JPG image from disk (" << img->getWidth() << "x" << img->getHeight() << "): "
               << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "JPG from disk", "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "JPG from disk", "Average Time", params, avgTime);
 
     // Now repeat with encoded image in memory
     std::ifstream file(imgPath, std::ios::binary | std::ios::ate);
@@ -77,7 +77,7 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
     std::cout << "Average time preprocessImage encoded JPG image in memory (" << img->getWidth() << "x" << img->getHeight() << "): "
               << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "encoded JPG in memory", "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "encoded JPG in memory", "Average Time", params, avgTime);
 
     // Now repeat with already decoded imgages (ex. you grab an image from your video stream).
     TFImage newImg;
@@ -101,5 +101,5 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
     std::cout << "Average time preprocessImage RGB pixel array in memory (" << img->getWidth() << "x" << img->getHeight() << "): "
               << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "RGB pixels array in memory", "Average Time", params, avgTime);
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "RGB pixels array in memory", "Average Time", params, avgTime);
 }
