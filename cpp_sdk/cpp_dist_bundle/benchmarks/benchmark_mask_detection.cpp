@@ -1,4 +1,5 @@
-#include "benchmark.h"
+#include "observation.h"
+#include "sdkfactory.h"
 #include "stopwatch.h"
 
 #include "tf_data_types.h"
@@ -60,15 +61,14 @@ void benchmarkMaskDetection(const SDKFactory& sdkFactory, BenchmarkParams params
     }
 
     // Time the mask detector
-    preciseStopwatch stopwatch;
+    std::vector<float> times;
+    times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
+        preciseStopwatch stopwatch;
         tfSdk.detectMasks(facechips, maskLabels, maskScores);
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
     }
-    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
-    auto avgTime = totalTime / params.numIterations / static_cast<float>(params.batchSize);
 
-    std::cout << "Average time mask detection: " << avgTime
-              << " ms | batch size = " << params.batchSize << " | " << params.numIterations << " iterations" << std::endl;
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
+    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                                benchmarkName, "", params, times, observations);
 }

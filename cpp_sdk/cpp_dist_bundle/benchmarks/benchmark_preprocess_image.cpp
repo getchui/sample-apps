@@ -1,4 +1,5 @@
-#include "benchmark.h"
+#include "observation.h"
+#include "sdkfactory.h"
 #include "stopwatch.h"
 
 #include "tf_data_types.h"
@@ -30,19 +31,18 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
         }
     }
 
-    // Time the preprocessImage function
-    preciseStopwatch stopwatch;
-    for (size_t i = 0; i < params.numIterations; ++i) {
-        TFImage newImg;
         tfSdk.preprocessImage(imgPath, img);
+    // Time the preprocessImage function
+    std::vector<float> times;
+    times.reserve(params.numIterations);
+    for (size_t i = 0; i < params.numIterations; ++i) {
+        preciseStopwatch stopwatch;
+        tfSdk.preprocessImage(imgPath, img);
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
     }
-    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
-    auto avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time preprocessImage JPG image from disk (" << img->getWidth() << "x" << img->getHeight() << "): "
-              << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "JPG from disk", "Average Time", params, avgTime);
+    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                                benchmarkName, "JPG from disk", params, times, observations);
 
     // Now repeat with encoded image in memory
     std::ifstream file(imgPath, std::ios::binary | std::ios::ate);
@@ -66,18 +66,15 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
     }
 
     // Time the preprocessImage function
-    preciseStopwatch stopwatch1;
+    times.clear();
     for (size_t i = 0; i < params.numIterations; ++i) {
-        TFImage newImg;
-        tfSdk.preprocessImage(buffer, newImg);
+        preciseStopwatch stopwatch;
+        tfSdk.preprocessImage(buffer, img);
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
     }
-    totalTime = stopwatch1.elapsedTime<float, std::chrono::milliseconds>();
-    avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time preprocessImage encoded JPG image in memory (" << img->getWidth() << "x" << img->getHeight() << "): "
-              << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "encoded JPG in memory", "Average Time", params, avgTime);
+    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                                benchmarkName, "encoded JPG in memory", params, times, observations);
 
     // Now repeat with already decoded imgages (ex. you grab an image from your video stream).
     TFImage newImg;
@@ -91,15 +88,13 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
         }
     }
 
-    preciseStopwatch stopwatch2;
+    times.clear();
     for (size_t i = 0; i < params.numIterations; ++i) {
+        preciseStopwatch stopwatch;
         tfSdk.preprocessImage(img->getData(), img->getWidth(), img->getHeight(), ColorCode::rgb, newImg);
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
     }
-    totalTime = stopwatch2.elapsedTime<float, std::chrono::milliseconds>();
-    avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time preprocessImage RGB pixel array in memory (" << img->getWidth() << "x" << img->getHeight() << "): "
-              << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "RGB pixels array in memory", "Average Time", params, avgTime);
+    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                                benchmarkName, "RGB pixels array in memory", params, times, observations);
 }

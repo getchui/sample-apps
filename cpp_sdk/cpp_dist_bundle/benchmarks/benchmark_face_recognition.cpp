@@ -1,4 +1,5 @@
-#include "benchmark.h"
+#include "observation.h"
+#include "sdkfactory.h"
 #include "stopwatch.h"
 
 #include "tf_data_types.h"
@@ -75,17 +76,14 @@ void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionMod
         }
     }
 
-    preciseStopwatch stopwatch;
+    std::vector<float> times;
+    times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
+        preciseStopwatch stopwatch;
         tfSdk.getFaceFeatureVectors(facechips, faceprints);
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
     }
 
-    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
-    auto avgTime = totalTime / params.numIterations / static_cast<float>(params.batchSize);
-
-    std::string modelName{getModelName(model)};
-    std::cout << "Average time face recognition " << modelName << ": " << avgTime
-              << " ms | batch size = " << params.batchSize << " | " << params.numIterations << " iterations" << std::endl;
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, modelName, "Average Time", params, avgTime);
+    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                                benchmarkName, getModelName(model), params, times, observations);
 }

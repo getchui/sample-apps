@@ -1,4 +1,5 @@
-#include "benchmark.h"
+#include "observation.h"
+#include "sdkfactory.h"
 #include "stopwatch.h"
 
 #include "tf_data_types.h"
@@ -48,15 +49,14 @@ void benchmarkBlinkDetection(const SDKFactory& sdkFactory, BenchmarkParams param
     }
 
     // Time the blink detector
-    preciseStopwatch stopwatch;
+    std::vector<float> times;
+    times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
+        preciseStopwatch stopwatch;
         tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
     }
-    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
-    auto avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time blink detection: " << avgTime
-              << " ms | " << params.numIterations << " iterations" << std::endl;
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
+    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                                benchmarkName, "", params, times, observations);
 }

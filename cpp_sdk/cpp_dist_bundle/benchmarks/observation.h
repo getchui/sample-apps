@@ -23,10 +23,14 @@ struct Observation {
     BenchmarkParams params;
     float timeInMs;
 };
+std::ostream& operator<<(std::ostream& out, const Observation& observation);
 
 using ObservationList = std::vector<Observation>;
 
-std::ostream& operator<<(std::ostream& out, const Observation& observation);
+void appendObservationsFromTimes(const std::string &version, bool isGpuEnabled,
+                                 const std::string &benchmarkName, const std::string &benchmarkSubType,
+                                 const BenchmarkParams &params, std::vector<float> times,
+                                 ObservationList &observations);
 
 class ObservationCSVWriter {
 public:

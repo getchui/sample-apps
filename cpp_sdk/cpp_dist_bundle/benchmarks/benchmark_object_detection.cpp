@@ -1,4 +1,5 @@
-#include "benchmark.h"
+#include "observation.h"
+#include "sdkfactory.h"
 #include "stopwatch.h"
 
 #include "tf_data_types.h"
@@ -39,18 +40,15 @@ void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel
     }
 
     // Time the creation of the feature vector
-    preciseStopwatch stopwatch;
+    std::vector<float> times;
+    times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
+        preciseStopwatch stopwatch;
         tfSdk.detectObjects(img, boundingBoxes);
-
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
     }
-    auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
-    auto avgTime = totalTime / params.numIterations;
 
     const std::string mode = (options.objModel == ObjectDetectionModel::FAST) ? "fast" : "accurate";
-
-    std::cout << "Average time object detection (" + mode + " mode): " << avgTime
-              << " ms | " << params.numIterations << " iterations" << std::endl;
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, mode, "Average Time", params, avgTime);
+    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                                benchmarkName, mode, params, times, observations);
 }
