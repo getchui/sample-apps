@@ -8,7 +8,9 @@
 
 using namespace Trueface;
 
-void benchmarkDetailedLandmarkDetection(const SDKFactory& sdkFactory, BenchmarkParams params) {
+const std::string benchmarkName{"106 face landmark detection"};
+
+void benchmarkDetailedLandmarkDetection(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.initializeModule.landmarkDetector = true;
@@ -50,7 +52,10 @@ void benchmarkDetailedLandmarkDetection(const SDKFactory& sdkFactory, BenchmarkP
         tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time 106 face landmark detection: " << totalTime / params.numIterations
+    std::cout << "Average time 106 face landmark detection: " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

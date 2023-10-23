@@ -8,7 +8,9 @@
 
 using namespace Trueface;
 
-void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel objModel, BenchmarkParams params) {
+const std::string benchmarkName{"Object detection"};
+
+void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel objModel, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK with the fast object detection model
     auto options = sdkFactory.createBasicConfiguration();
     options.objModel = objModel;
@@ -43,9 +45,12 @@ void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel
 
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations;
 
     const std::string mode = (options.objModel == ObjectDetectionModel::FAST) ? "fast" : "accurate";
 
-    std::cout << "Average time object detection (" + mode + " mode): " << totalTime / params.numIterations
+    std::cout << "Average time object detection (" + mode + " mode): " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, mode, "Average Time", params, avgTime);
 }

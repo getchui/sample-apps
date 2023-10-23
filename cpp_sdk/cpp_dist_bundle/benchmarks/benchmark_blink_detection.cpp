@@ -8,7 +8,9 @@
 
 using namespace Trueface;
 
-void benchmarkBlinkDetection(const SDKFactory& sdkFactory, BenchmarkParams params) {
+const std::string benchmarkName{"Blink detection"};
+
+void benchmarkBlinkDetection(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.initializeModule.faceDetector = true;
@@ -51,7 +53,10 @@ void benchmarkBlinkDetection(const SDKFactory& sdkFactory, BenchmarkParams param
         tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time blink detection: " << totalTime / params.numIterations
+    std::cout << "Average time blink detection: " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

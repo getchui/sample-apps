@@ -16,6 +16,8 @@ public:
     Trueface::SDK createSDK(Trueface::ConfigurationOptions& options) const;
     Trueface::ConfigurationOptions createBasicConfiguration() const;
 
+    bool isGpuEnabled() const;
+
 private:
     const Trueface::GPUOptions& gpuOptions_;
     std::string modelsPath_;

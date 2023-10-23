@@ -8,7 +8,9 @@
 
 using namespace Trueface;
 
-void benchmarkFaceImageBlurDetection(const SDKFactory& sdkFactory, BenchmarkParams params) {
+const std::string benchmarkName{"Face image blur detection"};
+
+void benchmarkFaceImageBlurDetection(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.initializeModule.faceBlurDetector = true;
@@ -58,7 +60,10 @@ void benchmarkFaceImageBlurDetection(const SDKFactory& sdkFactory, BenchmarkPara
         tfSdk.detectFaceImageBlur(facechip, quality, score);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time face image blur detection: " << totalTime / params.numIterations
+    std::cout << "Average time face image blur detection: " << avgTime
               << " ms  | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

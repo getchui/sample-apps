@@ -32,3 +32,7 @@ ConfigurationOptions SDKFactory::createBasicConfiguration() const {
     options.gpuOptions = gpuOptions_;
     return options;
 }
+
+bool SDKFactory::isGpuEnabled() const {
+    return gpuOptions_.enableGPU;
+}

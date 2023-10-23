@@ -8,7 +8,9 @@
 
 using namespace Trueface;
 
-void benchmarkHeadOrientation(const SDKFactory& sdkFactory, BenchmarkParams params) {
+const std::string benchmarkName{"Head orientation detection (yaw, pitch, roll)"};
+
+void benchmarkHeadOrientation(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.initializeModule.faceDetector = true;
@@ -59,7 +61,10 @@ void benchmarkHeadOrientation(const SDKFactory& sdkFactory, BenchmarkParams para
         tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotationVec, translationVec);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time head orientation: " << totalTime / params.numIterations
+    std::cout << "Average time head orientation: " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

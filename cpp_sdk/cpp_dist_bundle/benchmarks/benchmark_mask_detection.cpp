@@ -8,7 +8,9 @@
 
 using namespace Trueface;
 
-void benchmarkMaskDetection(const SDKFactory& sdkFactory, BenchmarkParams params) {
+const std::string benchmarkName{"Mask detection"};
+
+void benchmarkMaskDetection(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.initializeModule.faceDetector = true;
@@ -63,7 +65,10 @@ void benchmarkMaskDetection(const SDKFactory& sdkFactory, BenchmarkParams params
         tfSdk.detectMasks(facechips, maskLabels, maskScores);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations / static_cast<float>(params.batchSize);
 
-    std::cout << "Average time mask detection: " << totalTime / params.numIterations / static_cast<float>(params.batchSize)
+    std::cout << "Average time mask detection: " << avgTime
               << " ms | batch size = " << params.batchSize << " | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

@@ -9,7 +9,9 @@
 
 using namespace Trueface;
 
-void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams params) {
+const std::string benchmarkName{"Preprocess image"};
+
+void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     auto tfSdk = sdkFactory.createSDK(options);
@@ -35,9 +37,12 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
         tfSdk.preprocessImage(imgPath, img);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time preprocessImage JPG image from disk (" << img->getWidth() << "x" << img->getHeight() << "): " <<
-              totalTime / params.numIterations << " ms | " << params.numIterations << " iterations" << std::endl;
+    std::cout << "Average time preprocessImage JPG image from disk (" << img->getWidth() << "x" << img->getHeight() << "): "
+              << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "JPG from disk", "Average Time", params, avgTime);
 
     // Now repeat with encoded image in memory
     std::ifstream file(imgPath, std::ios::binary | std::ios::ate);
@@ -67,9 +72,12 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
         tfSdk.preprocessImage(buffer, newImg);
     }
     totalTime = stopwatch1.elapsedTime<float, std::chrono::milliseconds>();
+    avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time preprocessImage encoded JPG image in memory (" << img->getWidth() << "x" << img->getHeight() << "): " <<
-    totalTime / params.numIterations << " ms | " << params.numIterations << " iterations" << std::endl;
+    std::cout << "Average time preprocessImage encoded JPG image in memory (" << img->getWidth() << "x" << img->getHeight() << "): "
+              << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "encoded JPG in memory", "Average Time", params, avgTime);
 
     // Now repeat with already decoded imgages (ex. you grab an image from your video stream).
     TFImage newImg;
@@ -88,7 +96,10 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
         tfSdk.preprocessImage(img->getData(), img->getWidth(), img->getHeight(), ColorCode::rgb, newImg);
     }
     totalTime = stopwatch2.elapsedTime<float, std::chrono::milliseconds>();
+    avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time preprocessImage RGB pixel array in memory (" << img->getWidth() << "x" << img->getHeight() << "): " <<
-              totalTime / params.numIterations << " ms | " << params.numIterations << " iterations" << std::endl;
+    std::cout << "Average time preprocessImage RGB pixel array in memory (" << img->getWidth() << "x" << img->getHeight() << "): "
+              << avgTime << " ms | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "RGB pixels array in memory", "Average Time", params, avgTime);
 }

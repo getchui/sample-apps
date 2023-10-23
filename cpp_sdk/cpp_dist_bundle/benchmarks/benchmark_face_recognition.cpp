@@ -8,6 +8,8 @@
 
 using namespace Trueface;
 
+const std::string benchmarkName{"Face recognition"};
+
 std::string getModelName(FacialRecognitionModel model) {
     if (model == FacialRecognitionModel::TFV5_2) {
         return "TFV5_2";
@@ -24,7 +26,7 @@ std::string getModelName(FacialRecognitionModel model) {
     }
 }
 
-void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionModel model, BenchmarkParams params) {
+void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionModel model, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.frModel = model;
@@ -79,7 +81,11 @@ void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionMod
     }
 
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations / static_cast<float>(params.batchSize);
 
-    std::cout << "Average time face recognition " << getModelName(model) << ": " << totalTime / params.numIterations / static_cast<float>(params.batchSize)
+    std::string modelName{getModelName(model)};
+    std::cout << "Average time face recognition " << modelName << ": " << avgTime
               << " ms | batch size = " << params.batchSize << " | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, modelName, "Average Time", params, avgTime);
 }

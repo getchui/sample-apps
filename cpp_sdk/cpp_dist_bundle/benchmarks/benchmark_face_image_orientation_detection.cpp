@@ -8,7 +8,9 @@
 
 using namespace Trueface;
 
-void benchmarkFaceImageOrientationDetection(const SDKFactory& sdkFactory, BenchmarkParams params) {
+const std::string benchmarkName{"Face image orientation detection"};
+
+void benchmarkFaceImageOrientationDetection(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.initializeModule.faceOrientationDetector = true;
@@ -41,7 +43,9 @@ void benchmarkFaceImageOrientationDetection(const SDKFactory& sdkFactory, Benchm
         tfSdk.getFaceImageRotation(img, flags);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
-
-    std::cout << "Average time face image orientation detection: " << totalTime / params.numIterations
+    auto avgTime = totalTime / params.numIterations;
+    std::cout << "Average time face image orientation detection: " << avgTime
               << " ms  | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }

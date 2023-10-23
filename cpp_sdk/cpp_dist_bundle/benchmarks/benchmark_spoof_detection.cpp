@@ -8,7 +8,9 @@
 
 using namespace Trueface;
 
-void benchmarkSpoofDetection(const SDKFactory& sdkFactory, BenchmarkParams params) {
+const std::string benchmarkName{"Passive spoof detection"};
+
+void benchmarkSpoofDetection(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.initializeModule.faceDetector = true;
@@ -53,7 +55,10 @@ void benchmarkSpoofDetection(const SDKFactory& sdkFactory, BenchmarkParams param
         tfSdk.detectSpoof(img, faceBoxAndLandmarks, label, spoofScore);
     }
     auto totalTime = stopwatch.elapsedTime<float, std::chrono::milliseconds>();
+    auto avgTime = totalTime / params.numIterations;
 
-    std::cout << "Average time spoof detection: " << totalTime / params.numIterations
+    std::cout << "Average time spoof detection: " << avgTime
               << " ms | " << params.numIterations << " iterations" << std::endl;
+
+    observations.emplace_back(sdkFactory.isGpuEnabled(), benchmarkName, "", "Average Time", params, avgTime);
 }
