@@ -1,3 +1,4 @@
+#include "memory_high_water_mark.h"
 #include "observation.h"
 #include "sdkfactory.h"
 #include "stopwatch.h"
@@ -8,6 +9,7 @@
 #include <iostream>
 
 using namespace Trueface;
+using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Face recognition"};
 
@@ -27,7 +29,10 @@ std::string getModelName(FacialRecognitionModel model) {
     }
 }
 
-void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionModel model, BenchmarkParams params, ObservationList& observations) {
+void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionModel model, Parameters params, ObservationList& observations) {
+    // baseline memory reading
+    auto memoryTracker = MemoryHighWaterMarkTracker();
+
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.frModel = model;
@@ -86,4 +91,8 @@ void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionMod
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
                                 benchmarkName, getModelName(model), params, times, observations);
+
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              getModelName(model), "Memory usage (kB)", params,
+                              memoryTracker.getDifferenceFromBaseline());
 }

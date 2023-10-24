@@ -42,7 +42,7 @@ int main() {
     bool warmup = true; // Warmup inference to ensure caching is hot
     int numWarmup = 10;
     SDKFactory sdkFactory(gpuOptions);
-    ObservationList observations;
+    Benchmarks::ObservationList observations;
 
     benchmarkPreprocessImage(sdkFactory, {warmup, numWarmup, 1, 200}, observations);
     benchmarkFaceImageOrientationDetection(sdkFactory, {warmup, numWarmup, 1, 50*multFactor}, observations);
@@ -59,7 +59,7 @@ int main() {
     // Benchmarks with batching.
     // On CPU, should be the same speed as a batch size of 1.
     // On GPU, will increase the throughput.
-    BenchmarkParams batchBenchmarkParams{warmup, numWarmup, 1, 40*multFactor};
+    Benchmarks::Parameters batchBenchmarkParams{warmup, numWarmup, 1, 40*multFactor};
     for (auto currentBatchSize : std::vector<unsigned int>{1, batchSize}) {
         batchBenchmarkParams.batchSize = currentBatchSize;
         if (!gpuOptions.enableGPU) {
@@ -73,7 +73,7 @@ int main() {
         benchmarkMaskDetection(sdkFactory, batchBenchmarkParams, observations);
     }
 
-    ObservationCSVWriter csv{"benchmarks.csv"};
+    Benchmarks::ObservationCSVWriter csv{"benchmarks.csv"};
     csv.write(observations);
 
     return EXIT_SUCCESS;

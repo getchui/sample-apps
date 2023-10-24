@@ -5,23 +5,27 @@
 #include <fstream>
 #include <numeric>
 #include <ostream>
+#include <sstream>
+
+namespace Trueface {
+namespace Benchmarks {
 
 Observation::Observation(std::string v, bool gpuEnabled, std::string b, std::string bt,
-                         std::string m, BenchmarkParams p, float t)
+                         std::string m, Parameters p, float t)
     : version{v}, isGpuEnabled{gpuEnabled}, benchmark{b}, benchmarkSubType{bt},
-      measurement{m}, params{p}, timeInMs{t} {
+      measurementName{m}, params{p}, measurementValue{t} {
 }
-
 
 std::ostream& operator<<(std::ostream& out, const Observation& observation) {
     out << observation.version << ","
         << (observation.isGpuEnabled ? "GPU" : "CPU") << ","
         << "\"" << observation.benchmark << "\","
         << "\"" << observation.benchmarkSubType << "\","
-        << "\"" << observation.measurement << "\","
+        << "\"" << observation.measurementName << "\","
+        << observation.measurementValue << ","
         << observation.params.batchSize << ","
-        << observation.params.numIterations << ","
-        << observation.timeInMs;
+        << observation.params.numIterations;
+
     return out;
 }
 
@@ -40,9 +44,9 @@ void ObservationCSVWriter::write(const ObservationList &observations) {
             << "Benchmark Name, "
             << "Benchmark Type or Model, "
             << "Measurement Taken, "
+            << "Measured Value, "
             << "Batch Size, "
-            << "Number of Iterations, "
-            << "Time (ms)"
+            << "Number of Iterations"
             << "\n";
     }
 
@@ -60,7 +64,7 @@ bool ObservationCSVWriter::doesFileExist(const std::string& path) {
 
 void appendObservationsFromTimes(const std::string &version, bool isGpuEnabled,
                                  const std::string &benchmarkName, const std::string &benchmarkSubType,
-                                 const BenchmarkParams &params, std::vector<float> times,
+                                 const Parameters &params, std::vector<float> times,
                                  ObservationList &observations) {
     std::transform(times.begin(), times.end(), times.begin(), [&params](float val) {
         return val / static_cast<float>(params.batchSize);
@@ -81,9 +85,12 @@ void appendObservationsFromTimes(const std::string &version, bool isGpuEnabled,
     }
     std::cout << ": " << mean << " ms | " << params.numIterations << " iterations" << std::endl;
 
-    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Total Time", params, total);
-    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Mean Time", params, mean);
-    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Variance", params, variance);
-    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Low", params, *minmax.first);
-    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "High", params, *minmax.second);
+    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Total Time (ms)", params, total);
+    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Mean Time (ms)", params, mean);
+    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Variance (ms)", params, variance);
+    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Low (ms)", params, *minmax.first);
+    observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "High (ms)", params, *minmax.second);
 }
+
+} // namespace Benchmarks
+} // namespace Trueface

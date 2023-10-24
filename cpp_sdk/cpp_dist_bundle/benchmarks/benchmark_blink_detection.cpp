@@ -1,3 +1,4 @@
+#include "memory_high_water_mark.h"
 #include "observation.h"
 #include "sdkfactory.h"
 #include "stopwatch.h"
@@ -8,10 +9,14 @@
 #include <iostream>
 
 using namespace Trueface;
+using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Blink detection"};
 
-void benchmarkBlinkDetection(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
+void benchmarkBlinkDetection(const SDKFactory& sdkFactory, Parameters params, ObservationList& observations) {
+    // baseline memory reading
+    auto memoryTracker = MemoryHighWaterMarkTracker();
+
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     options.initializeModule.faceDetector = true;
@@ -59,4 +64,8 @@ void benchmarkBlinkDetection(const SDKFactory& sdkFactory, BenchmarkParams param
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
                                 benchmarkName, "", params, times, observations);
+
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              "", "Memory usage (kB)", params,
+                              memoryTracker.getDifferenceFromBaseline());
 }

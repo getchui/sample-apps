@@ -1,3 +1,4 @@
+#include "memory_high_water_mark.h"
 #include "observation.h"
 #include "sdkfactory.h"
 #include "stopwatch.h"
@@ -9,10 +10,14 @@
 #include <iostream>
 
 using namespace Trueface;
+using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Preprocess image"};
 
-void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams params, ObservationList& observations) {
+void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, ObservationList& observations) {
+    // baseline memory reading
+    auto memoryTracker = MemoryHighWaterMarkTracker();
+
     // Initialize the SDK
     auto options = sdkFactory.createBasicConfiguration();
     auto tfSdk = sdkFactory.createSDK(options);
@@ -43,6 +48,13 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
                                 benchmarkName, "JPG from disk", params, times, observations);
+
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              "JPG from disk", "Memory usage (kB)", params,
+                              memoryTracker.getDifferenceFromBaseline());
+
+    // baseline memory reading
+    memoryTracker.resetVmHighWaterMark();
 
     // Now repeat with encoded image in memory
     std::ifstream file(imgPath, std::ios::binary | std::ios::ate);
@@ -76,6 +88,13 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
                                 benchmarkName, "encoded JPG in memory", params, times, observations);
 
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              "encoded JPG in memory", "Memory usage (kB)", params,
+                              memoryTracker.getDifferenceFromBaseline());
+
+    // baseline memory reading
+    memoryTracker.resetVmHighWaterMark();
+
     // Now repeat with already decoded imgages (ex. you grab an image from your video stream).
     TFImage newImg;
     if (params.doWarmup) {
@@ -97,4 +116,8 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, BenchmarkParams para
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
                                 benchmarkName, "RGB pixels array in memory", params, times, observations);
+
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              "RGB pixels array in memory", "Memory usage (kB)", params,
+                              memoryTracker.getDifferenceFromBaseline());
 }
