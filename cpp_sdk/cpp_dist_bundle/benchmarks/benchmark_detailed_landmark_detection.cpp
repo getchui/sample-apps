@@ -58,7 +58,7 @@ void benchmarkDetailedLandmarkDetection(const SDKFactory& sdkFactory, Parameters
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
         tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
-        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),

@@ -8,16 +8,16 @@
 using namespace Trueface;
 
 SDKFactory::SDKFactory(const GPUOptions& gpuOptions)
-    : gpuOptions_{gpuOptions}, modelsPath_{"./"}, license_{TRUEFACE_TOKEN} {
+    : m_gpuOptions{gpuOptions}, m_modelsPath{"./"}, m_license{TRUEFACE_TOKEN} {
     auto modelsPath = std::getenv("MODELS_PATH");
     if (modelsPath) {
-        modelsPath_ = modelsPath;
+        m_modelsPath = modelsPath;
     }
 }
 
 SDK SDKFactory::createSDK(ConfigurationOptions& options) const {
     SDK tfSdk(options);
-    bool valid = tfSdk.setLicense(license_);
+    bool valid = tfSdk.setLicense(m_license);
     if (!valid) {
         std::cout << "Error: the provided license is invalid." << std::endl;
         exit (EXIT_FAILURE);
@@ -28,8 +28,8 @@ SDK SDKFactory::createSDK(ConfigurationOptions& options) const {
 
 ConfigurationOptions SDKFactory::createBasicConfiguration() const {
     ConfigurationOptions options;
-    options.modelsPath = modelsPath_;
-    options.gpuOptions = gpuOptions_;
+    options.modelsPath = m_modelsPath;
+    options.gpuOptions = m_gpuOptions;
     return options;
 }
 
@@ -61,5 +61,5 @@ SDKFactory::createGPUOptions(bool enableGPU, unsigned int deviceIndex,
 
 
 bool SDKFactory::isGpuEnabled() const {
-    return gpuOptions_.enableGPU;
+    return m_gpuOptions.enableGPU;
 }

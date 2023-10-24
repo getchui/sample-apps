@@ -1,6 +1,7 @@
 #include "observation.h"
 
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <numeric>
@@ -17,12 +18,15 @@ Observation::Observation(std::string v, bool gpuEnabled, std::string b, std::str
 }
 
 std::ostream& operator<<(std::ostream& out, const Observation& observation) {
+    auto precision{out.precision()};
     out << observation.version << ","
         << (observation.isGpuEnabled ? "GPU" : "CPU") << ","
         << "\"" << observation.benchmark << "\","
         << "\"" << observation.benchmarkSubType << "\","
         << "\"" << observation.measurementName << "\","
+        << std::fixed << std::setprecision(3)
         << observation.measurementValue << ","
+        << std::defaultfloat << std::setprecision(precision)
         << observation.params.batchSize << ","
         << observation.params.numIterations;
 
@@ -30,15 +34,15 @@ std::ostream& operator<<(std::ostream& out, const Observation& observation) {
 }
 
 ObservationCSVWriter::ObservationCSVWriter(const std::string& path)
-    : path_{path}, writeHeaders_{!doesFileExist(path)} {
+    : m_path{path}, m_writeHeaders{!doesFileExist(path)} {
 
 }
 
 void ObservationCSVWriter::write(const ObservationList &observations) {
     // write observations to a csv
-    std::ofstream out{path_, std::ios::app};
+    std::ofstream out{m_path, std::ios::app};
 
-    if (writeHeaders_) {
+    if (m_writeHeaders) {
         out << "SDK Version, "
             << "GPU or CPU, "
             << "Benchmark Name, "
@@ -58,7 +62,7 @@ void ObservationCSVWriter::write(const ObservationList &observations) {
 }
 
 bool ObservationCSVWriter::doesFileExist(const std::string& path) {
-    std::ifstream f{path_};
+    std::ifstream f{m_path};
     return f.good();
 }
 
@@ -66,6 +70,11 @@ void appendObservationsFromTimes(const std::string &version, bool isGpuEnabled,
                                  const std::string &benchmarkName, const std::string &benchmarkSubType,
                                  const Parameters &params, std::vector<float> times,
                                  ObservationList &observations) {
+    //
+    // times should be passed in NANOSECONDS as milliseconds do not have the resolution for
+    // some individual executions. So, the following divide through by 1000 to convert to ms
+    // for consumption down stream AFTER the calculations are done.
+    //
     std::transform(times.begin(), times.end(), times.begin(), [&params](float val) {
         return val / static_cast<float>(params.batchSize);
     });
@@ -77,13 +86,24 @@ void appendObservationsFromTimes(const std::string &version, bool isGpuEnabled,
     auto variance_func = [&mean, &sz](float accumulator, const float &val) {
         return accumulator + ((val - mean) * (val - mean) / (sz - 1));
     };
-    auto variance = std::accumulate(times.begin(), times.end(), 0.0, variance_func);
+    auto variance = std::accumulate(times.begin(), times.end(), 0.0, variance_func) / 1000.f;
 
+    constexpr float nsPerMs{1000.f * 1000.f};
+    total /= nsPerMs;
+    mean /= nsPerMs;
+    variance /= nsPerMs;
+    *minmax.first /= nsPerMs;
+    *minmax.second /= nsPerMs;
+
+    // screen output for reporting progress to user
     std::cout << "Average time " << benchmarkName;
     if (!benchmarkSubType.empty()) {
         std::cout << " (" << benchmarkSubType << ")";
     }
-    std::cout << ": " << mean << " ms | " << params.numIterations << " iterations" << std::endl;
+    auto precision{std::cout.precision()};
+    std::cout << ": " << std::fixed << std::setprecision(3) << mean << " ms | "
+        << std::defaultfloat << std::setprecision(precision)
+        << params.numIterations << " iterations " << std::endl;
 
     observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Total Time (ms)", params, total);
     observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Mean Time (ms)", params, mean);

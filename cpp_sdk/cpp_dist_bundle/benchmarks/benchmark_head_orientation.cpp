@@ -67,7 +67,7 @@ void benchmarkHeadOrientation(const SDKFactory& sdkFactory, Parameters params, O
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
         tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotationVec, translationVec);
-        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),

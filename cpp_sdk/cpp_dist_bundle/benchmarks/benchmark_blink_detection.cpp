@@ -59,7 +59,7 @@ void benchmarkBlinkDetection(const SDKFactory& sdkFactory, Parameters params, Ob
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
         tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
-        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),

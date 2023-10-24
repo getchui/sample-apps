@@ -50,7 +50,7 @@ void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
         tfSdk.detectObjects(img, boundingBoxes);
-        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
     const std::string mode = (options.objModel == ObjectDetectionModel::FAST) ? "fast" : "accurate";

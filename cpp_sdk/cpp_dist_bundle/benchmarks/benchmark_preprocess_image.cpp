@@ -43,7 +43,7 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
         tfSdk.preprocessImage(imgPath, img);
-        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
@@ -82,7 +82,7 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
         tfSdk.preprocessImage(buffer, img);
-        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
@@ -111,7 +111,7 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
         tfSdk.preprocessImage(img->getData(), img->getWidth(), img->getHeight(), ColorCode::rgb, newImg);
-        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::milliseconds>());
+        times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
     appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),

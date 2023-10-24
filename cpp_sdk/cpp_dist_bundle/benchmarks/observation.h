@@ -43,8 +43,8 @@ public:
 
 private:
     bool doesFileExist(const std::string& path);
-    const std::string& path_;
-    bool writeHeaders_;
+    const std::string& m_path;
+    bool m_writeHeaders;
 };
 
     } // namespace Benchmarks

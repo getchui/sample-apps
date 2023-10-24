@@ -21,7 +21,7 @@ public:
     bool isGpuEnabled() const;
 
 private:
-    const Trueface::GPUOptions& gpuOptions_;
-    std::string modelsPath_;
-    std::string license_;
+    const Trueface::GPUOptions& m_gpuOptions;
+    std::string m_modelsPath;
+    std::string m_license;
 };
