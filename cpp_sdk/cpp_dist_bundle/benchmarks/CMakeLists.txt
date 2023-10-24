@@ -47,7 +47,7 @@ add_executable(run_benchmarks benchmark.cpp
     benchmark_blink_detection.cpp
     benchmark_spoof_detection.cpp
     benchmark_face_landmark_detection.cpp)
-add_executable(run_benchmarks_1N_identification benchmark_1N_identification.cpp)
+add_executable(run_benchmarks_1N_identification benchmark_1N_identification.cpp observation.cpp sdkfactory.cpp)
 
 
 # Need to explicitly link onnxruntime and libdl when using static library version of trueface sdk

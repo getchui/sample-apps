@@ -9,15 +9,15 @@ namespace Trueface {
     enum class ObjectDetectionModel;
 } // namespace Trueface
 
-void benchmarkFaceRecognition(const SDKFactory&, Trueface::FacialRecognitionModel, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkObjectDetection(const SDKFactory&, Trueface::ObjectDetectionModel objModel, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkFaceLandmarkDetection(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkDetailedLandmarkDetection(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkPreprocessImage(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkMaskDetection(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkBlinkDetection(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkSpoofDetection(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkHeadOrientation(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkFaceImageBlurDetection(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkFaceImageOrientationDetection(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
-void benchmarkGlassesDetection(const SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkFaceRecognition(const Trueface::Benchmarks::SDKFactory&, Trueface::FacialRecognitionModel, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkObjectDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::ObjectDetectionModel objModel, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkFaceLandmarkDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkDetailedLandmarkDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkPreprocessImage(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkMaskDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkBlinkDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkSpoofDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkHeadOrientation(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkFaceImageBlurDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkFaceImageOrientationDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);
+void benchmarkGlassesDetection(const Trueface::Benchmarks::SDKFactory&, Trueface::Benchmarks::Parameters, Trueface::Benchmarks::ObservationList&);

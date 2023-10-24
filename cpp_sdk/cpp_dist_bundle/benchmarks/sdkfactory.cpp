@@ -7,6 +7,9 @@
 
 using namespace Trueface;
 
+namespace Trueface {
+namespace Benchmarks {
+
 SDKFactory::SDKFactory(const GPUOptions& gpuOptions)
     : m_gpuOptions{gpuOptions}, m_modelsPath{"./"}, m_license{TRUEFACE_TOKEN} {
     auto modelsPath = std::getenv("MODELS_PATH");
@@ -15,7 +18,7 @@ SDKFactory::SDKFactory(const GPUOptions& gpuOptions)
     }
 }
 
-SDK SDKFactory::createSDK(ConfigurationOptions& options) const {
+SDK SDKFactory::createSDK(const ConfigurationOptions& options) const {
     SDK tfSdk(options);
     bool valid = tfSdk.setLicense(m_license);
     if (!valid) {
@@ -63,3 +66,6 @@ SDKFactory::createGPUOptions(bool enableGPU, unsigned int deviceIndex,
 bool SDKFactory::isGpuEnabled() const {
     return m_gpuOptions.enableGPU;
 }
+
+} // namespace Benchmarks
+} // namespace Trueface

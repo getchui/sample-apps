@@ -17,7 +17,7 @@ using namespace Trueface;
 
 int main() {
     uint32_t batchSize = 16;
-    GPUOptions gpuOptions = SDKFactory::createGPUOptions(
+    GPUOptions gpuOptions = Benchmarks::SDKFactory::createGPUOptions(
         false,        // enableGPU,  NOTE: set this to true to benchmark on GPU
         0,            // deviceIndex
         batchSize,    // maxBatchSize
@@ -41,7 +41,7 @@ int main() {
 
     bool warmup = true; // Warmup inference to ensure caching is hot
     int numWarmup = 10;
-    SDKFactory sdkFactory(gpuOptions);
+    Benchmarks::SDKFactory sdkFactory(gpuOptions);
     Benchmarks::ObservationList observations;
 
     benchmarkPreprocessImage(sdkFactory, {warmup, numWarmup, 1, 200}, observations);

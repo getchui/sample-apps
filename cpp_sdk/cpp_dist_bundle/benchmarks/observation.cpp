@@ -91,7 +91,7 @@ void appendObservationsFromTimes(const std::string &version, bool isGpuEnabled,
     constexpr float nsPerMs{1000.f * 1000.f};
     total /= nsPerMs;
     mean /= nsPerMs;
-    variance /= nsPerMs;
+    variance /= nsPerMs * 1000.f;
     *minmax.first /= nsPerMs;
     *minmax.second /= nsPerMs;
 

@@ -58,7 +58,7 @@ void benchmarkGlassesDetection(const SDKFactory& sdkFactory, Parameters params, 
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
-            tfSdk.detectGlasses(img, faceBoxAndLandmarks, label, score);
+        tfSdk.detectGlasses(img, faceBoxAndLandmarks, label, score);
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 

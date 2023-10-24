@@ -8,12 +8,14 @@ namespace Trueface {
     class SDK;
 }
 
+namespace Trueface {
+namespace Benchmarks {
 class SDKFactory
 {
 public:
     SDKFactory(const Trueface::GPUOptions& gpuOptions);
 
-    Trueface::SDK createSDK(Trueface::ConfigurationOptions& options) const;
+    Trueface::SDK createSDK(const Trueface::ConfigurationOptions& options) const;
     Trueface::ConfigurationOptions createBasicConfiguration() const;
     static Trueface::GPUOptions createGPUOptions(bool enableGPU, unsigned int deviceIndex,
         int32_t maxBatchSize, int32_t optBatchSize);
@@ -25,3 +27,6 @@ private:
     std::string m_modelsPath;
     std::string m_license;
 };
+
+} // namespace Benchmarks
+} // namespace Trueface
