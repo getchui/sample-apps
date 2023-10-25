@@ -1,13 +1,10 @@
-from stopwatch import Stopwatch
+from utils import (Parameters, Stopwatch)
 import tfsdk
 
 import os
 
-NUM_WARMUP = 10
-DO_WARMUP = True
 
-
-def benchmark(license, gpu_options, num_iterations):
+def benchmark(license: str, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
     # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
 
@@ -40,8 +37,8 @@ def benchmark(license, gpu_options, num_iterations):
         print('Unable to detect face in image')
         return
 
-    if DO_WARMUP:
-        for _ in range(NUM_WARMUP):
+    if parameters.do_warmup:
+        for _ in range(parameters.num_warmup):
             error_code, glasses_label, glasses_score = \
                 sdk.detect_glasses(img, face_box_and_landmarks)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
@@ -50,10 +47,10 @@ def benchmark(license, gpu_options, num_iterations):
 
     # Time the glasses detector
     stop_watch = Stopwatch()
-    for _ in range(num_iterations):
+    for _ in range(parameters.num_iterations):
         sdk.detect_glasses(img, face_box_and_landmarks)
     total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / num_iterations
+    avg_time = total_time / parameters.num_iterations
 
     print('Average time glasses detection:',
-          avg_time, 'ms |', num_iterations, 'iterations')
+          avg_time, 'ms |', parameters.num_iterations, 'iterations')

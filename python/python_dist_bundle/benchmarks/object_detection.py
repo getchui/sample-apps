@@ -1,13 +1,11 @@
-from stopwatch import Stopwatch
+from utils import (Parameters, Stopwatch)
 import tfsdk
 
 import os
 
-NUM_WARMUP = 10
-DO_WARMUP = True
 
-
-def benchmark(license, gpu_options, obj_model, num_iterations = 100):
+def benchmark(license: str, gpu_options: tfsdk.GPUOptions,
+              obj_model: tfsdk.OBJECTDETECTIONMODEL, parameters: Parameters) -> None:
     # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
 
@@ -36,8 +34,8 @@ def benchmark(license, gpu_options, obj_model, num_iterations = 100):
         print('Error: could not load the image')
         return
 
-    if DO_WARMUP:
-        for _ in range(NUM_WARMUP):
+    if parameters.do_warmup:
+        for _ in range(parameters.num_warmup):
             ret, objects = sdk.detect_objects(img)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print('Error: Could not run object detection!')
@@ -45,10 +43,10 @@ def benchmark(license, gpu_options, obj_model, num_iterations = 100):
 
     # Time the creation of the feature vector
     stop_watch = Stopwatch()
-    for _ in range(num_iterations):
+    for _ in range(parameters.num_iterations):
         sdk.detect_objects(img)
     total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / num_iterations
+    avg_time = total_time / parameters.num_iterations
 
     print('Average time object detection ({}): {} ms | {} iterations'.format(
-        obj_model.name, avg_time, num_iterations))
+        obj_model.name, avg_time, parameters.num_iterations))

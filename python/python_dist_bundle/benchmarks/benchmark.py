@@ -1,6 +1,5 @@
 # Run benchmarks
 
-from stopwatch import Stopwatch
 import preprocess_image
 import face_image_orientation_detection
 import face_landmark_detection
@@ -13,14 +12,11 @@ import glasses_detection
 import spoof_detection
 import object_detection
 import face_recognition
+from utils import (Parameters, Stopwatch)
 
 import tfsdk
 
 import os
-
-NUM_WARMUP = 10
-DO_WARMUP = True
-
 
 # ********************************************************************************************************
 # ********************************************************************************************************
@@ -31,6 +27,9 @@ DO_WARMUP = True
 # ********************************************************************************************************
 
 def main():
+    NUM_WARMUP = 10
+    DO_WARMUP = True
+
     license = os.environ['TRUEFACE_TOKEN']
 
     gpu_options = tfsdk.GPUOptions()
@@ -67,36 +66,52 @@ def main():
     if gpu_options.enable_GPU is True:
         mult_factor = 10
 
-    preprocess_image.benchmark(license, gpu_options, 200)
-    face_image_orientation_detection.benchmark(license, gpu_options, 50*mult_factor)
-    face_landmark_detection.benchmark(license, gpu_options, 100*mult_factor)
-    detailed_landmark_detection.benchmark(license, gpu_options, 100*mult_factor)
-    head_orientation.benchmark(license, gpu_options, 500*mult_factor)
-    face_image_blur_detection.benchmark(license, gpu_options, 200*mult_factor)
-    blink_detection.benchmark(license, gpu_options, 100*mult_factor)
-    mask_detection.benchmark(license, gpu_options, 1, 100*mult_factor)
-    glasses_detection.benchmark(license, gpu_options, 200)
-    spoof_detection.benchmark(license, gpu_options, 100*mult_factor)
-    object_detection.benchmark(license, gpu_options, tfsdk.OBJECTDETECTIONMODEL.FAST, 100*mult_factor)
-    object_detection.benchmark(license, gpu_options, tfsdk.OBJECTDETECTIONMODEL.ACCURATE, 40*mult_factor)
+    parameters = Parameters(DO_WARMUP, NUM_WARMUP, 1, 200)
+    preprocess_image.benchmark(license, gpu_options, parameters)
+    glasses_detection.benchmark(license, gpu_options, parameters)
 
+    parameters.num_iterations = 50 * mult_factor
+    face_image_orientation_detection.benchmark(license, gpu_options, parameters)
 
+    parameters.num_iterations = 100*mult_factor
+    face_landmark_detection.benchmark(license, gpu_options, parameters)
+    detailed_landmark_detection.benchmark(license, gpu_options, parameters)
+    blink_detection.benchmark(license, gpu_options, parameters)
+    mask_detection.benchmark(license, gpu_options, parameters)
+    spoof_detection.benchmark(license, gpu_options, parameters)
+
+    parameters.num_iterations = 200*mult_factor
+    face_image_blur_detection.benchmark(license, gpu_options, parameters)
+
+    parameters.num_iterations = 500*mult_factor
+    head_orientation.benchmark(license, gpu_options, parameters)
+
+    parameters.num_iterations = 100*mult_factor
+    for object_detection_model in (tfsdk.OBJECTDETECTIONMODEL.FAST,
+                                   tfsdk.OBJECTDETECTIONMODEL.ACCURATE):
+        object_detection.benchmark(license, gpu_options, object_detection_model, parameters)
+
+    parameters.num_iterations = 200
     if gpu_options.enable_GPU is False:
         # get_face_feature_vectors is not supported by the LITE model
-        face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, 1, 200)
+        face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, parameters)
 
-    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, 1, 200)
-    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, 1, 40*mult_factor)
-    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, 1, 40*mult_factor)
-    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, 1, 40*mult_factor)
+    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, parameters)
+
+    parameters.num_iterations = 40*mult_factor
+    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters)
+    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters)
+    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters)
     # Benchmarks with batching.
     # On CPU, should be the same speed as a batch size of 1.
     # On GPU, will increase the throughput.
-    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, batch_size, 40*mult_factor)
-    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, batch_size, 40*mult_factor)
-    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, batch_size, 40*mult_factor)
+    parameters.batch_size = batch_size
+    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters)
+    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters)
+    face_recognition.benchmark(license, tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters)
 
-    mask_detection.benchmark(license, gpu_options, batch_size, 100*mult_factor)
+    parameters.num_iterations = 100*mult_factor
+    mask_detection.benchmark(license, gpu_options, parameters)
 
 
 if __name__ == '__main__':

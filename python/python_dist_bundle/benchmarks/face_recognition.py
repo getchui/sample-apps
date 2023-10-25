@@ -1,13 +1,10 @@
-from stopwatch import Stopwatch
+from utils import (Parameters, Stopwatch)
 import tfsdk
 
 import os
 
-NUM_WARMUP = 10
-DO_WARMUP = True
 
-
-def benchmark(license, fr_model, gpu_options, batch_size = 1, num_iterations = 100):
+def benchmark(license: str, fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
     # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
 
@@ -46,20 +43,20 @@ def benchmark(license, fr_model, gpu_options, batch_size = 1, num_iterations = 1
         print('Error: Unable to extract aligned face for mask detection')
         return
 
-    chips = batch_size*[chip]
+    chips = parameters.batch_size*[chip]
 
-    if DO_WARMUP:
-        for _ in range(NUM_WARMUP):
+    if parameters.do_warmup:
+        for _ in range(parameters.num_warmup):
             error_code, faceprints = sdk.get_face_feature_vectors(chips)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
                 print('Error: Unable to run face recognition')
                 return
 
     stop_watch = Stopwatch()
-    for _ in range(num_iterations):
+    for _ in range(parameters.num_iterations):
         sdk.get_face_feature_vectors(chips)
     total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / num_iterations / batch_size
+    avg_time = total_time / parameters.num_iterations / parameters.batch_size
 
     print("Average time face recognition {}: {} ms | batch size = {} | {} iterations".format(
-        fr_model.name, avg_time, batch_size, num_iterations))
+        fr_model.name, avg_time, parameters.batch_size, parameters.num_iterations))

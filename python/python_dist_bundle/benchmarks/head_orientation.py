@@ -1,12 +1,10 @@
-from stopwatch import Stopwatch
+from utils import (Parameters, Stopwatch)
 import tfsdk
 
 import os
 
-NUM_WARMUP = 10
-DO_WARMUP = True
 
-def benchmark(license, gpu_options, num_iterations = 200):
+def benchmark(license: str, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
     # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
 
@@ -43,16 +41,16 @@ def benchmark(license, gpu_options, num_iterations = 200):
         print('Unable to detect landmarks')
         return
 
-    if DO_WARMUP:
-        for _ in range(NUM_WARMUP):
+    if parameters.do_warmup:
+        for _ in range(parameters.num_warmup):
             error_code, yaw, pitch, roll, rotation_vec, translation_vec = \
                 sdk.estimate_head_orientation(img, face_box_and_landmarks, landmarks)
 
     # Time the head orientation
     stop_watch = Stopwatch()
-    for _ in range(num_iterations):
+    for _ in range(parameters.num_iterations):
         sdk.estimate_head_orientation(img, face_box_and_landmarks, landmarks)
     total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / num_iterations
+    avg_time = total_time / parameters.num_iterations
 
-    print("Average time head orientation: {} ms | {} iterations".format(avg_time, num_iterations))
+    print("Average time head orientation: {} ms | {} iterations".format(avg_time, parameters.num_iterations))

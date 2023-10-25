@@ -1,13 +1,9 @@
-from stopwatch import Stopwatch
+from utils import (Parameters, Stopwatch)
 import tfsdk
 
 import os
 
-NUM_WARMUP = 10
-DO_WARMUP = True
-
-
-def benchmark(license, gpu_options, num_iterations = 100):
+def benchmark(license: str, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
     # Initialize the SDK
     options = tfsdk.ConfigurationOptions()
 
@@ -40,8 +36,8 @@ def benchmark(license, gpu_options, num_iterations = 100):
         print('Unable to detect face in image')
         return
 
-    if DO_WARMUP:
-        for _ in range(NUM_WARMUP):
+    if parameters.do_warmup:
+        for _ in range(parameters.num_warmup):
             error_code, landmarks = sdk.get_face_landmarks(img, face_box_and_landmarks)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
                 print('Error: Unable to get detailed landmarks')
@@ -49,10 +45,10 @@ def benchmark(license, gpu_options, num_iterations = 100):
 
     # Time the landmark detection
     stop_watch = Stopwatch()
-    for i in range(num_iterations):
+    for i in range(parameters.num_iterations):
         sdk.get_face_landmarks(img, face_box_and_landmarks)
     total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / num_iterations
+    avg_time = total_time / parameters.num_iterations
 
     print("Average time 106 face landmark detection: {} ms | {} iterations".format(
-        avg_time, num_iterations))
+        avg_time, parameters.num_iterations))

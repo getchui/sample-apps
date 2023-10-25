@@ -1,4 +1,14 @@
+from dataclasses import dataclass
 import time
+
+
+@dataclass
+class Parameters:
+    do_warmup: bool = True
+    num_warmup: int = 10
+    batch_size: int = 16
+    num_iterations: int = 200
+
 
 class Stopwatch:
     def __init__(self):
