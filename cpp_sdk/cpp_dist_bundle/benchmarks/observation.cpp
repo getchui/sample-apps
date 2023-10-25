@@ -101,9 +101,12 @@ void appendObservationsFromTimes(const std::string &version, bool isGpuEnabled,
         std::cout << " (" << benchmarkSubType << ")";
     }
     auto precision{std::cout.precision()};
-    std::cout << ": " << std::fixed << std::setprecision(3) << mean << " ms | "
-        << std::defaultfloat << std::setprecision(precision)
-        << params.numIterations << " iterations " << std::endl;
+    std::cout << ": " << std::fixed << std::setprecision(3) << mean << " ms"
+        << std::defaultfloat << std::setprecision(precision);
+    if (params.batchSize > 1) {
+        std::cout << " | batch size = " << params.batchSize;
+    }
+    std::cout << " | " << params.numIterations << " iterations " << std::endl;
 
     observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Total Time (ms)", params, total);
     observations.emplace_back(version, isGpuEnabled, benchmarkName, benchmarkSubType, "Mean Time (ms)", params, mean);
