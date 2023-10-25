@@ -33,7 +33,7 @@ void MemoryHighWaterMarkTracker::resetVmHighWaterMark() {
 #endif
 }
 
-double MemoryHighWaterMarkTracker::getVmHighWaterMark() const {
+float MemoryHighWaterMarkTracker::getVmHighWaterMark() const {
 #if !defined(WIN32) && !defined(_WIN32)
     struct rusage usage{};
     if (!getrusage(RUSAGE_SELF, &usage)) {
@@ -41,15 +41,15 @@ double MemoryHighWaterMarkTracker::getVmHighWaterMark() const {
         // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/getrusage.2.html
         // https://man7.org/linux/man-pages/man2/getrusage.2.html
         //
-        // both Linux MacOS return ru_maxrss in kilobytes
+        // both Linux MacOS return ru_maxrss in kilobytes, but we convert to megabytes
         //
-        return usage.ru_maxrss;
+        return usage.ru_maxrss / 1000.f;
     }
 #endif
     return 0.0;
 }
 
-double MemoryHighWaterMarkTracker::getDifferenceFromBaseline() const {
+float MemoryHighWaterMarkTracker::getDifferenceFromBaseline() const {
     auto current = getVmHighWaterMark();
 
     return m_baseline < current ? current - m_baseline : 0.0f;

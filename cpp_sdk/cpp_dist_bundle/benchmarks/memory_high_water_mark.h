@@ -8,11 +8,11 @@ public:
     MemoryHighWaterMarkTracker();
 
     void resetVmHighWaterMark();
-    double getVmHighWaterMark() const;
-    double getDifferenceFromBaseline() const;
+    float getVmHighWaterMark() const;
+    float getDifferenceFromBaseline() const;
 
 private:
-    double m_baseline;
+    float m_baseline;
 };
 
 } // namespace Benchmarks

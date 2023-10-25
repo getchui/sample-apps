@@ -156,10 +156,10 @@ int main() {
 
         std::string benchmarkName = "1 to N identification search";
         std::string benchmarkSubType = "(" + std::to_string(collectionSize) + ") TFV7";
-        Benchmarks::appendObservationsFromTimes(
+        observations.emplace_back(
             sdk.getVersion(), sdkFactory.isGpuEnabled(),
             benchmarkName, benchmarkSubType,
-            parameters, times, observations);
+            parameters, times, 0.0f);
 
         // Now run batch identification
         std::vector<Faceprint> probeFaceprints;
@@ -181,10 +181,10 @@ int main() {
         }
 
         benchmarkName = "1 to N batch identification search";
-        Benchmarks::appendObservationsFromTimes(
+        observations.emplace_back(
             sdk.getVersion(), sdkFactory.isGpuEnabled(),
             benchmarkName, benchmarkSubType,
-            parameters, times, observations);
+            parameters, times, 0.0f);
     }
 
     auto csvWriter = Benchmarks::ObservationCSVWriter("benchmarks.csv");

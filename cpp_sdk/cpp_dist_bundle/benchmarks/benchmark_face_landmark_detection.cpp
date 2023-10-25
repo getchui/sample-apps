@@ -53,10 +53,7 @@ void benchmarkFaceLandmarkDetection(const SDKFactory& sdkFactory, Parameters par
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                                benchmarkName, "", params, times, observations);
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
-                              "", "Memory usage (kB)", params,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                              benchmarkName, "", params, times,
                               memoryTracker.getDifferenceFromBaseline());
 }

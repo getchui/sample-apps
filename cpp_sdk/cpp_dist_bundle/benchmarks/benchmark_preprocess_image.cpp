@@ -36,7 +36,6 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
         }
     }
 
-        tfSdk.preprocessImage(imgPath, img);
     // Time the preprocessImage function
     std::vector<float> times;
     times.reserve(params.numIterations);
@@ -46,11 +45,8 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                                benchmarkName, "JPG from disk", params, times, observations);
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
-                              "JPG from disk", "Memory usage (kB)", params,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                              benchmarkName, "JPG from disk", params, times,
                               memoryTracker.getDifferenceFromBaseline());
 
     // baseline memory reading
@@ -85,11 +81,8 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                                benchmarkName, "encoded JPG in memory", params, times, observations);
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
-                              "encoded JPG in memory", "Memory usage (kB)", params,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                              benchmarkName, "encoded JPG in memory", params, times,
                               memoryTracker.getDifferenceFromBaseline());
 
     // baseline memory reading
@@ -114,10 +107,7 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                                benchmarkName, "RGB pixels array in memory", params, times, observations);
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
-                              "RGB pixels array in memory", "Memory usage (kB)", params,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                              benchmarkName, "RGB pixels array in memory", params, times,
                               memoryTracker.getDifferenceFromBaseline());
 }

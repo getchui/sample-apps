@@ -54,10 +54,7 @@ void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel
     }
 
     const std::string mode = (options.objModel == ObjectDetectionModel::FAST) ? "fast" : "accurate";
-    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                                benchmarkName, mode, params, times, observations);
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
-                              mode, "Memory usage (kB)", params,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                              benchmarkName, mode, params, times,
                               memoryTracker.getDifferenceFromBaseline());
 }

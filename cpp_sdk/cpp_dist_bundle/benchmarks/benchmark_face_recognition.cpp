@@ -89,10 +89,7 @@ void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionMod
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    appendObservationsFromTimes(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                                benchmarkName, getModelName(model), params, times, observations);
-
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
-                              getModelName(model), "Memory usage (kB)", params,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
+                              benchmarkName, getModelName(model), params, times,
                               memoryTracker.getDifferenceFromBaseline());
 }
