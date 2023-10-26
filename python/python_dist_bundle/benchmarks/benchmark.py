@@ -12,7 +12,10 @@ import glasses_detection
 import spoof_detection
 import object_detection
 import face_recognition
+from observation import (Observation, ObservationCSVWriter)
+from typing import List
 from utils import Parameters
+
 
 import tfsdk
 
@@ -55,52 +58,55 @@ def main() -> None:
     if gpu_options.enable_GPU is True:
         mult_factor = 10
 
+    observations: List[Observation] = []
     parameters = Parameters(DO_WARMUP, NUM_WARMUP, 1, 200)
-    preprocess_image.benchmark(gpu_options, parameters)
-    glasses_detection.benchmark(gpu_options, parameters)
+    preprocess_image.benchmark(gpu_options, parameters, observations)
+    glasses_detection.benchmark(gpu_options, parameters, observations)
 
     parameters.num_iterations = 50 * mult_factor
-    face_image_orientation_detection.benchmark(gpu_options, parameters)
+    face_image_orientation_detection.benchmark(gpu_options, parameters, observations)
 
     parameters.num_iterations = 100 * mult_factor
-    face_landmark_detection.benchmark(gpu_options, parameters)
-    detailed_landmark_detection.benchmark(gpu_options, parameters)
-    blink_detection.benchmark(gpu_options, parameters)
-    mask_detection.benchmark(gpu_options, parameters)
-    spoof_detection.benchmark(gpu_options, parameters)
+    face_landmark_detection.benchmark(gpu_options, parameters, observations)
+    detailed_landmark_detection.benchmark(gpu_options, parameters, observations)
+    blink_detection.benchmark(gpu_options, parameters, observations)
+    mask_detection.benchmark(gpu_options, parameters, observations)
+    spoof_detection.benchmark(gpu_options, parameters, observations)
 
     parameters.num_iterations = 200 * mult_factor
-    face_image_blur_detection.benchmark(gpu_options, parameters)
+    face_image_blur_detection.benchmark(gpu_options, parameters, observations)
 
     parameters.num_iterations = 500 * mult_factor
-    head_orientation.benchmark(gpu_options, parameters)
+    head_orientation.benchmark(gpu_options, parameters, observations)
 
     parameters.num_iterations = 100 * mult_factor
     for object_detection_model in (tfsdk.OBJECTDETECTIONMODEL.FAST,
                                    tfsdk.OBJECTDETECTIONMODEL.ACCURATE):
-        object_detection.benchmark(gpu_options, object_detection_model, parameters)
+        object_detection.benchmark(gpu_options, object_detection_model, parameters, observations)
 
     parameters.num_iterations = 200
     if gpu_options.enable_GPU is False:
         # get_face_feature_vectors is not supported by the LITE model
-        face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, parameters)
+        face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, parameters, observations)
 
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, parameters)
+    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, parameters, observations)
 
     parameters.num_iterations = 40 * mult_factor
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters)
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters)
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters)
+    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters, observations)
+    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters, observations)
+    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters, observations)
     # Benchmarks with batching.
     # On CPU, should be the same speed as a batch size of 1.
     # On GPU, will increase the throughput.
     parameters.batch_size = batch_size
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters)
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters)
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters)
+    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters, observations)
+    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters, observations)
+    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters, observations)
 
     parameters.num_iterations = 100 * mult_factor
-    mask_detection.benchmark(gpu_options, parameters)
+    mask_detection.benchmark(gpu_options, parameters, observations)
+
+    ObservationCSVWriter('benchmarks.csv').write(observations)
 
 
 if __name__ == '__main__':

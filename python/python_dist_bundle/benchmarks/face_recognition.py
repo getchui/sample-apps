@@ -1,4 +1,5 @@
 from observation import Observation
+from typing import List
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
 
@@ -6,7 +7,11 @@ import tfsdk
 _benchmark_name = 'Face recognition'
 
 
-def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
+def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL,
+              gpu_options: tfsdk.GPUOptions,
+              parameters: Parameters,
+              observations: List[Observation]) -> None:
+
     # Initialize the SDK
     sdk = SDKFactory.createSDK(
         gpu_options,
@@ -44,4 +49,5 @@ def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options: tfsdk.GPUOpti
         sdk.get_face_feature_vectors(chips)
         times.append(stop_watch.elapsedTime())
 
-    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, fr_model.name, parameters, times)
+    observations.append(
+        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, fr_model.name, parameters, times))

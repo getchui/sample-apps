@@ -1,4 +1,5 @@
 from observation import Observation
+from typing import List
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
 
@@ -8,7 +9,9 @@ _benchmark_name = 'Object detection'
 
 def benchmark(gpu_options: tfsdk.GPUOptions,
               obj_model: tfsdk.OBJECTDETECTIONMODEL,
-              parameters: Parameters) -> None:
+              parameters: Parameters,
+              observations: List[Observation]) -> None:
+
     # Initialize the SDK
     sdk = SDKFactory.createSDK(
         gpu_options,
@@ -35,4 +38,5 @@ def benchmark(gpu_options: tfsdk.GPUOptions,
         sdk.detect_objects(img)
         times.append(stop_watch.elapsedTime())
 
-    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, obj_model.name, parameters, times)
+    observations.append(
+        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, obj_model.name, parameters, times))

@@ -1,4 +1,5 @@
 from observation import Observation
+from typing import List
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
 
@@ -8,7 +9,7 @@ import os
 _benchmark_name = 'Preprocess image'
 
 
-def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
+def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observations: List[Observation]) -> None:
     # Initialize the SDK
     sdk = SDKFactory.createSDK(gpu_options, initialize_modules=[])
 
@@ -30,7 +31,8 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
         sdk.preprocess_image(img_path)
         times.append(stop_watch.elapsedTime())
 
-    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'JPG from disk', parameters, times)
+    observations.append(
+        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'JPG from disk', parameters, times))
 
     # Now repeat with encoded image in memory
     size = os.path.getsize(img_path)
@@ -55,7 +57,8 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
         sdk.preprocess_image(buffer)
         times.append(stop_watch.elapsedTime())
 
-    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'encoded JPG in memory', parameters, times)
+    observations.append(
+        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'encoded JPG in memory', parameters, times))
 
     # Now repeat with already decoded images (ex. you grab an image from your video stream).
     if parameters.do_warmup:
@@ -71,4 +74,5 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
         sdk.preprocess_image(img.get_data(), img.get_width(), img.get_height(), tfsdk.COLORCODE.rgb)
         times.append(stop_watch.elapsedTime())
 
-    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'RGB pixels array in memory', parameters, times)
+    observations.append(
+        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'RGB pixels array in memory', parameters, times))

@@ -1,4 +1,6 @@
+import csv
 from dataclasses import dataclass
+import os
 import statistics
 from typing import List
 import utils
@@ -13,7 +15,6 @@ class TimeResult:
     high: float
 
 
-@dataclass
 class Observation:
     def __init__(self, version: str, is_gpu_enabled: bool, benchmark_name: str, benchmark_subtype: str, params: utils.Parameters, times: List[float]):
         self.version = version
@@ -48,3 +49,45 @@ class Observation:
         s += f' | {self.params.num_iterations} iterations'
 
         return s
+
+
+class ObservationCSVWriter:
+    _fieldNames = [
+        'SDK Version',
+        'GPU or CPU',
+        'Benchmark Name',
+        'Benchmark Type or Model',
+        'Batch Size',
+        'Number of Iterations',
+        'Total Time (ms)',
+        'Mean Time (ms)',
+        'Variance (ms)',
+        'Low (ms)',
+        'High (ms)'
+    ]
+
+    def __init__(self, path: str) -> None:
+        self.path = path
+
+    def write(self, observations: List[Observation]) -> None:
+        write_header = os.path.exists(self.path)
+        with open(self.path, 'a') as csvfile:
+            writer = csv.writer(csvfile)
+
+            if write_header is True:
+                writer.writerow(ObservationCSVWriter._fieldNames)
+
+            for o in observations:
+                writer.writerow([
+                    o.version,
+                    'GPU' if o.is_gpu_enabled else 'CPU',
+                    o.benchmark_name,
+                    o.benchmark_subtype,
+                    o.params.batch_size,
+                    o.params.num_iterations,
+                    o.time.total,
+                    o.time.mean,
+                    o.time.variance,
+                    o.time.low,
+                    o.time.high
+                ])
