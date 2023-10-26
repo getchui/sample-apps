@@ -1,31 +1,13 @@
-from utils import (Parameters, Stopwatch)
+from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
 
-import os
 
-
-def benchmark(license: str, fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
+def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
     # Initialize the SDK
-    options = tfsdk.ConfigurationOptions()
-
-    options.models_path = "./"
-    models_path = os.getenv('MODELS_PATH')
-    if models_path:
-        options.models_path = models_path
-
-    options.GPU_options = gpu_options
-    options.fr_model = fr_model
-
-    initialize_module = tfsdk.InitializeModule()
-    initialize_module.face_recognizer = True
-    options.initialize_module = initialize_module
-
-    sdk = tfsdk.SDK(options)
-
-    is_valid = sdk.set_license(license)
-    if is_valid is False:
-        print('Error: the provided license is invalid.')
-        exit(1)
+    sdk = SDKFactory.createSDK(
+        gpu_options,
+        initialize_modules=['face_recognizer'],
+        fr_model=fr_model)
 
     # Load the image
     ret, img = sdk.preprocess_image("./headshot.jpg")
@@ -43,7 +25,7 @@ def benchmark(license: str, fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options:
         print('Error: Unable to extract aligned face for mask detection')
         return
 
-    chips = parameters.batch_size*[chip]
+    chips = parameters.batch_size * [chip]
 
     if parameters.do_warmup:
         for _ in range(parameters.num_warmup):

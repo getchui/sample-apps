@@ -1,31 +1,12 @@
-from utils import (Parameters, Stopwatch)
+from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
 
-import os
 
-
-def benchmark(license: str, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
+def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
     # Initialize the SDK
-    options = tfsdk.ConfigurationOptions()
-
-    options.models_path = "./"
-    models_path = os.getenv('MODELS_PATH')
-    if models_path:
-        options.models_path = models_path
-
-    options.GPU_options = gpu_options
-
-    initialize_module = tfsdk.InitializeModule()
-    initialize_module.face_detector = True
-    initialize_module.blink_detector = True
-    options.initialize_module = initialize_module
-
-    sdk = tfsdk.SDK(options)
-
-    is_valid = sdk.set_license(license)
-    if is_valid is False:
-        print('Error: the provided license is invalid.')
-        exit(1)
+    sdk = SDKFactory.createSDK(
+        gpu_options,
+        initialize_modules=['face_detector', 'blink_detector'])
 
     # Load the image
     ret, img = sdk.preprocess_image("./headshot.jpg")
