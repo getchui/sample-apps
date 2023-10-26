@@ -1,5 +1,9 @@
+from observation import Observation
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
+
+
+_benchmark_name = 'Mask detection'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
@@ -7,7 +11,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
     sdk = SDKFactory.createSDK(gpu_options, initialize_modules=['face_detector'])
 
     # Load the image
-    ret, img = sdk.preprocess_image("./headshot.jpg")
+    ret, img = sdk.preprocess_image('./headshot.jpg')
     if ret != tfsdk.ERRORCODE.NO_ERROR:
         print('Error: could not load the image')
         return
@@ -32,11 +36,10 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
                 return
 
     # Time the mask detector
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.detect_masks(chips)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations / parameters.batch_size
+        times.append(stop_watch.elapsedTime())
 
-    print("Average time mask detection: {} ms | batch size = {} | {} iterations".format(
-        avg_time, parameters.batch_size, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, '', parameters, times)

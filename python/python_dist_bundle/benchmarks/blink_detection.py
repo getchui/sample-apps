@@ -1,5 +1,9 @@
+from observation import Observation
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
+
+
+_benchmark_name = 'Blink detection'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
@@ -9,7 +13,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
         initialize_modules=['face_detector', 'blink_detector'])
 
     # Load the image
-    ret, img = sdk.preprocess_image("./headshot.jpg")
+    ret, img = sdk.preprocess_image('./headshot.jpg')
     if ret != tfsdk.ERRORCODE.NO_ERROR:
         print('Error: could not load the image')
         return
@@ -27,10 +31,10 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
                 return
 
     # Time the blink detector
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.detect_blink(img, face_box_and_landmarks)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations
+        times.append(stop_watch.elapsedTime())
 
-    print("Average time blink detection: {} ms | {} iterations".format(avg_time, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, '', parameters, times)

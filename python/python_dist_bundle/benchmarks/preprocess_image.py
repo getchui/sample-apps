@@ -1,7 +1,11 @@
+from observation import Observation
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
 
 import os
+
+
+_benchmark_name = 'Preprocess image'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
@@ -16,18 +20,17 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
         for _ in range(parameters.num_warmup):
             error_code, img = sdk.preprocess_image(img_path)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
-                print("Unable to preprocess the image")
+                print('Unable to preprocess the image')
                 return
 
     # Time the preprocess_image function
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.preprocess_image(img_path)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations
+        times.append(stop_watch.elapsedTime())
 
-    print("Average time preprocess_image JPG image from disk ({}x{}): {} ms | {} iterations".format(
-        img.get_width(), img.get_height(), avg_time, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'JPG from disk', parameters, times)
 
     # Now repeat with encoded image in memory
     size = os.path.getsize(img_path)
@@ -42,18 +45,17 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
         for _ in range(parameters.num_warmup):
             error_code, img = sdk.preprocess_image(buffer)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
-                print("Unable to preprocess the image")
+                print('Unable to preprocess the image')
                 return
 
     # Time the preprocess_image function
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.preprocess_image(buffer)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations
+        times.append(stop_watch.elapsedTime())
 
-    print("Average time preprocess_image JPG image in memory ({}x{}): {} ms | {} iterations".format(
-        img.get_width(), img.get_height(), avg_time, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'encoded JPG in memory', parameters, times)
 
     # Now repeat with already decoded images (ex. you grab an image from your video stream).
     if parameters.do_warmup:
@@ -63,11 +65,10 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
                 print('Error: Unable to preprocess image')
                 return
 
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.preprocess_image(img.get_data(), img.get_width(), img.get_height(), tfsdk.COLORCODE.rgb)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations
+        times.append(stop_watch.elapsedTime())
 
-    print("Average time preprocessImage RGB pixel array in memory ({}x{}): {} ms | {} iterations".format(
-        img.get_width(), img.get_height(), avg_time, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'RGB pixels array in memory', parameters, times)

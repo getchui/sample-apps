@@ -1,5 +1,9 @@
+from observation import Observation
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
+
+
+_benchmark_name = 'Object detection'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions,
@@ -12,7 +16,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions,
         obj_model=obj_model)
 
     # Load the image
-    ret, img = sdk.preprocess_image("./headshot.jpg")
+    ret, img = sdk.preprocess_image('./headshot.jpg')
     if ret != tfsdk.ERRORCODE.NO_ERROR:
         print('Error: could not load the image')
         return
@@ -25,11 +29,10 @@ def benchmark(gpu_options: tfsdk.GPUOptions,
                 return
 
     # Time the creation of the feature vector
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.detect_objects(img)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations
+        times.append(stop_watch.elapsedTime())
 
-    print('Average time object detection ({}): {} ms | {} iterations'.format(
-        obj_model.name, avg_time, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, obj_model.name, parameters, times)

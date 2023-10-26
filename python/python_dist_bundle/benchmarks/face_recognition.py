@@ -1,5 +1,9 @@
+from observation import Observation
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
+
+
+_benchmark_name = 'Face recognition'
 
 
 def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
@@ -10,7 +14,7 @@ def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options: tfsdk.GPUOpti
         fr_model=fr_model)
 
     # Load the image
-    ret, img = sdk.preprocess_image("./headshot.jpg")
+    ret, img = sdk.preprocess_image('./headshot.jpg')
     if ret != tfsdk.ERRORCODE.NO_ERROR:
         print('Error: could not load the image')
         return
@@ -34,11 +38,10 @@ def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL, gpu_options: tfsdk.GPUOpti
                 print('Error: Unable to run face recognition')
                 return
 
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.get_face_feature_vectors(chips)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations / parameters.batch_size
+        times.append(stop_watch.elapsedTime())
 
-    print("Average time face recognition {}: {} ms | batch size = {} | {} iterations".format(
-        fr_model.name, avg_time, parameters.batch_size, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, fr_model.name, parameters, times)

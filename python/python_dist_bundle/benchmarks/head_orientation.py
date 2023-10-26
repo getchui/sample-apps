@@ -1,12 +1,16 @@
+from observation import Observation
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
+
+
+_benchmark_name = 'Head orientation detection (yaw, pitch, roll)'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
     # Initialize the SDK
     sdk = SDKFactory.createSDK(gpu_options, initialize_modules=['face_detector'])
 
-    ret, img = sdk.preprocess_image("./headshot.jpg")
+    ret, img = sdk.preprocess_image('./headshot.jpg')
     if ret != tfsdk.ERRORCODE.NO_ERROR:
         print('Error: could not load the image')
         return
@@ -27,10 +31,10 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
                 sdk.estimate_head_orientation(img, face_box_and_landmarks, landmarks)
 
     # Time the head orientation
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.estimate_head_orientation(img, face_box_and_landmarks, landmarks)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations
+        times.append(stop_watch.elapsedTime())
 
-    print("Average time head orientation: {} ms | {} iterations".format(avg_time, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, '', parameters, times)

@@ -1,5 +1,9 @@
+from observation import Observation
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
+
+
+_benchmark_name = 'Face image orientation detection'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
@@ -20,11 +24,10 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
                 print('Error: Unable to compute face image orientation')
                 return
 
-    stop_watch = Stopwatch()
+    times = []
     for _ in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.get_face_image_rotation(img)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations
+        times.append(stop_watch.elapsedTime())
 
-    print('Average time face image orientation detection: {} ms  | {} iterations'.format(
-        avg_time, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, '', parameters, times)

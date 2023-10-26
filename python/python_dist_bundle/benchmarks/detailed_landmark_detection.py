@@ -1,5 +1,9 @@
+from observation import Observation
 from utils import (Parameters, Stopwatch, SDKFactory)
 import tfsdk
+
+
+_benchmark_name = '106 face landmark detection'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
@@ -8,7 +12,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
         gpu_options,
         initialize_modules=['face_detector', 'landmark_detector'])
 
-    ret, img = sdk.preprocess_image("./headshot.jpg")
+    ret, img = sdk.preprocess_image('./headshot.jpg')
     if ret != tfsdk.ERRORCODE.NO_ERROR:
         print('Error: could not load the image')
         return
@@ -26,11 +30,10 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters) -> None:
                 return
 
     # Time the landmark detection
-    stop_watch = Stopwatch()
+    times = []
     for i in range(parameters.num_iterations):
+        stop_watch = Stopwatch()
         sdk.get_face_landmarks(img, face_box_and_landmarks)
-    total_time = stop_watch.elapsedTimeMilliSeconds()
-    avg_time = total_time / parameters.num_iterations
+        times.append(stop_watch.elapsedTime())
 
-    print("Average time 106 face landmark detection: {} ms | {} iterations".format(
-        avg_time, parameters.num_iterations))
+    o = Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, '', parameters, times)

@@ -15,6 +15,8 @@ class Parameters:
 
 
 class Stopwatch:
+    ns_in_ms: float = 10**6
+
     def __init__(self) -> None:
         self.start_point = time.time_ns()
 
@@ -23,7 +25,7 @@ class Stopwatch:
 
     def elapsedTimeMilliSeconds(self) -> float:
         now = time.time_ns()
-        return now / (10 ** 6) - self.start_point / (10**6)
+        return now / Stopwatch.ns_in_ms - self.start_point / Stopwatch.ns_in_ms
 
 
 class SDKFactory:
@@ -54,6 +56,9 @@ class SDKFactory:
             for module in initialize_modules:
                 if hasattr(options.initialize_module, module):
                     setattr(options.initialize_module, module, True)
+                else:
+                    print(f'Error: Unknown initialize module: {module}')
+                    exit(1)
 
         sdk = tfsdk.SDK(options)
 
