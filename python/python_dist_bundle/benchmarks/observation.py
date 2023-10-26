@@ -70,7 +70,8 @@ class ObservationCSVWriter:
         self.path = path
 
     def write(self, observations: List[Observation]) -> None:
-        write_header = os.path.exists(self.path)
+        write_header = False if os.path.exists(self.path) else True
+
         with open(self.path, 'a') as csvfile:
             writer = csv.writer(csvfile)
 
@@ -85,9 +86,9 @@ class ObservationCSVWriter:
                     o.benchmark_subtype,
                     o.params.batch_size,
                     o.params.num_iterations,
-                    o.time.total,
-                    o.time.mean,
-                    o.time.variance,
-                    o.time.low,
-                    o.time.high
+                    f'{o.time.total:0.4f}',
+                    f'{o.time.mean:0.4f}',
+                    f'{o.time.variance:0.4f}',
+                    f'{o.time.low:0.4f}',
+                    f'{o.time.high:0.4f}'
                 ])
