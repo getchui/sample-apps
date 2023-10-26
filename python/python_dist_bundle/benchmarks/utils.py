@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 import os
+import resource
+import sys
 import time
 from typing import (List, Optional)
 
@@ -69,3 +71,32 @@ class SDKFactory:
             exit(1)
 
         return sdk
+
+
+class MemoryHighWaterMarkTracker:
+    def __init__(self) -> None:
+        self.reset_high_water_mark()
+        self.base_line = self.get_high_water_mark()
+
+    def reset_high_water_mark(self) -> None:
+        platform = sys.platform
+        if platform != 'linux':
+            return
+
+        with open('/proc/self/clear_refs', 'w') as outfile:
+            outfile.write('5\n')
+
+        self.base_line = self.get_high_water_mark()
+
+    def get_high_water_mark(self) -> float:
+        platform = sys.platform
+        if platform not in ('linux', 'darwin',):
+            return 0.0
+
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        return usage.ru_maxrss / 1000.
+
+    def get_diff_from_baseline(self) -> float:
+        current = self.get_high_water_mark()
+
+        return current - self.base_line if self.base_line < current else 0.0

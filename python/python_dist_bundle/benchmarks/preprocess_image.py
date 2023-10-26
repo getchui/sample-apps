@@ -1,6 +1,6 @@
 from observation import Observation
 from typing import List
-from utils import (Parameters, Stopwatch, SDKFactory)
+from utils import (Parameters, MemoryHighWaterMarkTracker, Stopwatch, SDKFactory)
 import tfsdk
 
 import os
@@ -10,6 +10,8 @@ _benchmark_name = 'Preprocess image'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observations: List[Observation]) -> None:
+    mem_tracker = MemoryHighWaterMarkTracker()
+
     # Initialize the SDK
     sdk = SDKFactory.createSDK(gpu_options, initialize_modules=[])
 
@@ -32,7 +34,13 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
         times.append(stop_watch.elapsedTime())
 
     observations.append(
-        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'JPG from disk', parameters, times))
+        Observation(
+            sdk.get_version(), gpu_options.enable_GPU,
+            _benchmark_name, 'JPG from disk',
+            parameters, times, mem_tracker.get_diff_from_baseline()))
+
+    # baseline memory reading
+    mem_tracker.reset_high_water_mark()
 
     # Now repeat with encoded image in memory
     size = os.path.getsize(img_path)
@@ -58,7 +66,13 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
         times.append(stop_watch.elapsedTime())
 
     observations.append(
-        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'encoded JPG in memory', parameters, times))
+        Observation(
+            sdk.get_version(), gpu_options.enable_GPU,
+            _benchmark_name, 'encoded JPG in memory',
+            parameters, times, mem_tracker.get_diff_from_baseline()))
+
+    # baseline memory reading
+    mem_tracker.reset_high_water_mark()
 
     # Now repeat with already decoded images (ex. you grab an image from your video stream).
     if parameters.do_warmup:
@@ -75,4 +89,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
         times.append(stop_watch.elapsedTime())
 
     observations.append(
-        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, 'RGB pixels array in memory', parameters, times))
+        Observation(
+            sdk.get_version(), gpu_options.enable_GPU,
+            _benchmark_name, 'RGB pixels array in memory',
+            parameters, times, mem_tracker.get_diff_from_baseline()))

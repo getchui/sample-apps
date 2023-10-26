@@ -16,13 +16,14 @@ class TimeResult:
 
 
 class Observation:
-    def __init__(self, version: str, is_gpu_enabled: bool, benchmark_name: str, benchmark_subtype: str, params: utils.Parameters, times: List[float]):
+    def __init__(self, version: str, is_gpu_enabled: bool, benchmark_name: str, benchmark_subtype: str, params: utils.Parameters, times: List[float], mem_usage: float):
         self.version = version
         self.is_gpu_enabled = is_gpu_enabled
         self.benchmark_name = benchmark_name
         self.benchmark_subtype = benchmark_subtype
         self.params = params
         self.time = self._summarize_times(params, times)
+        self.mem_usage = mem_usage
         print(self)
 
     def _summarize_times(self, params: utils.Parameters, times: List[float]) -> TimeResult:
@@ -63,7 +64,8 @@ class ObservationCSVWriter:
         'Mean Time (ms)',
         'Variance (ms)',
         'Low (ms)',
-        'High (ms)'
+        'High (ms)',
+        'Memory Usage (MB)'
     ]
 
     def __init__(self, path: str) -> None:
@@ -90,5 +92,6 @@ class ObservationCSVWriter:
                     f'{o.time.mean:0.4f}',
                     f'{o.time.variance:0.4f}',
                     f'{o.time.low:0.4f}',
-                    f'{o.time.high:0.4f}'
+                    f'{o.time.high:0.4f}',
+                    f'{o.mem_usage:0.4f}'
                 ])

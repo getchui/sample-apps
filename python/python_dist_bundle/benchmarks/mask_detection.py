@@ -1,6 +1,6 @@
 from observation import Observation
 from typing import List
-from utils import (Parameters, Stopwatch, SDKFactory)
+from utils import (Parameters, MemoryHighWaterMarkTracker, Stopwatch, SDKFactory)
 import tfsdk
 
 
@@ -8,6 +8,8 @@ _benchmark_name = 'Mask detection'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observations: List[Observation]) -> None:
+    mem_tracker = MemoryHighWaterMarkTracker()
+
     # Initialize the SDK
     sdk = SDKFactory.createSDK(gpu_options, initialize_modules=['face_detector'])
 
@@ -44,4 +46,6 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
         times.append(stop_watch.elapsedTime())
 
     observations.append(
-        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, '', parameters, times))
+        Observation(
+            sdk.get_version(), gpu_options.enable_GPU,
+            _benchmark_name, '', parameters, times, mem_tracker.get_diff_from_baseline()))

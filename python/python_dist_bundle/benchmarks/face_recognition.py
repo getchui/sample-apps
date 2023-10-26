@@ -1,6 +1,6 @@
 from observation import Observation
 from typing import List
-from utils import (Parameters, Stopwatch, SDKFactory)
+from utils import (Parameters, MemoryHighWaterMarkTracker, Stopwatch, SDKFactory)
 import tfsdk
 
 
@@ -11,6 +11,8 @@ def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL,
               gpu_options: tfsdk.GPUOptions,
               parameters: Parameters,
               observations: List[Observation]) -> None:
+
+    mem_tracker = MemoryHighWaterMarkTracker()
 
     # Initialize the SDK
     sdk = SDKFactory.createSDK(
@@ -50,4 +52,7 @@ def benchmark(fr_model: tfsdk.FACIALRECOGNITIONMODEL,
         times.append(stop_watch.elapsedTime())
 
     observations.append(
-        Observation(sdk.get_version(), gpu_options.enable_GPU, _benchmark_name, fr_model.name, parameters, times))
+        Observation(
+            sdk.get_version(), gpu_options.enable_GPU,
+            _benchmark_name, fr_model.name,
+            parameters, times, mem_tracker.get_diff_from_baseline()))
