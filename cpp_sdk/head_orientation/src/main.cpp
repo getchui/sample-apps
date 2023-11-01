@@ -1,26 +1,25 @@
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <cmath>
-#include <thread>
-#include <mutex>
-#include <chrono>
-#include <memory>
 #include <atomic>
+#include <chrono>
+#include <cmath>
+#include <memory>
+#include <mutex>
+#include <opencv2/opencv.hpp>
+#include <thread>
+#include <vector>
 
-#include "tf_sdk.h"
 #include "tf_data_types.h"
+#include "tf_sdk.h"
 
 using namespace Trueface;
 
 // Utility class for grabbing RTSP stream frames
 // Runs in alternate thread to ensure we always have the latest frame from our RTSP stream
-class StreamController{
+class StreamController {
 public:
-    explicit StreamController(std::atomic<bool>& run)
-            : m_run(run)
-    {
+    explicit StreamController(std::atomic<bool> &run) : m_run(run) {
         // Open the video capture
-        // Open the default camera (TODO: Can change the camera source, for example to an RTSP stream)
+        // Open the default camera (TODO: Can change the camera source, for example to an RTSP
+        // stream)
         if (!m_cap.open(0)) {
             throw std::runtime_error("Unable to open video capture");
         }
@@ -28,11 +27,11 @@ public:
         std::cout << "Original resolution to: (" << m_cap.get(cv::CAP_PROP_FRAME_WIDTH) << ", "
                   << m_cap.get(cv::CAP_PROP_FRAME_HEIGHT) << ")" << std::endl;
 
-        m_cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);//Setting the width of the video
-        m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);//Setting the height of the video
+        m_cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280); // Setting the width of the video
+        m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720); // Setting the height of the video
 
         std::cout << "Set resolution to: (" << m_cap.get(cv::CAP_PROP_FRAME_WIDTH) << ", "
-        << m_cap.get(cv::CAP_PROP_FRAME_HEIGHT) << ")" << std::endl;
+                  << m_cap.get(cv::CAP_PROP_FRAME_HEIGHT) << ")" << std::endl;
 
         // Launch a thread to start grab the newest frame from the frame buffer
         m_rtspThread = std::make_unique<std::thread>(&StreamController::rtspThreadFunc, this);
@@ -50,12 +49,13 @@ public:
         double fps = m_cap.get(cv::CAP_PROP_FPS);
         int sleepDurationMs = static_cast<int>(1000 / fps);
 
-        while(m_run) {
+        while (m_run) {
             // Sleep so that we match the camera frame rate
             std::this_thread::sleep_for(std::chrono::milliseconds(sleepDurationMs));
 
             // Grab a frame from the frame buffer, discard the return value
-            // This will discard built up frames in the buffer to ensure we only process the latest frame to remove any delay
+            // This will discard built up frames in the buffer to ensure we only process the latest
+            // frame to remove any delay
             m_mtx.lock();
             m_cap.grab();
             m_mtx.unlock();
@@ -63,24 +63,26 @@ public:
     }
 
     // Returns true if a frame was grabber
-    bool grabFrame(cv::Mat& frame) {
+    bool grabFrame(cv::Mat &frame) {
         const std::lock_guard<std::mutex> lock(m_mtx);
         return m_cap.retrieve(frame);
     }
+
 private:
     std::unique_ptr<std::thread> m_rtspThread = nullptr;
     std::mutex m_mtx;
-    std::atomic<bool>& m_run;
+    std::atomic<bool> &m_run;
     cv::VideoCapture m_cap;
 };
 
 int main() {
-    std::atomic<bool> run {true};
+    std::atomic<bool> run{true};
     StreamController streamController(run);
 
     // Start by specifying the configuration options to be used.
-    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
-    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    // Can choose to use default configuration options if preferred by calling the default SDK
+    // constructor. Learn more about configuration options here:
+    // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
     // The face recognition model to use. Balances accuracy and speed.
     options.frModel = FacialRecognitionModel::TFV5_2;
@@ -106,17 +108,19 @@ int main() {
     options.encryptDatabase.key = "TODO: Your encryption key here";
 
     // Initialize module in SDK constructor.
-    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
-    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
-    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
-    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they
+    // are first used (on first inference). This is done so that modules which are not used do not
+    // load their models into memory, and hence do not utilize memory. The downside to this is that
+    // the first inference will be much slower as the model file is being decrypted and loaded into
+    // memory. Therefore, if you know you will use a module, choose to pre-initialize the module,
+    // which reads the model file into memory in the SDK constructor.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
-    // We will disable GPU inference, but you can easily enable it by modifying the following options
-    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    // We will disable GPU inference, but you can easily enable it by modifying the following
+    // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
     options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
     options.gpuOptions.deviceIndex = 0;
 
@@ -139,7 +143,7 @@ int main() {
         return -1;
     }
 
-    while(run) {
+    while (run) {
         // Grab the latest frame from the video stream
         cv::Mat frame;
         auto shouldProcess = streamController.grabFrame(frame);
@@ -149,7 +153,8 @@ int main() {
 
         // Set the image using the capture frame buffer
         TFImage img;
-        auto errorCode = tfSdk.preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
+        auto errorCode =
+            tfSdk.preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error setting the image\n";
             return -1;
@@ -173,7 +178,8 @@ int main() {
             // Compute the yaw, pitch, roll
             float yaw, pitch, roll;
             std::array<double, 3> rotMat, transMat;
-            retCode = tfSdk.estimateHeadOrientation(img, face, landmarks, yaw, pitch, roll, rotMat, transMat);
+            retCode = tfSdk.estimateHeadOrientation(img, face, landmarks, yaw, pitch, roll, rotMat,
+                                                    transMat);
             if (retCode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to compute orientation\n";
                 continue;

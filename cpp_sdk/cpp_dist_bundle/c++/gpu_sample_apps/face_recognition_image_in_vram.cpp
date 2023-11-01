@@ -1,22 +1,24 @@
-// Sample code: Using the GPU/CUDA backend detect largest face in an image already loaded in the graphics card's memory.
+// Sample code: Using the GPU/CUDA backend detect largest face in an image already loaded in the
+// graphics card's memory.
 
+#include "opencv2/core/core.hpp"
+#include "opencv2/core/cuda.hpp"
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/opencv.hpp"
 #include "tf_sdk.h"
 #include <iostream>
 #include <vector>
-#include "opencv2/opencv.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/core/cuda.hpp"
 
 using namespace Trueface;
 
 int main() {
     // Start by specifying the configuration options to be used.
-    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
-    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    // Can choose to use default configuration options if preferred by calling the default SDK
+    // constructor. Learn more about configuration options here:
+    // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
-// The face recognition model to use. TFV5_2 balances accuracy and speed.
+    // The face recognition model to use. TFV5_2 balances accuracy and speed.
     options.frModel = FacialRecognitionModel::TFV5_2;
     // The object detection model to use.
     options.objModel = ObjectDetectionModel::ACCURATE;
@@ -40,18 +42,20 @@ int main() {
     options.encryptDatabase.key = "TODO: Your encryption key here";
 
     // Initialize module in SDK constructor.
-    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
-    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
-    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
-    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they
+    // are first used (on first inference). This is done so that modules which are not used do not
+    // load their models into memory, and hence do not utilize memory. The downside to this is that
+    // the first inference will be much slower as the model file is being decrypted and loaded into
+    // memory. Therefore, if you know you will use a module, choose to pre-initialize the module,
+    // which reads the model file into memory in the SDK constructor.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.faceRecognizer = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
-    // We will disable GPU inference, but you can easily enable it by modifying the following options
-    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    // We will disable GPU inference, but you can easily enable it by modifying the following
+    // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
     options.gpuOptions = true; // Enable GPU inference
     options.gpuOptions.deviceIndex = 0;
 
@@ -79,23 +83,22 @@ int main() {
     std::vector<Faceprint> faceprints1;
     std::vector<Faceprint> faceprints2;
 
-    std::vector<std::string> imagePaths = {
-            "../../images/brad_pitt_1.jpg",
-            "../../images/brad_pitt_2.jpg"
-    };
+    std::vector<std::string> imagePaths = {"../../images/brad_pitt_1.jpg",
+                                           "../../images/brad_pitt_2.jpg"};
 
     std::vector<TFFacechip> facechips;
 
-    for (const auto& imagePath: imagePaths) {
+    for (const auto &imagePath : imagePaths) {
         // using opencv to load the image in vram
         cv::Mat img = cv::imread(imagePath);
         cv::cuda::GpuMat mat;
         mat.upload(img);
-        uchar* ptr = mat.data;
+        uchar *ptr = mat.data;
 
         // Set the image using the Trueface SDK directly from VRAM
         TFImage gpuImg;
-        ErrorCode errorCode = tfSdk.preprocessImage(ptr, img.cols, img.rows, ColorCode::bgr, gpuImg, mat.step);
+        ErrorCode errorCode =
+            tfSdk.preprocessImage(ptr, img.cols, img.rows, ColorCode::bgr, gpuImg, mat.step);
 
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << errorCode << std::endl;
@@ -142,7 +145,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "Probability: "<< prob * 100 << "%" << std::endl;
-    std::cout << "Similarity: "<< cos << std::endl;
+    std::cout << "Probability: " << prob * 100 << "%" << std::endl;
+    std::cout << "Similarity: " << cos << std::endl;
     return 0;
 }

@@ -1,22 +1,23 @@
-#include <opencv2/opencv.hpp>
-#include <iostream>
-#include <string>
-#include <utility>
-#include <vector>
-#include <thread>
-#include <mutex>
-#include <memory>
 #include <atomic>
 #include <chrono>
 #include <cmath>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <opencv2/opencv.hpp>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
 
-#include "tf_sdk.h"
 #include "tf_data_types.h"
+#include "tf_sdk.h"
 
 using namespace Trueface;
 
 // Utility function for drawing the label on our image
-void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin, const cv::Scalar& color) {
+void setLabel(cv::Mat &im, const std::string label, const cv::Point &oldOrigin,
+              const cv::Scalar &color) {
     cv::Point origin(oldOrigin.x - 2, oldOrigin.y - 10);
     const int font = cv::FONT_HERSHEY_SIMPLEX;
     // Can change scale and thickness to change label size
@@ -25,10 +26,10 @@ void setLabel(cv::Mat& im, const std::string label, const cv::Point & oldOrigin,
     int baseline = 0;
 
     cv::Size text = cv::getTextSize(label, font, scale, thickness, &baseline);
-    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height), color, cv::FILLED);
-    cv::putText(im, label, origin, font, scale, CV_RGB(0,0,0), thickness, cv::LINE_AA);
+    cv::rectangle(im, origin + cv::Point(0, baseline), origin + cv::Point(text.width, -text.height),
+                  color, cv::FILLED);
+    cv::putText(im, label, origin, font, scale, CV_RGB(0, 0, 0), thickness, cv::LINE_AA);
 }
-
 
 int main() {
     // TODO: Select a threshold for your application using the ROC curves
@@ -36,8 +37,9 @@ int main() {
     const float threshold = 0.3;
 
     // Start by specifying the configuration options to be used.
-    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
-    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    // Can choose to use default configuration options if preferred by calling the default SDK
+    // constructor. Learn more about configuration options here:
+    // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
     // The face recognition model to use. Balances accuracy and speed.
     options.frModel = FacialRecognitionModel::TFV5_2;
@@ -63,18 +65,20 @@ int main() {
     options.encryptDatabase.key = "TODO: Your encryption key here";
 
     // Initialize module in SDK constructor.
-    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
-    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
-    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
-    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they
+    // are first used (on first inference). This is done so that modules which are not used do not
+    // load their models into memory, and hence do not utilize memory. The downside to this is that
+    // the first inference will be much slower as the model file is being decrypted and loaded into
+    // memory. Therefore, if you know you will use a module, choose to pre-initialize the module,
+    // which reads the model file into memory in the SDK constructor.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.faceRecognizer = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
-    // We will disable GPU inference, but you can easily enable it by modifying the following options
-    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    // We will disable GPU inference, but you can easily enable it by modifying the following
+    // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
     options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
     options.gpuOptions.deviceIndex = 0;
 
@@ -142,7 +146,8 @@ int main() {
     auto faceHeight = faceBoxAndLandmarks.bottomRight.y - faceBoxAndLandmarks.topLeft.y;
     std::cout << "Face height: " << faceHeight << std::endl;
     if (faceHeight < 100) {
-        std::cout << "The face is too small in the image for a high quality enrollment." << std::endl;
+        std::cout << "The face is too small in the image for a high quality enrollment."
+                  << std::endl;
         return -1;
     }
 
@@ -161,8 +166,8 @@ int main() {
         return -1;
     }
 
-    // Ensure the image quality is above a threshold (TODO: adjust this threshold based on your use case).
-    // Once again, we only want to enroll high quality images into our collection
+    // Ensure the image quality is above a threshold (TODO: adjust this threshold based on your use
+    // case). Once again, we only want to enroll high quality images into our collection
     std::cout << "Face quality: " << quality << std::endl;
     if (quality < 0.8) {
         std::cout << "Please choose a higher quality enrollment image\n";
@@ -176,17 +181,20 @@ int main() {
         return -1;
     }
 
-    // As a final check, we can check the orientation of the head and ensure that it is facing forward
-    // To see the effect of yaw and pitch on the match score, refer to: https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
+    // As a final check, we can check the orientation of the head and ensure that it is facing
+    // forward To see the effect of yaw and pitch on the match score, refer to:
+    // https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
     std::array<double, 3> rotMat, transMat;
     float yaw, pitch, roll;
-    errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotMat, transMat);
+    errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll,
+                                              rotMat, transMat);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute head orientation\n";
         return -1;
     }
 
-    std::cout << "Yaw: " << yaw * 180 / M_PI  << ", Pitch: " << pitch * 180 / M_PI << ", Roll: " << roll * 180 / M_PI << " degrees" << std::endl;
+    std::cout << "Yaw: " << yaw * 180 / M_PI << ", Pitch: " << pitch * 180 / M_PI
+              << ", Roll: " << roll * 180 / M_PI << " degrees" << std::endl;
 
     // TODO: Can filter out images with extreme yaw and pitch here
 
@@ -199,7 +207,8 @@ int main() {
     }
 
     // Add the enrollment template to our collection
-    // Any data that is added to the collection will persist after the application is terminated because of the DatabaseManagementSystem we chose.
+    // Any data that is added to the collection will persist after the application is terminated
+    // because of the DatabaseManagementSystem we chose.
     std::string UUID;
     errorCode = tfSdk.enrollFaceprint(enrollmentFaceprint, "Obama", UUID);
     if (errorCode != ErrorCode::NO_ERROR) {
@@ -212,13 +221,14 @@ int main() {
     cv::VideoCapture cap("../../../../images/obama/speech.mp4");
     cv::VideoWriter outputVideo;
 
-    cv::Size frameSize (static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH)), static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT)));
+    cv::Size frameSize(static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH)),
+                       static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT)));
     int ex = static_cast<int>(cap.get(cv::CAP_PROP_FOURCC));
 
     // Name of our output file
-    outputVideo.open("annotated.mp4" , ex, cap.get(cv::CAP_PROP_FPS), frameSize, true);
+    outputVideo.open("annotated.mp4", ex, cap.get(cv::CAP_PROP_FPS), frameSize, true);
 
-    while(true) {
+    while (true) {
         cv::Mat frame;
         cap >> frame;
         if (frame.empty()) {
@@ -240,7 +250,7 @@ int main() {
         std::vector<Faceprint> faceprints;
         faceprints.reserve(bboxVec.size());
 
-        for (const auto &bbox: bboxVec) {
+        for (const auto &bbox : bboxVec) {
             // Get the face feature vector
             Faceprint tmpFaceprint;
             tfSdk.getFaceFeatureVector(img, bbox, tmpFaceprint);
@@ -283,7 +293,6 @@ int main() {
         if (cv::waitKey(1) == 27) {
             break; // stop capturing by pressing ESC
         }
-
     }
 
     return 0;

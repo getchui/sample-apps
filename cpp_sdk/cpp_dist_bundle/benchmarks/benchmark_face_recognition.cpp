@@ -29,7 +29,8 @@ std::string getModelName(FacialRecognitionModel model) {
     }
 }
 
-void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionModel model, Parameters params, ObservationList& observations) {
+void benchmarkFaceRecognition(const SDKFactory &sdkFactory, FacialRecognitionModel model,
+                              Parameters params, ObservationList &observations) {
     // baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
@@ -53,14 +54,17 @@ void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionMod
     bool found;
     errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: Unable to detect face when benchmarking face recognition model" << std::endl;
+        std::cout << "Error: Unable to detect face when benchmarking face recognition model"
+                  << std::endl;
         return;
     }
 
     TFFacechip facechip;
     errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: Unable to extract aligned face when benchmarking face recognition model" << std::endl;
+        std::cout
+            << "Error: Unable to extract aligned face when benchmarking face recognition model"
+            << std::endl;
         return;
     }
 
@@ -89,7 +93,7 @@ void benchmarkFaceRecognition(const SDKFactory& sdkFactory, FacialRecognitionMod
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, getModelName(model), params, times,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              getModelName(model), params, times,
                               memoryTracker.getDifferenceFromBaseline());
 }

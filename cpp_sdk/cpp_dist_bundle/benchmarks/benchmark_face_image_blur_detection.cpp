@@ -13,7 +13,8 @@ using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Face image blur detection"};
 
-void benchmarkFaceImageBlurDetection(const SDKFactory& sdkFactory, Parameters params, ObservationList& observations) {
+void benchmarkFaceImageBlurDetection(const SDKFactory &sdkFactory, Parameters params,
+                                     ObservationList &observations) {
     // baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
@@ -69,7 +70,6 @@ void benchmarkFaceImageBlurDetection(const SDKFactory& sdkFactory, Parameters pa
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                                benchmarkName, "", params, times,
-                                memoryTracker.getDifferenceFromBaseline());
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "",
+                              params, times, memoryTracker.getDifferenceFromBaseline());
 }

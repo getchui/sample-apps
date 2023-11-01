@@ -19,11 +19,11 @@ MemoryHighWaterMarkTracker::MemoryHighWaterMarkTracker() {
 void MemoryHighWaterMarkTracker::resetVmHighWaterMark() {
 #if !defined(WIN32) && !defined(_WIN32)
 #ifndef __APPLE__
-//
-// LINUX ONLY: https://www.kernel.org/doc/html/latest/filesystems/proc.html
-// "To reset the peak resident set size ("high water mark") to the process's current value:"
-// > echo 5 > /proc/PID/clear_refs
-//
+    //
+    // LINUX ONLY: https://www.kernel.org/doc/html/latest/filesystems/proc.html
+    // "To reset the peak resident set size ("high water mark") to the process's current value:"
+    // > echo 5 > /proc/PID/clear_refs
+    //
     std::ofstream clear_refs_stream{"/proc/self/clear_refs"};
     clear_refs_stream << "5" << std::endl;
     clear_refs_stream.close();
@@ -35,7 +35,7 @@ void MemoryHighWaterMarkTracker::resetVmHighWaterMark() {
 
 float MemoryHighWaterMarkTracker::getVmHighWaterMark() const {
 #if !defined(WIN32) && !defined(_WIN32)
-    struct rusage usage{};
+    struct rusage usage {};
     if (!getrusage(RUSAGE_SELF, &usage)) {
         //
         // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/getrusage.2.html

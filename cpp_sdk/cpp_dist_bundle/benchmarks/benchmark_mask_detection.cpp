@@ -13,7 +13,8 @@ using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Mask detection"};
 
-void benchmarkMaskDetection(const SDKFactory& sdkFactory, Parameters params, ObservationList& observations) {
+void benchmarkMaskDetection(const SDKFactory &sdkFactory, Parameters params,
+                            ObservationList &observations) {
     // baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
@@ -74,7 +75,6 @@ void benchmarkMaskDetection(const SDKFactory& sdkFactory, Parameters params, Obs
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, "", params, times,
-                              memoryTracker.getDifferenceFromBaseline());
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "",
+                              params, times, memoryTracker.getDifferenceFromBaseline());
 }

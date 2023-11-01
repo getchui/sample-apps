@@ -13,7 +13,8 @@ using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Face and landmark detection"};
 
-void benchmarkFaceLandmarkDetection(const SDKFactory& sdkFactory, Parameters params, ObservationList& observations) {
+void benchmarkFaceLandmarkDetection(const SDKFactory &sdkFactory, Parameters params,
+                                    ObservationList &observations) {
     // baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
@@ -53,7 +54,6 @@ void benchmarkFaceLandmarkDetection(const SDKFactory& sdkFactory, Parameters par
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, "", params, times,
-                              memoryTracker.getDifferenceFromBaseline());
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "",
+                              params, times, memoryTracker.getDifferenceFromBaseline());
 }

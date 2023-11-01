@@ -24,18 +24,17 @@ struct TimeResult {
 
 class Observation {
 public:
-    Observation(const std::string &version, bool isGpuEnabled,
-                const std::string &benchmarkName, const std::string &benchmarkSubType,
-                const Parameters &params, const std::vector<float> &times,
-                float memoryUsage);
+    Observation(const std::string &version, bool isGpuEnabled, const std::string &benchmarkName,
+                const std::string &benchmarkSubType, const Parameters &params,
+                const std::vector<float> &times, float memoryUsage);
 
-    const std::string& getVersion() const {return m_version;}
-    bool getIsGpuEnabled() const {return m_isGpuEnabled;}
-    const std::string& getBenchmarkName() const {return m_benchmarkName;}
-    const std::string& getBenchmarkSubType() const {return m_benchmarkSubType;}
-    const Parameters& getParameters() const {return m_params;}
-    const TimeResult& getTimeResult() const {return m_time;}
-    float getMemoryUsage() const {return m_memoryUsage;}
+    const std::string &getVersion() const { return m_version; }
+    bool getIsGpuEnabled() const { return m_isGpuEnabled; }
+    const std::string &getBenchmarkName() const { return m_benchmarkName; }
+    const std::string &getBenchmarkSubType() const { return m_benchmarkSubType; }
+    const Parameters &getParameters() const { return m_params; }
+    const TimeResult &getTimeResult() const { return m_time; }
+    float getMemoryUsage() const { return m_memoryUsage; }
 
 private:
     void emitToUser();
@@ -49,21 +48,21 @@ private:
     float m_memoryUsage;
 };
 
-std::ostream& operator<<(std::ostream&, const Observation&);
+std::ostream &operator<<(std::ostream &, const Observation &);
 
 using ObservationList = std::vector<Observation>;
 
 class ObservationCSVWriter {
 public:
-    ObservationCSVWriter(const std::string& path);
+    ObservationCSVWriter(const std::string &path);
 
-    void write(const ObservationList&);
+    void write(const ObservationList &);
 
 private:
-    bool doesFileExist(const std::string& path);
-    const std::string& m_path;
+    bool doesFileExist(const std::string &path);
+    const std::string &m_path;
     bool m_writeHeaders;
 };
 
 } // namespace Benchmarks
-} // namespace Trueface;
+} // namespace Trueface

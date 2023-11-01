@@ -1,15 +1,16 @@
 #include <iostream>
 #include <vector>
 
-#include "tf_sdk.h"
 #include "tf_data_types.h"
+#include "tf_sdk.h"
 
 using namespace Trueface;
 
 int main() {
     // Start by specifying the configuration options to be used.
-    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
-    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    // Can choose to use default configuration options if preferred by calling the default SDK
+    // constructor. Learn more about configuration options here:
+    // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
     // The face recognition model to use. Balances accuracy and speed.
     options.frModel = FacialRecognitionModel::TFV5_2;
@@ -35,18 +36,20 @@ int main() {
     options.encryptDatabase.key = "TODO: Your encryption key here";
 
     // Initialize module in SDK constructor.
-    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
-    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
-    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
-    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they
+    // are first used (on first inference). This is done so that modules which are not used do not
+    // load their models into memory, and hence do not utilize memory. The downside to this is that
+    // the first inference will be much slower as the model file is being decrypted and loaded into
+    // memory. Therefore, if you know you will use a module, choose to pre-initialize the module,
+    // which reads the model file into memory in the SDK constructor.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.faceRecognizer = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
-    // We will disable GPU inference, but you can easily enable it by modifying the following options
-    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    // We will disable GPU inference, but you can easily enable it by modifying the following
+    // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
     options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
     options.gpuOptions.deviceIndex = 0;
 
@@ -60,7 +63,7 @@ int main() {
     options.gpuOptions.faceDetectorGPUOptions = moduleOptions;
     options.gpuOptions.maskDetectorGPUOptions = moduleOptions;
 
-    SDK tfSdk (options);
+    SDK tfSdk(options);
 
     // TODO: replace <LICENSE_CODE> with your license code.
     const auto isValid = tfSdk.setLicense(TRUEFACE_TOKEN);

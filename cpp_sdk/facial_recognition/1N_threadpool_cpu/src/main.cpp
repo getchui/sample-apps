@@ -1,18 +1,18 @@
-#include <opencv2/opencv.hpp>
-#include <iostream>
-#include <string>
-#include <utility>
-#include <vector>
-#include <thread>
-#include <mutex>
 #include <atomic>
-#include <queue>
 #include <condition_variable>
 #include <csignal>
+#include <iostream>
+#include <mutex>
+#include <opencv2/opencv.hpp>
+#include <queue>
+#include <string>
+#include <thread>
 #include <unistd.h>
+#include <utility>
+#include <vector>
 
-#include "tf_sdk.h"
 #include "tf_data_types.h"
+#include "tf_sdk.h"
 
 using namespace Trueface;
 
@@ -30,11 +30,12 @@ void sigstop(int a) {
 
 class Controller {
 public:
-    Controller(const std::string& sdkToken, const std::vector<std::string>& rtspURLs,
-               const std::string& databaseConnectionURL, const std::string& collectionName) {
+    Controller(const std::string &sdkToken, const std::vector<std::string> &rtspURLs,
+               const std::string &databaseConnectionURL, const std::string &collectionName) {
         // Start by specifying the configuration options to be used.
-        // Can choose to use default configuration options if preferred by calling the default SDK constructor.
-        // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+        // Can choose to use default configuration options if preferred by calling the default SDK
+        // constructor. Learn more about configuration options here:
+        // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
         ConfigurationOptions options;
         // The face recognition model to use. Use the most accurate face recognition model.
         options.frModel = FacialRecognitionModel::LITE_V2;
@@ -57,23 +58,27 @@ public:
 
         // Encrypt the biometric templates stored in the database
         EncryptDatabase encryptDatabase;
-        encryptDatabase.enableEncryption = false; // TODO: To encrypt the database change this to true
+        encryptDatabase.enableEncryption =
+            false; // TODO: To encrypt the database change this to true
         encryptDatabase.key = "TODO: Your encryption key here";
         options.encryptDatabase = encryptDatabase;
 
         // Initialize module in SDK constructor.
-        // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
-        // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
-        // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
-        // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+        // By default, the SDK uses lazy initialization, meaning modules are only initialized when
+        // they are first used (on first inference). This is done so that modules which are not used
+        // do not load their models into memory, and hence do not utilize memory. The downside to
+        // this is that the first inference will be much slower as the model file is being decrypted
+        // and loaded into memory. Therefore, if you know you will use a module, choose to
+        // pre-initialize the module, which reads the model file into memory in the SDK constructor.
         InitializeModule initializeModule;
         initializeModule.faceDetector = true;
         initializeModule.faceRecognizer = true;
         options.initializeModule = initializeModule;
 
         // Options for enabling GPU
-        // We will disable GPU inference, but you can easily enable it by modifying the following options
-        // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+        // We will disable GPU inference, but you can easily enable it by modifying the following
+        // options Note, you may require a specific GPU enabled token in order to enable GPU
+        // inference.
         options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
         options.gpuOptions.deviceIndex = 0;
 
@@ -99,7 +104,7 @@ public:
         m_workerThreads.emplace_back(std::thread(&Controller::logQueueSizes, this));
 
         // Create a rtsp worker thread for each rtsp stream
-        for (const auto& rtspURL: rtspURLs) {
+        for (const auto &rtspURL : rtspURLs) {
             std::thread t(&Controller::grabAndEnqueueFrames, this, rtspURL);
             m_workerThreads.emplace_back(std::move(t));
         }
@@ -121,7 +126,8 @@ public:
         // Create identification worker thread
         size_t numIdentificationWorkerThreads = 1;
         for (size_t i = 0; i < numIdentificationWorkerThreads; ++i) {
-            std::thread t (&Controller::identifyTemplate, this, databaseConnectionURL, collectionName, i == 0);
+            std::thread t(&Controller::identifyTemplate, this, databaseConnectionURL,
+                          collectionName, i == 0);
             m_workerThreads.emplace_back(std::move(t));
         }
     }
@@ -144,7 +150,7 @@ public:
         m_faceprintQueueCondVar.notify_all();
 
         // Wait for all of our threads
-        for (auto& t: m_workerThreads) {
+        for (auto &t : m_workerThreads) {
             if (t.joinable()) {
                 t.join();
             }
@@ -154,23 +160,24 @@ public:
 
         m_terminated = true;
     }
+
 private:
     // Function for logging the queue sizes
     void logQueueSizes() {
-        while(m_run) {
+        while (m_run) {
             // If the queue sizes get too large,
             // then you need to create more workers or reduce the number of input streams
             sleep(2);
             {
-                std::lock_guard<std::mutex> lock (m_imageQueueMtx);
+                std::lock_guard<std::mutex> lock(m_imageQueueMtx);
                 std::cout << "Image Queue Size: " << m_imageQueue.size() << std::endl;
             }
             {
-                std::lock_guard<std::mutex> lock (m_faceChipQueueMtx);
+                std::lock_guard<std::mutex> lock(m_faceChipQueueMtx);
                 std::cout << "Face Chip Queue Size: " << m_faceChipQueue.size() << std::endl;
             }
             {
-                std::lock_guard<std::mutex> lock (m_faceprintQueueMtx);
+                std::lock_guard<std::mutex> lock(m_faceprintQueueMtx);
                 std::cout << "Faceprint Queue Size: " << m_faceprintQueue.size() << std::endl;
             }
         }
@@ -180,7 +187,7 @@ private:
     // Assuming our cameras stream at 30FPS, we will only process every 6th frame
     // to process at 5FPS because any higher and we end up processing very similar frames
     // and doing unnecessary work.
-    void grabAndEnqueueFrames(const std::string& rtspURL) {
+    void grabAndEnqueueFrames(const std::string &rtspURL) {
         // Open the video capture
         cv::VideoCapture cap;
         if (!cap.open(rtspURL)) {
@@ -189,7 +196,7 @@ private:
         }
 
         // Main loop
-        while(m_run) {
+        while (m_run) {
             // Only retrieve ever 6th frame from the stream (5FPS)
             for (auto i = 0; i < 6; ++i) {
                 cap.grab();
@@ -204,9 +211,11 @@ private:
 
             // Preprocess the frame
             TFImage img;
-            auto errorcode = m_sdkPtr->preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
+            auto errorcode =
+                m_sdkPtr->preprocessImage(frame.data, frame.cols, frame.rows, ColorCode::bgr, img);
             if (errorcode != ErrorCode::NO_ERROR) {
-                std::cout << "Thread " << std::this_thread::get_id() << ": There was an error preprocessing the frame" << std::endl;
+                std::cout << "Thread " << std::this_thread::get_id()
+                          << ": There was an error preprocessing the frame" << std::endl;
                 std::cout << errorcode << std::endl;
                 continue;
             }
@@ -220,19 +229,21 @@ private:
             m_imageQueueCondVar.notify_one();
         }
 
-        std::cout << "RTSP thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
+        std::cout << "RTSP thread " << std::this_thread::get_id() << " shutting down..."
+                  << std::endl;
     }
 
     // Function for searching for all faces in the frame and pushing the aligned face chips
     // into another queue to be processed for face recognition
     void detectAndEnqueueFaces() {
         // Main loop
-        while(m_run) {
+        while (m_run) {
             TFImage img;
             // Wait for work
             {
                 std::unique_lock<std::mutex> lock(m_imageQueueMtx);
-                m_imageQueueCondVar.wait(lock, [this]{ return !this->m_imageQueue.empty() || !this->m_run;});
+                m_imageQueueCondVar.wait(
+                    lock, [this] { return !this->m_imageQueue.empty() || !this->m_run; });
 
                 if (!m_run) {
                     // Exit signal received
@@ -248,18 +259,20 @@ private:
             auto retcode = m_sdkPtr->detectFaces(img, faceBoxAndLandmarks);
 
             if (retcode != ErrorCode::NO_ERROR) {
-                std::cout << "Thread " << std::this_thread::get_id() << ": Error detecting faces" << std::endl;
+                std::cout << "Thread " << std::this_thread::get_id() << ": Error detecting faces"
+                          << std::endl;
                 continue;
             }
 
             // For each detected face, extract the aligned face chip, add to the face chip queue
             // Each face chip is 112x112 pixels in size, so we must allocate 112x112x3 bytes
-            for (const auto& fb: faceBoxAndLandmarks) {
+            for (const auto &fb : faceBoxAndLandmarks) {
                 TFFacechip facechip;
                 retcode = m_sdkPtr->extractAlignedFace(img, fb, facechip);
 
                 if (retcode != ErrorCode::NO_ERROR) {
-                    std::cout << "Thread " << std::this_thread::get_id() << ": Error extracting aligned face" << std::endl;
+                    std::cout << "Thread " << std::this_thread::get_id()
+                              << ": Error extracting aligned face" << std::endl;
                     continue;
                 }
 
@@ -271,7 +284,8 @@ private:
                 m_faceChipQueueCondVar.notify_one();
             }
         }
-        std::cout << "Face detection thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
+        std::cout << "Face detection thread " << std::this_thread::get_id() << " shutting down..."
+                  << std::endl;
     }
 
     // Function for generating a face recognition template from the face chips.
@@ -283,7 +297,8 @@ private:
             // wait for work
             {
                 std::unique_lock<std::mutex> lock(m_faceChipQueueMtx);
-                m_faceChipQueueCondVar.wait(lock, [this] {return !this->m_faceChipQueue.empty() || !this->m_run;});
+                m_faceChipQueueCondVar.wait(
+                    lock, [this] { return !this->m_faceChipQueue.empty() || !this->m_run; });
 
                 if (!m_run) {
                     // Exit signal received
@@ -298,24 +313,28 @@ private:
             Faceprint faceprint;
             auto retcode = m_sdkPtr->getFaceFeatureVector(facechip, faceprint);
             if (retcode != ErrorCode::NO_ERROR) {
-                std::cout << "Thread " << std::this_thread::get_id() << ": Unable to generate feature vector" << std::endl;
+                std::cout << "Thread " << std::this_thread::get_id()
+                          << ": Unable to generate feature vector" << std::endl;
                 continue;
             }
 
             // Push the faceprint into the queue and indicate that work is ready
             {
-                std::lock_guard<std::mutex> lock (m_faceprintQueueMtx);
+                std::lock_guard<std::mutex> lock(m_faceprintQueueMtx);
                 m_faceprintQueue.push(std::move(faceprint));
             }
 
             m_faceprintQueueCondVar.notify_one();
         }
-        std::cout << "Template extraction thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
+        std::cout << "Template extraction thread " << std::this_thread::get_id()
+                  << " shutting down..." << std::endl;
     }
 
-    void identifyTemplate(const std::string& databaseURL, const std::string& collectionName, bool first) {
-        // As long as all instances of the SDK are in the same process, then only one instance needs to connect to the database
-        // To learn more, read the top of: https://reference.trueface.ai/cpp/dev/latest/usage/identification.html
+    void identifyTemplate(const std::string &databaseURL, const std::string &collectionName,
+                          bool first) {
+        // As long as all instances of the SDK are in the same process, then only one instance needs
+        // to connect to the database To learn more, read the top of:
+        // https://reference.trueface.ai/cpp/dev/latest/usage/identification.html
         if (first) {
             auto retcode = m_sdkPtr->createDatabaseConnection(databaseURL);
             if (retcode != ErrorCode::NO_ERROR) {
@@ -324,7 +343,8 @@ private:
 
             retcode = m_sdkPtr->createLoadCollection(collectionName);
             if (retcode != ErrorCode::NO_ERROR) {
-                throw std::runtime_error("Unable to create new collection or load existing collection");
+                throw std::runtime_error(
+                    "Unable to create new collection or load existing collection");
             }
 
             {
@@ -335,19 +355,19 @@ private:
         } else {
             // Wait for the first thread to connect to the database
             {
-                std::unique_lock<std::mutex> lock (m_databaseConnectionMtx);
-                m_databaseConnectionConVar.wait(lock, [this]{return this->m_databaseConnected;});
+                std::unique_lock<std::mutex> lock(m_databaseConnectionMtx);
+                m_databaseConnectionConVar.wait(lock, [this] { return this->m_databaseConnected; });
             }
         }
 
-
         // Main loop
-        while(m_run) {
+        while (m_run) {
             Faceprint faceprint;
             // Wait for work
             {
                 std::unique_lock<std::mutex> lock(m_faceprintQueueMtx);
-                m_imageQueueCondVar.wait(lock, [this]{ return !this->m_faceprintQueue.empty() || !this->m_run;});
+                m_imageQueueCondVar.wait(
+                    lock, [this] { return !this->m_faceprintQueue.empty() || !this->m_run; });
 
                 if (!m_run) {
                     // Exit signal received
@@ -371,10 +391,12 @@ private:
                 // A match was found
                 // TODO: Do something with match information, run callback function, etc
                 // For the sake of the demo, we will just log it to the console
-                std::cout << "Match found: " << candidate.identity << " with " << candidate.matchProbability * 100 << "% probability" << std::endl;
+                std::cout << "Match found: " << candidate.identity << " with "
+                          << candidate.matchProbability * 100 << "% probability" << std::endl;
             }
         }
-        std::cout << "Identify thread " << std::this_thread::get_id() << " shutting down..." << std::endl;
+        std::cout << "Identify thread " << std::this_thread::get_id() << " shutting down..."
+                  << std::endl;
     }
 
     // Single SDK instance to be used by various threads
@@ -397,9 +419,9 @@ private:
     std::condition_variable m_databaseConnectionConVar;
 
     // When set to false, worker threads should stop running
-    std::atomic<bool> m_run {true};
-    std::atomic<bool> m_terminated {false};
-    bool m_databaseConnected  = false;
+    std::atomic<bool> m_run{true};
+    std::atomic<bool> m_terminated{false};
+    bool m_databaseConnected = false;
 
     // Worker threads
     std::vector<std::thread> m_workerThreads;
@@ -415,17 +437,17 @@ int main() {
     const std::string token = TRUEFACE_TOKEN;
 
     // TODO: Fill out your database connection string and collection name
-    // Should point to an existing collection that you have already filled with enrollment templates.
-    const std::string postgresConnectionString = "host=localhost port=5432 dbname=my_database user=postgres password=admin";
+    // Should point to an existing collection that you have already filled with enrollment
+    // templates.
+    const std::string postgresConnectionString =
+        "host=localhost port=5432 dbname=my_database user=postgres password=admin";
     const std::string collectionName = "my_collection";
 
     // Simulate connecting to 5 different 1920x1080 resolution RTSP streams
     std::vector<std::string> rtspURLS = {
-            "rtsp://root:!admin@192.168.0.11/stream1",
-            "rtsp://root:!admin@192.168.0.11/stream1",
-            "rtsp://root:!admin@192.168.0.11/stream1",
-            "rtsp://root:!admin@192.168.0.11/stream1",
-            "rtsp://root:!admin@192.168.0.11/stream1",
+        "rtsp://root:!admin@192.168.0.11/stream1", "rtsp://root:!admin@192.168.0.11/stream1",
+        "rtsp://root:!admin@192.168.0.11/stream1", "rtsp://root:!admin@192.168.0.11/stream1",
+        "rtsp://root:!admin@192.168.0.11/stream1",
     };
 
     // Starts our main process
@@ -433,5 +455,5 @@ int main() {
 
     // Have the main thread sleep until kill signal received
     std::unique_lock<std::mutex> lock(g_mtx);
-    g_conditionVariable.wait(lock, []{return !g_run;});
+    g_conditionVariable.wait(lock, [] { return !g_run; });
 }

@@ -10,7 +10,7 @@ using namespace Trueface;
 namespace Trueface {
 namespace Benchmarks {
 
-SDKFactory::SDKFactory(const GPUOptions& gpuOptions)
+SDKFactory::SDKFactory(const GPUOptions &gpuOptions)
     : m_gpuOptions{gpuOptions}, m_modelsPath{"./"}, m_license{TRUEFACE_TOKEN} {
     auto modelsPath = std::getenv("MODELS_PATH");
     if (modelsPath) {
@@ -18,12 +18,12 @@ SDKFactory::SDKFactory(const GPUOptions& gpuOptions)
     }
 }
 
-SDK SDKFactory::createSDK(const ConfigurationOptions& options) const {
+SDK SDKFactory::createSDK(const ConfigurationOptions &options) const {
     SDK tfSdk(options);
     bool valid = tfSdk.setLicense(m_license);
     if (!valid) {
         std::cout << "Error: the provided license is invalid." << std::endl;
-        exit (EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 
     return tfSdk;
@@ -36,9 +36,8 @@ ConfigurationOptions SDKFactory::createBasicConfiguration() const {
     return options;
 }
 
-GPUOptions
-SDKFactory::createGPUOptions(bool enableGPU, unsigned int deviceIndex,
-                             int32_t maxBatchSize, int32_t optBatchSize) {
+GPUOptions SDKFactory::createGPUOptions(bool enableGPU, unsigned int deviceIndex,
+                                        int32_t maxBatchSize, int32_t optBatchSize) {
     GPUOptions gpuOptions;
     gpuOptions.enableGPU = enableGPU;
     gpuOptions.deviceIndex = deviceIndex;
@@ -62,10 +61,7 @@ SDKFactory::createGPUOptions(bool enableGPU, unsigned int deviceIndex,
     return gpuOptions;
 }
 
-
-bool SDKFactory::isGpuEnabled() const {
-    return m_gpuOptions.enableGPU;
-}
+bool SDKFactory::isGpuEnabled() const { return m_gpuOptions.enableGPU; }
 
 } // namespace Benchmarks
 } // namespace Trueface

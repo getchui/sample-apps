@@ -14,7 +14,8 @@ using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Preprocess image"};
 
-void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, ObservationList& observations) {
+void benchmarkPreprocessImage(const SDKFactory &sdkFactory, Parameters params,
+                              ObservationList &observations) {
     // baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
@@ -45,8 +46,8 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, "JPG from disk", params, times,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              "JPG from disk", params, times,
                               memoryTracker.getDifferenceFromBaseline());
 
     // baseline memory reading
@@ -58,7 +59,7 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
     file.seekg(0, std::ios::beg);
 
     std::vector<uint8_t> buffer(size);
-    if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+    if (!file.read(reinterpret_cast<char *>(buffer.data()), size)) {
         std::cout << "Unable to load the image" << std::endl;
         return;
     }
@@ -81,8 +82,8 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, "encoded JPG in memory", params, times,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              "encoded JPG in memory", params, times,
                               memoryTracker.getDifferenceFromBaseline());
 
     // baseline memory reading
@@ -92,7 +93,8 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
     TFImage newImg;
     if (params.doWarmup) {
         for (int i = 0; i < params.numWarmup; ++i) {
-            auto errorCode = tfSdk.preprocessImage(img->getData(), img->getWidth(), img->getHeight(), ColorCode::rgb, newImg);
+            auto errorCode = tfSdk.preprocessImage(img->getData(), img->getWidth(),
+                                                   img->getHeight(), ColorCode::rgb, newImg);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to preprocess image" << std::endl;
                 return;
@@ -103,11 +105,12 @@ void benchmarkPreprocessImage(const SDKFactory& sdkFactory, Parameters params, O
     times.clear();
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
-        tfSdk.preprocessImage(img->getData(), img->getWidth(), img->getHeight(), ColorCode::rgb, newImg);
+        tfSdk.preprocessImage(img->getData(), img->getWidth(), img->getHeight(), ColorCode::rgb,
+                              newImg);
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, "RGB pixels array in memory", params, times,
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                              "RGB pixels array in memory", params, times,
                               memoryTracker.getDifferenceFromBaseline());
 }
