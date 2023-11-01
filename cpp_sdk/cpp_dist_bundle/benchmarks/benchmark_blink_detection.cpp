@@ -13,7 +13,8 @@ using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Blink detection"};
 
-void benchmarkBlinkDetection(const SDKFactory& sdkFactory, Parameters params, ObservationList& observations) {
+void benchmarkBlinkDetection(const SDKFactory &sdkFactory, Parameters params,
+                             ObservationList &observations) {
     // baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
@@ -62,7 +63,6 @@ void benchmarkBlinkDetection(const SDKFactory& sdkFactory, Parameters params, Ob
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, "", params, times,
-                              memoryTracker.getDifferenceFromBaseline());
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "",
+                              params, times, memoryTracker.getDifferenceFromBaseline());
 }

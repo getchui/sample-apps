@@ -13,7 +13,8 @@ using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Object detection"};
 
-void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel objModel, Parameters params, ObservationList& observations) {
+void benchmarkObjectDetection(const SDKFactory &sdkFactory, ObjectDetectionModel objModel,
+                              Parameters params, ObservationList &observations) {
     // baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
@@ -54,7 +55,6 @@ void benchmarkObjectDetection(const SDKFactory& sdkFactory, ObjectDetectionModel
     }
 
     const std::string mode = (options.objModel == ObjectDetectionModel::FAST) ? "fast" : "accurate";
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, mode, params, times,
-                              memoryTracker.getDifferenceFromBaseline());
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, mode,
+                              params, times, memoryTracker.getDifferenceFromBaseline());
 }

@@ -1,6 +1,7 @@
 // Sample code: load two images, extract feature vectors and compare the similarity
-// This sample is similar to face_recognition.cpp, and shows how to call setImage() with an image buffer pointer.
-// First two images of the same identity are compared. Then the similarity score of two different identities is computed.
+// This sample is similar to face_recognition.cpp, and shows how to call setImage() with an image
+// buffer pointer. First two images of the same identity are compared. Then the similarity score of
+// two different identities is computed.
 
 #include "tf_sdk.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -12,10 +13,11 @@ using namespace Trueface;
 
 int main() {
     // Start by specifying the configuration options to be used.
-    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
-    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    // Can choose to use default configuration options if preferred by calling the default SDK
+    // constructor. Learn more about configuration options here:
+    // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
-// The face recognition model to use. TFV5_2 balances accuracy and speed.
+    // The face recognition model to use. TFV5_2 balances accuracy and speed.
     options.frModel = FacialRecognitionModel::TFV5_2;
     // The object detection model to use.
     options.objModel = ObjectDetectionModel::ACCURATE;
@@ -39,18 +41,20 @@ int main() {
     options.encryptDatabase.key = "TODO: Your encryption key here";
 
     // Initialize module in SDK constructor.
-    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
-    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
-    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
-    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they
+    // are first used (on first inference). This is done so that modules which are not used do not
+    // load their models into memory, and hence do not utilize memory. The downside to this is that
+    // the first inference will be much slower as the model file is being decrypted and loaded into
+    // memory. Therefore, if you know you will use a module, choose to pre-initialize the module,
+    // which reads the model file into memory in the SDK constructor.
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.faceRecognizer = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
-    // We will disable GPU inference, but you can easily enable it by modifying the following options
-    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    // We will disable GPU inference, but you can easily enable it by modifying the following
+    // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
     options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
     options.gpuOptions.deviceIndex = 0;
 
@@ -64,7 +68,7 @@ int main() {
     options.gpuOptions.faceDetectorGPUOptions = moduleOptions;
     options.gpuOptions.maskDetectorGPUOptions = moduleOptions;
     options.gpuOptions.objectDetectorGPUOptions = moduleOptions;
-    
+
     SDK tfSdk(options);
 
     // TODO: Either input your token in the CMakeLists.txt file, or insert it below directly
@@ -77,7 +81,7 @@ int main() {
 
     // Load the first image into memory using STB_image (for the sake of the demo).
     int width, height, channels;
-    uint8_t* rgb_image = stbi_load("../../images/brad_pitt_1.jpg", &width, &height, &channels, 3);
+    uint8_t *rgb_image = stbi_load("../../images/brad_pitt_1.jpg", &width, &height, &channels, 3);
 
     // Preprocess the first image
     TFImage img1, img2, img3;
@@ -86,9 +90,9 @@ int main() {
         std::cout << errorCode << std::endl;
         return 1;
     }
-    // Calling preprocessImage creates a copy of the data, therefore we can deallocate the input buffer
+    // Calling preprocessImage creates a copy of the data, therefore we can deallocate the input
+    // buffer
     stbi_image_free(rgb_image);
-
 
     // Load the second image
     rgb_image = stbi_load("../../images/brad_pitt_2.jpg", &width, &height, &channels, 3);
@@ -97,7 +101,8 @@ int main() {
         std::cout << errorCode << std::endl;
         return 1;
     }
-    // Calling preprocessImage creates a copy of the data, therefore we can deallocate the input buffer
+    // Calling preprocessImage creates a copy of the data, therefore we can deallocate the input
+    // buffer
     stbi_image_free(rgb_image);
 
     rgb_image = stbi_load("../../images/tom_cruise_1.jpg", &width, &height, &channels, 3);
@@ -156,8 +161,9 @@ int main() {
         return 1;
     }
 
-    std::cout <<  "Similarity score of same identity images: " << similarityScore << std::endl;
-    std::cout <<  "Match probability of same identity images: " << matchProbability * 100 << "%\n" << std::endl;
+    std::cout << "Similarity score of same identity images: " << similarityScore << std::endl;
+    std::cout << "Match probability of same identity images: " << matchProbability * 100 << "%\n"
+              << std::endl;
 
     // Compute the similarity between the images of different identities.
     errorCode = SDK::getSimilarity(faceprint1, faceprint3, matchProbability, similarityScore);
@@ -167,8 +173,9 @@ int main() {
         return 1;
     }
 
-    std::cout <<  "Similarity score of two different identities: " << similarityScore << std::endl;
-    std::cout <<  "Match probability of two different identities: " << matchProbability * 100 << "%" << std::endl;
+    std::cout << "Similarity score of two different identities: " << similarityScore << std::endl;
+    std::cout << "Match probability of two different identities: " << matchProbability * 100 << "%"
+              << std::endl;
 
     return 0;
 }

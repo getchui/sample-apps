@@ -24,24 +24,23 @@ int main() {
     options.frVectorCompression = true;
 
     if (options.frVectorCompression) {
-        std::cout << "~~~~~~~~~~~~~~~ Vector compression enabled ~~~~~~~~~~~~~~~~"  << std::endl;
+        std::cout << "~~~~~~~~~~~~~~~ Vector compression enabled ~~~~~~~~~~~~~~~~" << std::endl;
     }
 
     auto sdk = sdkFactory.createSDK(options);
 
     // Populate our collection with the following distractor templates
     std::vector<std::pair<std::string, std::string>> imagePairList = {
-            {"../../images/tom_cruise_1.jpg", "tom cruise"},
-            {"../../images/tom_cruise_2.jpg", "tom cruise"},
-            {"../../images/tom_cruise_3.jpg", "tom cruise"},
-            {"../images/headshot.jpg", "anon"}
-    };
+        {"../../images/tom_cruise_1.jpg", "tom cruise"},
+        {"../../images/tom_cruise_2.jpg", "tom cruise"},
+        {"../../images/tom_cruise_3.jpg", "tom cruise"},
+        {"../images/headshot.jpg", "anon"}};
 
     std::vector<std::pair<std::string, Faceprint>> dataVec;
 
     // Generate a template for each of the images
     std::cout << "\nGenerating templates" << std::endl;
-    for (const auto& imagePair: imagePairList) {
+    for (const auto &imagePair : imagePairList) {
         TFImage img;
         auto ret = sdk.preprocessImage(imagePair.first, img);
         if (ret != ErrorCode::NO_ERROR) {
@@ -91,16 +90,11 @@ int main() {
     }
 
     // Collection sizes to test
-    std::vector<size_t> collectionSizes {
-        1000,
-        10000,
-        100000,
-        1000000
-    };
+    std::vector<size_t> collectionSizes{1000, 10000, 100000, 1000000};
 
     auto observations = Benchmarks::ObservationList();
     // Populate the collections
-    for (const auto& collectionSize: collectionSizes) {
+    for (const auto &collectionSize : collectionSizes) {
         std::cout << "Populating collection with " << collectionSize << " templates" << std::endl;
 
         // We are using the DatabaseManagementSystem::NONE so the collection will not persist
@@ -111,7 +105,8 @@ int main() {
         }
 
         // Enroll the templates
-        // Note: we are enrolling collectionSize - 1 because we will add the matchTemplate at the end.
+        // Note: we are enrolling collectionSize - 1 because we will add the matchTemplate at the
+        // end.
         for (size_t i = 0; i < collectionSize; ++i) {
 
             const auto &data = dataVec[i % dataVec.size()];
@@ -156,10 +151,8 @@ int main() {
 
         std::string benchmarkName = "1 to N identification search";
         std::string benchmarkSubType = "(" + std::to_string(collectionSize) + ") TFV7";
-        observations.emplace_back(
-            sdk.getVersion(), sdkFactory.isGpuEnabled(),
-            benchmarkName, benchmarkSubType,
-            parameters, times, 0.0f);
+        observations.emplace_back(sdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                                  benchmarkSubType, parameters, times, 0.0f);
 
         // Now run batch identification
         std::vector<Faceprint> probeFaceprints;
@@ -181,10 +174,8 @@ int main() {
         }
 
         benchmarkName = "1 to N batch identification search";
-        observations.emplace_back(
-            sdk.getVersion(), sdkFactory.isGpuEnabled(),
-            benchmarkName, benchmarkSubType,
-            parameters, times, 0.0f);
+        observations.emplace_back(sdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName,
+                                  benchmarkSubType, parameters, times, 0.0f);
     }
 
     auto csvWriter = Benchmarks::ObservationCSVWriter("benchmarks.csv");
@@ -192,20 +183,3 @@ int main() {
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

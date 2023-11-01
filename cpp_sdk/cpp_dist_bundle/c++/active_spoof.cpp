@@ -1,10 +1,11 @@
 // Sample code: Demonstrates how to run active spoof.
 // Active spoof works by analyzing the way a persons face changes as they move closer to a camera.
-// The active spoof solution therefore required two images and expects the face a certain distance from the camera.
-// In the far image, the face should be about 18 inches from the camera, while in the near image,
-// the face should be 7-8 inches from the camera.
+// The active spoof solution therefore required two images and expects the face a certain distance
+// from the camera. In the far image, the face should be about 18 inches from the camera, while in
+// the near image, the face should be 7-8 inches from the camera.
 
-// In this sample app, we run spoof detection using both a real image pair and spoof attempt image pair.
+// In this sample app, we run spoof detection using both a real image pair and spoof attempt image
+// pair.
 
 #include "tf_sdk.h"
 #include <iostream>
@@ -15,10 +16,11 @@ using namespace Trueface;
 
 int main() {
     // Start by specifying the configuration options to be used.
-    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
-    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    // Can choose to use default configuration options if preferred by calling the default SDK
+    // constructor. Learn more about configuration options here:
+    // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
-// The face recognition model to use. TFV5_2 balances accuracy and speed.
+    // The face recognition model to use. TFV5_2 balances accuracy and speed.
     options.frModel = FacialRecognitionModel::TFV5_2;
     // The object detection model to use.
     options.objModel = ObjectDetectionModel::ACCURATE;
@@ -42,17 +44,19 @@ int main() {
     options.encryptDatabase.key = "TODO: Your encryption key here";
 
     // Initialize module in SDK constructor.
-    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
-    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
-    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
-    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they
+    // are first used (on first inference). This is done so that modules which are not used do not
+    // load their models into memory, and hence do not utilize memory. The downside to this is that
+    // the first inference will be much slower as the model file is being decrypted and loaded into
+    // memory. Therefore, if you know you will use a module, choose to pre-initialize the module,
+    // which reads the model file into memory in the SDK constructor.
     InitializeModule initializeModule;
     initializeModule.activeSpoof = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
-    // We will disable GPU inference, but you can easily enable it by modifying the following options
-    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    // We will disable GPU inference, but you can easily enable it by modifying the following
+    // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
     options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
     options.gpuOptions.deviceIndex = 0;
 
@@ -70,9 +74,9 @@ int main() {
     SDK tfSdk(options);
     // TODO: Either input your token in the CMakeLists.txt file, or insert it below directly
     bool valid = tfSdk.setLicense(TRUEFACE_TOKEN);
-    
+
     if (!valid) {
-        std::cout<<"Error: the provided license is invalid."<<std::endl;
+        std::cout << "Error: the provided license is invalid." << std::endl;
         return 1;
     }
 
@@ -130,11 +134,13 @@ int main() {
         Faceprint farFaceprint;
         ret = tfSdk.getFaceFeatureVector(img, fb, farFaceprint);
         if (ret != ErrorCode::NO_ERROR) {
-            std::cout << "There was an error generating the faceprint for real face, far shot!" << std::endl;
+            std::cout << "There was an error generating the faceprint for real face, far shot!"
+                      << std::endl;
             return 1;
         }
 
-        // Now at this point we can repeat all the above steps, but now for the near shot face image.
+        // Now at this point we can repeat all the above steps, but now for the near shot face
+        // image.
 
         errorCode = tfSdk.preprocessImage("../../images/near_shot_real_person.jpg", img);
         if (errorCode != ErrorCode::NO_ERROR) {
@@ -153,7 +159,9 @@ int main() {
             return 1;
         }
 
-        ret = tfSdk.checkSpoofImageFaceSize(img, fb,ActiveSpoofStage::NEAR); // Be sure to specify ActiveSpoofStage::NEAR this time.
+        ret = tfSdk.checkSpoofImageFaceSize(
+            img, fb,
+            ActiveSpoofStage::NEAR); // Be sure to specify ActiveSpoofStage::NEAR this time.
         if (ret == ErrorCode::FACE_TOO_FAR) {
             std::cout << "Real face, near shot: Face too far!" << std::endl;
             return 1;
@@ -170,7 +178,8 @@ int main() {
         Landmarks nearFaceLandmarks{};
         ret = tfSdk.getFaceLandmarks(img, fb, nearFaceLandmarks);
         if (ret != ErrorCode::NO_ERROR) {
-            std::cout << "Unable to compute facial landmarks for real face, near shot!" << std::endl;
+            std::cout << "Unable to compute facial landmarks for real face, near shot!"
+                      << std::endl;
             std::cout << errorCode << std::endl;
             return 1;
         }
@@ -178,7 +187,8 @@ int main() {
         Faceprint nearFaceprint;
         ret = tfSdk.getFaceFeatureVector(img, fb, nearFaceprint);
         if (ret != ErrorCode::NO_ERROR) {
-            std::cout << "There was an error generating the faceprint for real face, near shot!" << std::endl;
+            std::cout << "There was an error generating the faceprint for real face, near shot!"
+                      << std::endl;
             std::cout << errorCode << std::endl;
             return 1;
         }
@@ -199,18 +209,24 @@ int main() {
         if (spoofLabel == SpoofLabel::FAKE) {
             std::cout << "SPOOF RESULTS: Spoof attempt detected!\n" << std::endl;
         } else {
-            // Finally, as a last step, we can compare the two face recognition templates to ensure they are the same identity
+            // Finally, as a last step, we can compare the two face recognition templates to ensure
+            // they are the same identity
             float matchProb, simScore;
             SDK::getSimilarity(nearFaceprint, farFaceprint, matchProb, simScore);
             if (simScore < 0.3) {
-                std::cout << "SPOOF RESULTS: Image is real, but the images are not of the same identity!\n" << std::endl;
+                std::cout << "SPOOF RESULTS: Image is real, but the images are not of the same "
+                             "identity!\n"
+                          << std::endl;
             } else {
-                std::cout << "SPOOF RESULTS: Image is real, and both images are of the same identity\n" << std::endl;
+                std::cout
+                    << "SPOOF RESULTS: Image is real, and both images are of the same identity\n"
+                    << std::endl;
             }
         }
     }
 
-    // Now for the sake of the demo, let's repeat the entire process, but this time with two spoof attempt images
+    // Now for the sake of the demo, let's repeat the entire process, but this time with two spoof
+    // attempt images
 
     {
         // Load the far image. The face must be about 18 inches from the camera.
@@ -265,12 +281,14 @@ int main() {
         Faceprint farFaceprint;
         ret = tfSdk.getFaceFeatureVector(img, fb, farFaceprint);
         if (ret != ErrorCode::NO_ERROR) {
-            std::cout << "There was an error generating the faceprint for fake face, far shot!" << std::endl;
+            std::cout << "There was an error generating the faceprint for fake face, far shot!"
+                      << std::endl;
             std::cout << errorCode << std::endl;
             return 1;
         }
 
-        // Now at this point we can repeat all the above steps, but now for the near shot face image.
+        // Now at this point we can repeat all the above steps, but now for the near shot face
+        // image.
         errorCode = tfSdk.preprocessImage("../../images/near_shot_fake_person.jpg", img);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << errorCode << std::endl;
@@ -288,7 +306,9 @@ int main() {
             return 1;
         }
 
-        ret = tfSdk.checkSpoofImageFaceSize(img, fb, ActiveSpoofStage::NEAR); // Be sure to specify ActiveSpoofStage::NEAR this time.
+        ret = tfSdk.checkSpoofImageFaceSize(
+            img, fb,
+            ActiveSpoofStage::NEAR); // Be sure to specify ActiveSpoofStage::NEAR this time.
 
         if (ret == ErrorCode::FACE_TOO_FAR) {
             std::cout << "Fake face, near shot: Face too far!" << std::endl;
@@ -306,7 +326,8 @@ int main() {
         Landmarks nearFaceLandmarks{};
         ret = tfSdk.getFaceLandmarks(img, fb, nearFaceLandmarks);
         if (ret != ErrorCode::NO_ERROR) {
-            std::cout << "Unable to compute facial landmarks for fake face, near shot!" << std::endl;
+            std::cout << "Unable to compute facial landmarks for fake face, near shot!"
+                      << std::endl;
             std::cout << errorCode << std::endl;
             return 1;
         }
@@ -314,7 +335,8 @@ int main() {
         Faceprint nearFaceprint;
         ret = tfSdk.getFaceFeatureVector(img, fb, nearFaceprint);
         if (ret != ErrorCode::NO_ERROR) {
-            std::cout << "There was an error generating the faceprint for fake face, near shot!" << std::endl;
+            std::cout << "There was an error generating the faceprint for fake face, near shot!"
+                      << std::endl;
             std::cout << errorCode << std::endl;
             return 1;
         }
@@ -335,13 +357,18 @@ int main() {
         if (spoofLabel == SpoofLabel::FAKE) {
             std::cout << "SPOOF RESULTS: Spoof attempt detected!\n" << std::endl;
         } else {
-            // Finally, as a last step, we can compare the two face recognition templates to ensure they are the same identity
+            // Finally, as a last step, we can compare the two face recognition templates to ensure
+            // they are the same identity
             float matchProb, simScore;
             SDK::getSimilarity(nearFaceprint, farFaceprint, matchProb, simScore);
             if (simScore < 0.3) {
-                std::cout << "SPOOF RESULTS: Image is real, but the images are not of the same identity!\n" << std::endl;
+                std::cout << "SPOOF RESULTS: Image is real, but the images are not of the same "
+                             "identity!\n"
+                          << std::endl;
             } else {
-                std::cout << "SPOOF RESULTS: Image is real, and both images are of the same identity\n" << std::endl;
+                std::cout
+                    << "SPOOF RESULTS: Image is real, and both images are of the same identity\n"
+                    << std::endl;
             }
         }
     }

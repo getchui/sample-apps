@@ -3,7 +3,6 @@
 // This sample demonstrates how to use the detectBlink function. First, an image is loaded.
 // Next, the blink scores are computed.
 
-
 #include "tf_sdk.h"
 #include <iostream>
 
@@ -11,10 +10,11 @@ using namespace Trueface;
 
 int main() {
     // Start by specifying the configuration options to be used.
-    // Can choose to use default configuration options if preferred by calling the default SDK constructor.
-    // Learn more about configuration options here: https://reference.trueface.ai/cpp/dev/latest/usage/general.html
+    // Can choose to use default configuration options if preferred by calling the default SDK
+    // constructor. Learn more about configuration options here:
+    // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
-// The face recognition model to use. TFV5_2 balances accuracy and speed.
+    // The face recognition model to use. TFV5_2 balances accuracy and speed.
     options.frModel = FacialRecognitionModel::TFV5_2;
     // The object detection model to use.
     options.objModel = ObjectDetectionModel::ACCURATE;
@@ -38,17 +38,19 @@ int main() {
     options.encryptDatabase.key = "TODO: Your encryption key here";
 
     // Initialize module in SDK constructor.
-    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they are first used (on first inference).
-    // This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
-    // The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
-    // Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
+    // By default, the SDK uses lazy initialization, meaning modules are only initialized when they
+    // are first used (on first inference). This is done so that modules which are not used do not
+    // load their models into memory, and hence do not utilize memory. The downside to this is that
+    // the first inference will be much slower as the model file is being decrypted and loaded into
+    // memory. Therefore, if you know you will use a module, choose to pre-initialize the module,
+    // which reads the model file into memory in the SDK constructor.
     InitializeModule initializeModule;
     initializeModule.blinkDetector = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
-    // We will disable GPU inference, but you can easily enable it by modifying the following options
-    // Note, you may require a specific GPU enabled token in order to enable GPU inference.
+    // We will disable GPU inference, but you can easily enable it by modifying the following
+    // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
     options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
     options.gpuOptions.deviceIndex = 0;
 
@@ -101,7 +103,8 @@ int main() {
     BlinkState blinkState;
     errorCode = tfSdk.detectBlink(img, fb, blinkState);
     if (errorCode == ErrorCode::EXTREME_FACE_ANGLE) {
-        std::cout << "The face angle is too extreme! Please ensure face image is forward facing!" << std::endl;
+        std::cout << "The face angle is too extreme! Please ensure face image is forward facing!"
+                  << std::endl;
         return 1;
     } else if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute blink!" << std::endl;
@@ -109,8 +112,9 @@ int main() {
         return 1;
     }
 
-    // At this point, we can use the members of BlinkState along with our own threshold to determine if the eyes are open or closed
-    // Alternatively, we can use the pre-set thresholds by consulting BlinkState.isLeftEyeClosed and BlinkState.isRightEyeClosed
+    // At this point, we can use the members of BlinkState along with our own threshold to determine
+    // if the eyes are open or closed Alternatively, we can use the pre-set thresholds by consulting
+    // BlinkState.isLeftEyeClosed and BlinkState.isRightEyeClosed
 
     std::cout << "Left eye score: " << blinkState.leftEyeScore << std::endl;
     std::cout << "Right eye score: " << blinkState.rightEyeScore << std::endl;
@@ -146,7 +150,8 @@ int main() {
     // Compute if the detected face has eyes open or closed
     errorCode = tfSdk.detectBlink(img, fb, blinkState);
     if (errorCode == ErrorCode::EXTREME_FACE_ANGLE) {
-        std::cout << "The face angle is too extreme! Please ensure face image is forward facing!" << std::endl;
+        std::cout << "The face angle is too extreme! Please ensure face image is forward facing!"
+                  << std::endl;
         return 1;
     } else if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute blink!" << std::endl;
@@ -154,8 +159,9 @@ int main() {
         return 1;
     }
 
-    // At this point, we can use the members of BlinkState along with our own threshold to determine if the eyes are open or closed
-    // Alternatively, we can use the pre-set thresholds by consulting BlinkState.isLeftEyeClosed and BlinkState.isRightEyeClosed
+    // At this point, we can use the members of BlinkState along with our own threshold to determine
+    // if the eyes are open or closed Alternatively, we can use the pre-set thresholds by consulting
+    // BlinkState.isLeftEyeClosed and BlinkState.isRightEyeClosed
 
     std::cout << "Left eye score: " << blinkState.leftEyeScore << std::endl;
     std::cout << "Right eye score: " << blinkState.rightEyeScore << std::endl;

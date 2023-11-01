@@ -13,7 +13,8 @@ using namespace Trueface::Benchmarks;
 
 const std::string benchmarkName{"Head orientation detection (yaw, pitch, roll)"};
 
-void benchmarkHeadOrientation(const SDKFactory& sdkFactory, Parameters params, ObservationList& observations) {
+void benchmarkHeadOrientation(const SDKFactory &sdkFactory, Parameters params,
+                              ObservationList &observations) {
     // baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
@@ -53,7 +54,8 @@ void benchmarkHeadOrientation(const SDKFactory& sdkFactory, Parameters params, O
 
     if (params.doWarmup) {
         for (int i = 0; i < params.numWarmup; ++i) {
-            errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotationVec, translationVec);
+            errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw,
+                                                      pitch, roll, rotationVec, translationVec);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to run head orientation method" << std::endl;
                 return;
@@ -66,11 +68,11 @@ void benchmarkHeadOrientation(const SDKFactory& sdkFactory, Parameters params, O
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
-        tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll, rotationVec, translationVec);
+        tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll,
+                                      rotationVec, translationVec);
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
-    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(),
-                              benchmarkName, "", params, times,
-                              memoryTracker.getDifferenceFromBaseline());
+    observations.emplace_back(tfSdk.getVersion(), sdkFactory.isGpuEnabled(), benchmarkName, "",
+                              params, times, memoryTracker.getDifferenceFromBaseline());
 }
