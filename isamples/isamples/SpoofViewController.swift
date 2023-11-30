@@ -88,7 +88,7 @@ class SpoofViewController: FaceDetectionViewController {
         uninitializeModule.activeSpoof = true
         uninitializeModule.passiveSpoof = true
         uninitializeModule.maskDetector = true
-        uninitializeModule.liveness = true
+        uninitializeModule.blinkDetector = true
         uninitializeModule.landmarkDetector = true
         self.sdk.uninitializeModule(uninitializeModule)
     }

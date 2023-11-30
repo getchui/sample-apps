@@ -21,7 +21,5 @@
 			</array>
 		</dict>
 	</dict>
-    <key>NSCameraUsageDescription</key>
-    <string>TestFace requires access to your phone’s camera to verify user info</string>
 </dict>
 </plist>

@@ -45,10 +45,15 @@ class SDKManager {
     // Method to configure the SDK options.
     private func configureSDKOptions() {
         options = TFConfigurationOptions()
-        options.smallestFaceHeight = 120
-        options.mobileThreads = 8
+        // options.smallestFaceHeight = 120
+        // options.mobileThreads = 8
+        options.useCoreML = true
         options.initializeModule.faceRecognizer = true
-        options.frModel = LITE_V2
+        options.initializeModule.faceDetector = true
+        options.initializeModule.objectDetector = true
+        options.objModel = OBJECT_FAST
+        options.fdModel = FACE_FAST
+        options.frModel = TFV5_2
         options.modelsPath = Bundle.main.resourcePath
         options.dbms = SQLITE
     }

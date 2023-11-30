@@ -20,3 +20,6 @@ download_models
 *.db
 libmxnet.so
 .env
+
+*.v2
+*.xcframework

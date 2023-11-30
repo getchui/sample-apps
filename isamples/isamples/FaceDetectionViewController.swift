@@ -9,6 +9,98 @@ import Foundation
 import UIKit
 import AVFoundation
 
+func stringFromTFObjectLabel(_ label: TFObjectLabel) -> String {
+    let labelStrings = [
+        "person",
+        "bicycle",
+        "car",
+        "motorcycle",
+        "airplane",
+        "bus",
+        "train",
+        "truck",
+        "boat",
+        "traffic light",
+        "fire hydrant",
+        "stop sign",
+        "parking meter",
+        "bench",
+        "bird",
+        "cat",
+        "dog",
+        "horse",
+        "sheep",
+        "cow",
+        "elephant",
+        "bear",
+        "zebra",
+        "giraffe",
+        "backpack",
+        "umbrella",
+        "handbag",
+        "tie",
+        "suitcase",
+        "frisbee",
+        "skis",
+        "snowboard",
+        "sports ball",
+        "kite",
+        "baseball bat",
+        "baseball glove",
+        "skateboard",
+        "surfboard",
+        "tennis racket",
+        "bottle",
+        "wine glass",
+        "cup",
+        "fork",
+        "knife",
+        "spoon",
+        "bowl",
+        "banana",
+        "apple",
+        "sandwich",
+        "orange",
+        "broccoli",
+        "carrot",
+        "hot dog",
+        "pizza",
+        "donut",
+        "cake",
+        "chair",
+        "couch",
+        "potted plant",
+        "bed",
+        "dining table",
+        "toilet",
+        "tv",
+        "laptop",
+        "mouse",
+        "remote",
+        "keyboard",
+        "cell phone",
+        "microwave",
+        "oven",
+        "toaster",
+        "sink",
+        "refrigerator",
+        "book",
+        "clock",
+        "vase",
+        "scissors",
+        "teddy bear",
+        "hair drier",
+        "toothbrush"
+    ]
+    
+    let index = label.rawValue
+    if index >= 0 && index < labelStrings.count {
+        return labelStrings[Int(index)]
+    } else {
+        return " "
+    }
+}
+
 // FaceDetectionViewController is a UIViewController that initializes and manages the AVCaptureSession
 // for real-time face detection using the SDK.
 class FaceDetectionViewController: UIViewController {
@@ -25,9 +117,18 @@ class FaceDetectionViewController: UIViewController {
     var faceRectLayer: CAShapeLayer?
     var frame = UIImage()
     
+    // hack in to add object detection
+    var objectLayers: [CAShapeLayer] = []
+    let faceDetectionSwitch = UISwitch()
+    let faceDetectionLabel = UILabel()
+    let objectDetectionSwitch = UISwitch()
+    let objectDetectionLabel = UILabel()
+
     // @IBOutlet weak var previewView: UIView!
     var previewView: UIView!
     
+    var cameraPosition: AVCaptureDevice.Position = .back
+
     // Deinitializer to stop the camera.
     // import for navigation and to avoid crashes
     deinit {
@@ -42,6 +143,35 @@ class FaceDetectionViewController: UIViewController {
         super.viewDidLoad()
         initSDK()
         setupAVCapture()
+        
+        setupSwitch(faceDetectionSwitch, label: faceDetectionLabel, text: "Face Detection", yPos: 100)
+        setupSwitch(objectDetectionSwitch, label: objectDetectionLabel, text: "Object Detection", yPos: 140)
+    }
+    
+    func setupSwitch(_ switchWidget: UISwitch, label: UILabel, text: String, yPos: CGFloat) {
+        // Setup label
+        label.frame = CGRect(x: 20, y: yPos, width: 150, height: 31)
+        label.text = text
+        label.textColor = .black
+        label.shadowColor = .lightGray
+        label.shadowOffset = CGSize(width: 1, height: 1)
+        view.addSubview(label)
+
+        // Setup switch
+        switchWidget.frame = CGRect(x: label.frame.maxX + 10, y: yPos, width: 0, height: 0)
+        switchWidget.addTarget(self, action: #selector(switchChanged), for: .valueChanged)
+        view.addSubview(switchWidget)
+    }
+    
+    @objc func switchChanged(_ sender: UISwitch) {
+        if !sender.isOn {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                for layer in self.objectLayers {
+                    layer.removeFromSuperlayer()
+                }
+                self.objectLayers.removeAll()
+            }
+        }
     }
     
     // MARK: - SDK Initialization
@@ -64,7 +194,7 @@ class FaceDetectionViewController: UIViewController {
         guard let device = AVCaptureDevice
             .default(.builtInWideAngleCamera,
                      for: .video,
-                     position: .front) else {
+                     position: cameraPosition) else {
             return
         }
         captureDevice = device
@@ -202,13 +332,10 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             case .portrait:
                 connection.videoOrientation = .portrait
             case .portraitUpsideDown:
-                // connection.videoOrientation = .portraitUpsideDown
                 connection.videoOrientation = .portrait
             case .landscapeLeft:
-                // connection.videoOrientation = .landscapeRight
                 connection.videoOrientation = .portrait
             case .landscapeRight:
-                // connection.videoOrientation = .landscapeLeft
                 connection.videoOrientation = .portrait
             default:
                 break
@@ -225,7 +352,25 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             let width = CVPixelBufferGetWidth(imageBuffer)
             
             guard let tfimage = sdk.preprocessImage(self.frame) else { return }
-            let face = sdk.detectLargestFace(tfimage)
+            
+            var face: TFFaceBoxAndLandmarks?
+            var objects: [Any]?
+            
+            var faceDetectionEnabled = false
+            var objectDetectionEnabled = false
+            // Check the switch states on the main thread
+            DispatchQueue.main.sync {
+                faceDetectionEnabled = faceDetectionSwitch.isOn
+                objectDetectionEnabled = objectDetectionSwitch.isOn
+            }
+
+            if faceDetectionEnabled {
+                face = sdk.detectLargestFace(tfimage)
+            }
+
+            if objectDetectionEnabled {
+                objects = sdk.detectObjects(tfimage)
+            }
             
             DispatchQueue.main.async {
                 self.previewView.subviews.forEach({ $0.removeFromSuperview() })
@@ -236,6 +381,12 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             if face != nil {
                 DispatchQueue.main.async {
                     self.processFace(tfimage: tfimage, face: face!, width: width, height: height)
+                }
+            }
+            
+            if objects != nil {
+                DispatchQueue.main.async {
+                    self.processObjects(tfimage: tfimage, objects: objects!, width: width, height: height)
                 }
             }
             
@@ -251,24 +402,76 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         }
     }
     
+    // Process the detected objects and draw a rectangle around it.
+    func processObjects(tfimage: TFImage, objects: [Any], width: Int, height: Int) {
+        for layer in objectLayers {
+            layer.removeFromSuperlayer()
+        }
+        objectLayers.removeAll()
+        
+        for item in objects {
+            if let boundingBox = item as? TFBoundingBox {
+                if boundingBox.label == person {
+                    continue
+                }
+                let adjustedObjectRect = transformObjectRectToLayerCoordinates(object: boundingBox, layerWidth: width, layerHeight: height, usingFrontCamera: !isUsingBackCamera())
+                let objectName = stringFromTFObjectLabel(boundingBox.label)
+                let objectLayer = drawRectOnObject(rect: adjustedObjectRect, label: " \(objectName)")
+                objectLayers.append(objectLayer)
+            }
+        }
+    }
+
     // Process the detected face and draw a rectangle around it.
     func processFace(tfimage: TFImage, face: TFFaceBoxAndLandmarks, width: Int, height: Int) {
-        let adjustedFaceRect = transformRectToLayerCoordinates(face: face, width: width, height: height)
+        // let adjustedFaceRect = backCameraTransformRectToLayerCoordinates(face: face, width: width, height: height)
+        let adjustedFaceRect = transformFaceRectToLayerCoordinates(face: face, layerWidth: width, layerHeight: height, usingFrontCamera: !isUsingBackCamera())
         drawRectOnFace(rect: adjustedFaceRect)
     }
 
-    // Transform the detected face rectangle coordinates to layer coordinates.
-    func transformRectToLayerCoordinates(face: TFFaceBoxAndLandmarks, width: Int, height: Int) -> CGRect {
-        let previewLayerBounds = previewLayer.bounds
-        
-        let x = (1 - CGFloat(face.topLeft.x) / CGFloat(width)) * previewLayerBounds.width
-        let y = CGFloat(face.topLeft.y) * previewLayerBounds.height / CGFloat(height)
-        let rectWidth = (CGFloat(face.bottomRight.x) - CGFloat(face.topLeft.x)) * previewLayerBounds.width / CGFloat(width)
-        let rectHeight = (CGFloat(face.bottomRight.y) - CGFloat(face.topLeft.y)) * previewLayerBounds.height / CGFloat(height)
-        
-        let adjustedFaceRect = CGRect(x: x - rectWidth, y: y, width: rectWidth, height: rectHeight)
-        return adjustedFaceRect
+    // Check if the current camera is the back camera
+    func isUsingBackCamera() -> Bool {
+        return captureDevice.position == .back
     }
+    
+    // Transform the detected object rectangle coordinates to layer coordinates.
+    func transformObjectRectToLayerCoordinates(object: TFBoundingBox, layerWidth: Int, layerHeight: Int, usingFrontCamera: Bool) -> CGRect {
+        let previewLayerBounds = previewLayer.bounds
+        let scaleX = previewLayerBounds.width / CGFloat(layerWidth)
+        let scaleY = previewLayerBounds.height / CGFloat(layerHeight)
+        
+        var x = CGFloat(object.topLeft.x) * scaleX
+        let y = CGFloat(object.topLeft.y) * scaleY
+        let rectWidth = CGFloat(object.width) * scaleX
+        let rectHeight = CGFloat(object.height) * scaleY
+        
+        // Adjust the x coordinate for the front camera
+        if usingFrontCamera {
+            x = (1 - CGFloat(object.topLeft.x) / CGFloat(layerWidth)) * previewLayerBounds.width - rectWidth
+        }
+        
+        return CGRect(x: x, y: y, width: rectWidth, height: rectHeight)
+    }
+    
+    // Transform the detected face rectangle coordinates to layer coordinates.
+    func transformFaceRectToLayerCoordinates(face: TFFaceBoxAndLandmarks, layerWidth: Int, layerHeight: Int, usingFrontCamera: Bool) -> CGRect {
+        let previewLayerBounds = previewLayer.bounds
+        let scaleX = previewLayerBounds.width / CGFloat(layerWidth)
+        let scaleY = previewLayerBounds.height / CGFloat(layerHeight)
+        
+        var x = CGFloat(face.topLeft.x) * scaleX
+        let y = CGFloat(face.topLeft.y) * scaleY
+        let rectWidth = (CGFloat(face.bottomRight.x) - CGFloat(face.topLeft.x)) * scaleX
+        let rectHeight = (CGFloat(face.bottomRight.y) - CGFloat(face.topLeft.y)) * scaleY
+        
+        // Adjust the x coordinate for the front camera
+        if usingFrontCamera {
+            x = (1 - CGFloat(face.topLeft.x) / CGFloat(layerWidth)) * previewLayerBounds.width - rectWidth
+        }
+        
+        return CGRect(x: x, y: y, width: rectWidth, height: rectHeight)
+    }
+
 
     // Convert CIImage to UIImage.
     func convert(cmage: CIImage) -> UIImage {
@@ -290,6 +493,30 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         
         faceRectLayer?.path = UIBezierPath(rect: rect).cgPath
         faceRectLayer?.frame = self.previewView.bounds
+    }
+
+    // Draw a red rectangle on the detected object, add a label, and return the layer.
+    func drawRectOnObject(rect: CGRect, label: String) -> CAShapeLayer {
+        let objectLayer = CAShapeLayer()
+        objectLayer.strokeColor = UIColor.red.cgColor
+        objectLayer.lineWidth = 3.0
+        objectLayer.fillColor = UIColor.clear.cgColor
+        objectLayer.path = UIBezierPath(rect: rect).cgPath
+        objectLayer.frame = self.previewView.bounds
+
+        // Create a text layer
+        let textLayer = CATextLayer()
+        textLayer.string = label
+        textLayer.foregroundColor = UIColor.white.cgColor
+        textLayer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        textLayer.alignmentMode = .left
+        textLayer.fontSize = 14
+        textLayer.frame = CGRect(x: rect.origin.x, y: rect.origin.y - 20, width: rect.width, height: 24)
+
+        objectLayer.addSublayer(textLayer)
+        self.previewView.layer.addSublayer(objectLayer)
+
+        return objectLayer
     }
     
 }
