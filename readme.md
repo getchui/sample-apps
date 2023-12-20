@@ -1,7 +1,4 @@
-![Trueface_red](https://github.com/getchui/sample-apps/assets/17056751/b8c0c234-54a6-4ca4-8c15-d737c1324536)
-<img src="https://github.com/getchui/sample-apps/assets/17056751/b8c0c234-54a6-4ca4-8c15-d737c1324536" alt="Trueface red" width="200"/>
-
-
+<img src="https://github.com/getchui/sample-apps/assets/17056751/b8c0c234-54a6-4ca4-8c15-d737c1324536" alt="Trueface red" width="400"/>
 
 # Trueface Sample Apps and Tutorials
 
