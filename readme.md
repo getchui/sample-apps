@@ -1,4 +1,4 @@
-[![alt text]([https://i.ibb.co/dJz6kF6/trueface-logo.png](https://github.com/getchui/sample-apps/assets/17056751/b72f9c35-fc79-44f3-b49a-9d1f0ffd94aa))](https://www.trueface.ai/)
+![Trueface_red](https://github.com/getchui/sample-apps/assets/17056751/b8c0c234-54a6-4ca4-8c15-d737c1324536)
 
 # Trueface Sample Apps and Tutorials
 
