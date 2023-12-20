@@ -1,4 +1,5 @@
-[![alt text](https://i.ibb.co/dJz6kF6/trueface-logo.png)](https://www.trueface.ai/)
+[![alt text]([https://i.ibb.co/dJz6kF6/trueface-logo.png](https://github.com/getchui/sample-apps/assets/17056751/b72f9c35-fc79-44f3-b49a-9d1f0ffd94aa))](https://www.trueface.ai/)
+
 # Trueface Sample Apps and Tutorials
 
 For documentation, please visit https://docs.trueface.ai/
