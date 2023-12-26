@@ -20,8 +20,8 @@ std::string getModelName(FacialRecognitionModel model) {
         return "TFV6";
     } else if (model == FacialRecognitionModel::TFV7) {
         return "TFV7";
-    } else if (model == FacialRecognitionModel::LITE) {
-        return "LITE";
+    } else if (model == FacialRecognitionModel::LITE_V3) {
+        return "LITE_V3";
     } else if (model == FacialRecognitionModel::LITE_V2) {
         return "LITE V2";
     } else {

@@ -68,12 +68,9 @@ int main() {
     Benchmarks::Parameters batchBenchmarkParams{warmup, numWarmup, 1, 40 * multFactor};
     for (auto currentBatchSize : std::vector<unsigned int>{1, batchSize}) {
         batchBenchmarkParams.batchSize = currentBatchSize;
-        if (!gpuOptions.enableGPU) {
-            // Trueface::SDK::getFaceFeatureVectors is not supported by the LITE model.
-            benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE, batchBenchmarkParams,
-                                     observations);
-        }
         benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE_V2, batchBenchmarkParams,
+                                 observations);
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE_V3, batchBenchmarkParams,
                                  observations);
         benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV5_2, batchBenchmarkParams,
                                  observations);
