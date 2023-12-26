@@ -85,11 +85,8 @@ def main() -> None:
         object_detection.benchmark(gpu_options, object_detection_model, parameters, observations)
 
     parameters.num_iterations = 200
-    if gpu_options.enable_GPU is False:
-        # get_face_feature_vectors is not supported by the LITE model
-        face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.LITE, gpu_options, parameters, observations)
-
     face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.LITE_V2, gpu_options, parameters, observations)
+    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.LITE_V3, gpu_options, parameters, observations)
 
     parameters.num_iterations = 40 * mult_factor
     face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters, observations)
