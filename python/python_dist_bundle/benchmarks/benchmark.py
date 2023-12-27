@@ -93,15 +93,16 @@ def main() -> None:
     face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters, observations)
     face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters, observations)
     # Benchmarks with batching.
-    # On CPU, should be the same speed as a batch size of 1.
-    # On GPU, will increase the throughput.
-    parameters.batch_size = batch_size
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters, observations)
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters, observations)
-    face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters, observations)
+    # Only run for GPU inference
+    # CPU inference does not support batching, so will provide no speedup
+    if gpu_options.enable_GPU:
+        parameters.batch_size = batch_size
+        face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV5_2, gpu_options, parameters, observations)
+        face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV6, gpu_options, parameters, observations)
+        face_recognition.benchmark(tfsdk.FACIALRECOGNITIONMODEL.TFV7, gpu_options, parameters, observations)
 
-    parameters.num_iterations = 100 * mult_factor
-    mask_detection.benchmark(gpu_options, parameters, observations)
+        parameters.num_iterations = 100 * mult_factor
+        mask_detection.benchmark(gpu_options, parameters, observations)
 
     ObservationCSVWriter('benchmarks.csv').write(observations)
 
