@@ -52,6 +52,10 @@ class EnrollViewController: FaceDetectionViewController {
     
     // Enroll the face and associated name when the camera button is tapped
     @objc func cameraButtonTapped() {
+        let tfImage = self.tfImage
+        let face = self.face
+        let faceprint = sdk.getFaceFeatureVector(tfImage, face)
+        
         let alertController = UIAlertController(title: "Enroll Face", message: "Enter the name of the person", preferredStyle: .alert)
         
         alertController.addTextField { (textField) in
@@ -62,12 +66,8 @@ class EnrollViewController: FaceDetectionViewController {
             guard let self = self,
                   let textField = alertController.textFields?.first,
                   let nameOfPerson = textField.text,
-                  !nameOfPerson.isEmpty,
-                  let sdk = self.sdk,
-                  let tfImage = self.tfImage,
-                  let face = self.face else { return }
+                  !nameOfPerson.isEmpty else { return }
             
-            let faceprint = sdk.getFaceFeatureVector(tfImage, face)
             sdk.enrollFaceprint(faceprint, nameOfPerson)
         }
         

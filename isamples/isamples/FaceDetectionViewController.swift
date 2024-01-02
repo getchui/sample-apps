@@ -123,12 +123,12 @@ class FaceDetectionViewController: UIViewController {
     let faceDetectionLabel = UILabel()
     let objectDetectionSwitch = UISwitch()
     let objectDetectionLabel = UILabel()
-
+    
     // @IBOutlet weak var previewView: UIView!
     var previewView: UIView!
     
     var cameraPosition: AVCaptureDevice.Position = .back
-
+    
     // Deinitializer to stop the camera.
     // import for navigation and to avoid crashes
     deinit {
@@ -146,6 +146,23 @@ class FaceDetectionViewController: UIViewController {
         
         setupSwitch(faceDetectionSwitch, label: faceDetectionLabel, text: "Face Detection", yPos: 100)
         setupSwitch(objectDetectionSwitch, label: objectDetectionLabel, text: "Object Detection", yPos: 140)
+        
+        /*
+        // Switch camera
+        let switchCameraLabel = UILabel()
+        switchCameraLabel.frame = CGRect(x: 20, y: 190, width: 150, height: 31)
+        switchCameraLabel.text = "Switch Camera"
+        switchCameraLabel.textColor = .black
+        switchCameraLabel.shadowColor = .lightGray
+        switchCameraLabel.shadowOffset = CGSize(width: 1, height: 1)
+        view.addSubview(switchCameraLabel)
+        
+        // Setup switch
+        let objecstDetectionWidget = UISwitch()
+        objecstDetectionWidget .frame = CGRect(x: switchCameraLabel.frame.maxX + 10, y: 190, width: 0, height: 0)
+        objecstDetectionWidget .addTarget(self, action: #selector(switchChanged), for: .valueChanged)
+        view.addSubview(objecstDetectionWidget)
+        */
     }
     
     func setupSwitch(_ switchWidget: UISwitch, label: UILabel, text: String, yPos: CGFloat) {
@@ -156,13 +173,29 @@ class FaceDetectionViewController: UIViewController {
         label.shadowColor = .lightGray
         label.shadowOffset = CGSize(width: 1, height: 1)
         view.addSubview(label)
-
+        
         // Setup switch
         switchWidget.frame = CGRect(x: label.frame.maxX + 10, y: yPos, width: 0, height: 0)
         switchWidget.addTarget(self, action: #selector(switchChanged), for: .valueChanged)
         view.addSubview(switchWidget)
     }
-    
+
+    /*
+    @objc func switchCameraChanged(_ sender: UISwitch) {
+        if !sender.isOn {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                for layer in self.objectLayers {
+                    layer.removeFromSuperlayer()
+                }
+                self.objectLayers.removeAll()
+            }
+        }
+        cameraPosition = (cameraPosition == .back) ? .front : .back
+        configureCaptureDevice()
+        beginSession()
+    }
+    */
+
     @objc func switchChanged(_ sender: UISwitch) {
         if !sender.isOn {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -303,7 +336,7 @@ class FaceDetectionViewController: UIViewController {
     func pauseCamera() {
         session.stopRunning()
     }
-
+    
     // Resume the AVCaptureSession.
     func resumeCamera() {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -363,11 +396,11 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
                 faceDetectionEnabled = faceDetectionSwitch.isOn
                 objectDetectionEnabled = objectDetectionSwitch.isOn
             }
-
+            
             if faceDetectionEnabled {
                 face = sdk.detectLargestFace(tfimage)
             }
-
+            
             if objectDetectionEnabled {
                 objects = sdk.detectObjects(tfimage)
             }
@@ -421,14 +454,14 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             }
         }
     }
-
+    
     // Process the detected face and draw a rectangle around it.
     func processFace(tfimage: TFImage, face: TFFaceBoxAndLandmarks, width: Int, height: Int) {
         // let adjustedFaceRect = backCameraTransformRectToLayerCoordinates(face: face, width: width, height: height)
         let adjustedFaceRect = transformFaceRectToLayerCoordinates(face: face, layerWidth: width, layerHeight: height, usingFrontCamera: !isUsingBackCamera())
         drawRectOnFace(rect: adjustedFaceRect)
     }
-
+    
     // Check if the current camera is the back camera
     func isUsingBackCamera() -> Bool {
         return captureDevice.position == .back
@@ -471,8 +504,8 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         
         return CGRect(x: x, y: y, width: rectWidth, height: rectHeight)
     }
-
-
+    
+    
     // Convert CIImage to UIImage.
     func convert(cmage: CIImage) -> UIImage {
         let context = CIContext(options: nil)
@@ -494,7 +527,7 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         faceRectLayer?.path = UIBezierPath(rect: rect).cgPath
         faceRectLayer?.frame = self.previewView.bounds
     }
-
+    
     // Draw a red rectangle on the detected object, add a label, and return the layer.
     func drawRectOnObject(rect: CGRect, label: String) -> CAShapeLayer {
         let objectLayer = CAShapeLayer()
@@ -503,7 +536,7 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         objectLayer.fillColor = UIColor.clear.cgColor
         objectLayer.path = UIBezierPath(rect: rect).cgPath
         objectLayer.frame = self.previewView.bounds
-
+        
         // Create a text layer
         let textLayer = CATextLayer()
         textLayer.string = label
@@ -512,10 +545,10 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         textLayer.alignmentMode = .left
         textLayer.fontSize = 14
         textLayer.frame = CGRect(x: rect.origin.x, y: rect.origin.y - 20, width: rect.width, height: 24)
-
+        
         objectLayer.addSublayer(textLayer)
         self.previewView.layer.addSublayer(objectLayer)
-
+        
         return objectLayer
     }
     

@@ -45,8 +45,6 @@ class SDKManager {
     // Method to configure the SDK options.
     private func configureSDKOptions() {
         options = TFConfigurationOptions()
-        // options.smallestFaceHeight = 120
-        // options.mobileThreads = 8
         options.useCoreML = true
         options.initializeModule.faceRecognizer = true
         options.initializeModule.faceDetector = true
