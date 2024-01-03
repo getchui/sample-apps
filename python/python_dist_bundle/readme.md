@@ -91,12 +91,8 @@ Note, `enroll_in_database.py` must be run before you can run `identification_1_n
 - `blur_live_streaming.py` uses OpenCV to grab frames from the webcam then runs face detection. The detected faces are then blurred.
 The annotated video is then displayed in real time.
 
-### Head and Pose Estimation
+### Head Pose Estimation
 - `head_pose_estimation_live_stream.py` uses OpenCV to grab frames from the webcam then draws the head pose axes on the live stream. 
-
-- `body_pose_estimation.py` demonstrates how to draw the human body pose on an input image. 
-
-- `body_pose_live_streaming.py` uses OpenCV to grab frames from the webcam then draws the body pose on the live stream. 
 
 ### Liveness
 - `blink_detection_live_streaming.py` demonstrates the use of our blink detection API.
