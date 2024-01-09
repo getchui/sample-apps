@@ -85,7 +85,7 @@ int main() {
         benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV7, batchBenchmarkParams,
                                  observations);
         benchmarkMaskDetection(sdkFactory, batchBenchmarkParams, observations);
-        benchmarkFaceTemplateQualityEstimation(sdkFactory, batchBenchmarkParams, observations);
+        benchmarkFaceTemplateQualityEstimation(sdkFactory,  {warmup, numWarmup, currentBatchSize, 200 * multFactor}, observations);
     }
 
     Benchmarks::ObservationCSVWriter csv{"benchmarks.csv"};
