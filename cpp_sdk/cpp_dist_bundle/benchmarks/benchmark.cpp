@@ -84,7 +84,7 @@ int main() {
                                  observations);
         benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV7, batchBenchmarkParams,
                                  observations);
-        benchmarkMaskDetection(sdkFactory, batchBenchmarkParams, observations);
+        benchmarkMaskDetection(sdkFactory, {warmup, numWarmup, currentBatchSize, 200 * multFactor}, observations);
         benchmarkFaceTemplateQualityEstimation(sdkFactory,  {warmup, numWarmup, currentBatchSize, 200 * multFactor}, observations);
     }
 
