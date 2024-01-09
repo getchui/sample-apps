@@ -12,6 +12,8 @@ import cv2
 options = tfsdk.ConfigurationOptions()
 # The face recognition model to use. TFV5_2 balances speed and accuracy.
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5_2
+# Use the fast face detection model
+options.fd_model = tfsdk.FACEDETECTIONMODEL.FAST
 # The object detection model to use.
 options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.
