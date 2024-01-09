@@ -46,3 +46,7 @@ void benchmarkFaceImageOrientationDetection(const Trueface::Benchmarks::SDKFacto
 void benchmarkGlassesDetection(const Trueface::Benchmarks::SDKFactory &,
                                Trueface::Benchmarks::Parameters,
                                Trueface::Benchmarks::ObservationList &);
+
+void benchmarkFaceTemplateQualityEstimation(const Trueface::Benchmarks::SDKFactory &,
+                                            Trueface::Benchmarks::Parameters,
+                                            Trueface::Benchmarks::ObservationList &);

@@ -57,6 +57,7 @@ GPUOptions SDKFactory::createGPUOptions(bool enableGPU, unsigned int deviceIndex
     gpuOptions.faceBlurDetectorGPUOptions = gpuModuleOptions;
     gpuOptions.spoofDetectorGPUOptions = gpuModuleOptions;
     gpuOptions.blinkDetectorGPUOptions = gpuModuleOptions;
+    gpuOptions.faceTemplateQualityEstimatorGPUOptions = gpuModuleOptions;
 
     return gpuOptions;
 }
