@@ -12,6 +12,7 @@ import glasses_detection
 import spoof_detection
 import object_detection
 import face_recognition
+import face_template_quality_estimation
 from observation import (Observation, ObservationCSVWriter)
 from typing import List
 from utils import Parameters
@@ -44,6 +45,7 @@ def main() -> None:
     gpu_options.face_blur_detector_GPU_options = gpu_module_options
     gpu_options.spoof_detector_GPU_options = gpu_module_options
     gpu_options.blink_detector_GPU_options = gpu_module_options
+    gpu_options.face_template_quality_estimator_GPU_options = gpu_module_options
 
     print("==========================")
     print("==========================")
@@ -72,6 +74,7 @@ def main() -> None:
     blink_detection.benchmark(gpu_options, parameters, observations)
     mask_detection.benchmark(gpu_options, parameters, observations)
     spoof_detection.benchmark(gpu_options, parameters, observations)
+    face_template_quality_estimation.benchmark(gpu_options, parameters, observations)
 
     parameters.num_iterations = 200 * mult_factor
     face_image_blur_detection.benchmark(gpu_options, parameters, observations)
@@ -103,6 +106,7 @@ def main() -> None:
 
         parameters.num_iterations = 100 * mult_factor
         mask_detection.benchmark(gpu_options, parameters, observations)
+        face_template_quality_estimation.benchmark(gpu_options, parameters, observations)
 
     ObservationCSVWriter('benchmarks.csv').write(observations)
 

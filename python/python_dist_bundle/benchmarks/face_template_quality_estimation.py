@@ -4,14 +4,14 @@ from utils import (Parameters, MemoryHighWaterMarkTracker, Stopwatch, SDKFactory
 import tfsdk
 
 
-_benchmark_name = 'Mask detection'
+_benchmark_name = 'Face template quality estimation'
 
 
 def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observations: List[Observation]) -> None:
     mem_tracker = MemoryHighWaterMarkTracker()
 
     # Initialize the SDK
-    sdk = SDKFactory.createSDK(gpu_options, initialize_modules=['face_detector', 'mask_detector'])
+    sdk = SDKFactory.createSDK(gpu_options, initialize_modules=['face_detector', 'face_template_quality_estimator'])
 
     # Load the image
     ret, img = sdk.preprocess_image('./headshot.jpg')
@@ -32,17 +32,17 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
     chips = parameters.batch_size * [chip]
 
     if parameters.do_warmup:
-        for _ in range(parameters.num_warmup):
-            error_code, mask_labels, mask_scores = sdk.detect_masks(chips)
+        for _ in range(parameters.num_warmup):            
+            error_code, are_good_quality, scores = sdk.estimate_face_template_qualities(chips)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
-                print('Error: Unable to run mask detection')
+                print('Error: Unable to run face template quality estimation')
                 return
 
     # Time the mask detector
     times = []
     for _ in range(parameters.num_iterations):
         stop_watch = Stopwatch()
-        sdk.detect_masks(chips)
+        sdk.estimate_face_template_qualities(chips)
         times.append(stop_watch.elapsedTime())
 
     observations.append(

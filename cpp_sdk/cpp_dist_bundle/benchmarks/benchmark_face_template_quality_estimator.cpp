@@ -44,7 +44,7 @@ void benchmarkFaceTemplateQualityEstimation(const SDKFactory &sdkFactory, Parame
     TFFacechip facechip;
     errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
     if (errorCode != ErrorCode::NO_ERROR) {
-        std::cout << "Error: Unable to extract aligned face for mask detection" << std::endl;
+        std::cout << "Error: Unable to extract aligned face for face template quality estimation" << std::endl;
         return;
     }
 
@@ -60,7 +60,7 @@ void benchmarkFaceTemplateQualityEstimation(const SDKFactory &sdkFactory, Parame
         for (int i = 0; i < params.numWarmup; ++i) {
             errorCode = tfSdk.estimateFaceTemplateQualities(facechips, areQualitiesGood, scores);
             if (errorCode != ErrorCode::NO_ERROR) {
-                std::cout << "Error: Unable to run mask detection" << std::endl;
+                std::cout << "Error: Unable to run face template quality estimation" << std::endl;
                 return;
             }
         }
