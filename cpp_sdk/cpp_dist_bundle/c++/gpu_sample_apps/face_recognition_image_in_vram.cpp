@@ -60,7 +60,7 @@ int main() {
     // Options for enabling GPU
     // We will disable GPU inference, but you can easily enable it by modifying the following
     // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
-    options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
+    options.gpuOptions = true;
     options.gpuOptions.deviceIndex = 0;
 
     GPUModuleOptions moduleOptions;
