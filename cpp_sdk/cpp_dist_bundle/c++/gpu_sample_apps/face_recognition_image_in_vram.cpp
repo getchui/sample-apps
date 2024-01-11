@@ -18,14 +18,18 @@ int main() {
     // constructor. Learn more about configuration options here:
     // https://reference.trueface.ai/cpp/dev/latest/usage/general.html
     ConfigurationOptions options;
+    // For the sake of this sample app, will demonstrate how to set all the configuration options.
+    // Some of them may not be relevant to this sample app.
     // The face recognition model to use. TFV5_2 balances accuracy and speed.
     options.frModel = FacialRecognitionModel::TFV5_2;
-    // The object detection model to use.
-    options.objModel = ObjectDetectionModel::ACCURATE;
+    // The face detection model
+    options.fdModel = FaceDetectionModel::FAST;
     // The face detection filter.
     options.fdFilter = FaceDetectionFilter::BALANCED;
     // Smallest face height in pixels for the face detector.
     options.smallestFaceHeight = 40;
+    // Use a global inference threadpool
+    options.useGlobalInferenceThreadpool = true;
     // The path specifying the directory where the model files have been downloaded
     options.modelsPath = "./";
     auto modelsPath = std::getenv("MODELS_PATH");
@@ -56,19 +60,25 @@ int main() {
     // Options for enabling GPU
     // We will disable GPU inference, but you can easily enable it by modifying the following
     // options Note, you may require a specific GPU enabled token in order to enable GPU inference.
-    options.gpuOptions = true; // Enable GPU inference
+    options.gpuOptions = false; // TODO: Change this to true to enable GPU inference
     options.gpuOptions.deviceIndex = 0;
 
-    GPUModuleOptions gpuOptions;
-    gpuOptions.maxBatchSize = 8;
-    gpuOptions.optBatchSize = 3;
-    gpuOptions.maxWorkspaceSizeMb = 2000;
-    gpuOptions.precision = Precision::FP16;
+    GPUModuleOptions moduleOptions;
+    moduleOptions.maxBatchSize = 4;
+    moduleOptions.optBatchSize = 2;
+    moduleOptions.maxWorkspaceSizeMb = 2000;
+    moduleOptions.precision = Precision::FP16;
 
-    options.gpuOptions.faceRecognizerGPUOptions = gpuOptions;
-    options.gpuOptions.faceDetectorGPUOptions = gpuOptions;
-    options.gpuOptions.maskDetectorGPUOptions = gpuOptions;
-    options.gpuOptions.objectDetectorGPUOptions = gpuOptions;
+    options.gpuOptions.faceRecognizerGPUOptions = moduleOptions;
+    options.gpuOptions.faceLandmarkDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.faceDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.maskDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.objectDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.faceOrientationDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.faceBlurDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.spoofDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.blinkDetectorGPUOptions = moduleOptions;
+    options.gpuOptions.faceTemplateQualityEstimatorGPUOptions = moduleOptions;
 
     SDK tfSdk(options);
 
