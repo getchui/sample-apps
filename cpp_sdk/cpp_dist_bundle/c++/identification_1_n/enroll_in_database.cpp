@@ -145,7 +145,7 @@ int main() {
         if (retcode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error computing the image rotation" << std::endl;
             std::cout << retcode << std::endl;
-            continue;
+            return -1;
         }
 
         // Rotate the image appropriately
@@ -158,7 +158,7 @@ int main() {
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error with the call to detectLargestFace\n";
             std::cout << errorCode << std::endl;
-            continue;
+            return -1;
         }
 
         if (!faceDetected) {
@@ -179,7 +179,7 @@ int main() {
                                          percentImageDark, percentFaceBright);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to run exposure check on the image" << std::endl;
-            continue;
+            return -1;
         }
 
         if (quality != FaceImageQuality::GOOD) {
@@ -193,7 +193,7 @@ int main() {
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "There was an error extracting the aligned face\n";
             std::cout << errorCode << std::endl;
-            continue;
+            return -1;
         }
 
         // Compute the face image blur and ensure it is not too blurry for face recognition
@@ -202,11 +202,26 @@ int main() {
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute image blur\n";
             std::cout << errorCode << std::endl;
-            continue;
+            return -1;
         }
 
         if (quality != FaceImageQuality::GOOD) {
             std::cout << "The face image is too blurry for enrollment, skipping" << std::endl;
+            continue;
+        }
+
+        // Ensure the face chip will generate a good face recognition template
+        bool isTemplateQualityGood;
+        float templateQualityScore;
+        errorCode = tfSdk.estimateFaceTemplateQuality(facechip, isTemplateQualityGood, templateQualityScore);
+        if (errorCode != ErrorCode::NO_ERROR) {
+            std::cout << "Unable to estimate face template quality" << std::endl;
+            std::cout << errorCode << std::endl;
+            return -1;
+        }
+
+        if (!isTemplateQualityGood) {
+            std::cout << "The face chip is not suitable for face recognition template generation." << std::endl;
             continue;
         }
 
@@ -238,13 +253,13 @@ int main() {
         if (std::abs(yawDeg) > 30) {
             std::cout << "Enrollment image has too extreme a yaw: " << yawDeg
                       << " deg. Please choose a higher quality enrollment image." << std::endl;
-            return -1;
+            continue;
         }
 
         if (std::abs(pitchDeg) > 30) {
             std::cout << "Enrollment image has too extreme a pitch: " << pitchDeg
                       << " deg. Please choose a higher quality enrollment image." << std::endl;
-            return -1;
+            continue;
         }
 
         // Finally, ensure the user is not wearing a mask
@@ -259,7 +274,7 @@ int main() {
 
         if (masklabel == MaskLabel::MASK) {
             std::cout << "Please choose an image without a mask for enrollment." << std::endl;
-            return -1;
+            continue;
         }
 
         // Generate the enrollment template
@@ -268,7 +283,7 @@ int main() {
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Error: Unable to generate template\n";
             std::cout << errorCode << std::endl;
-            continue;
+            return -1;
         }
 
         // Enroll the template into the collection
@@ -277,7 +292,7 @@ int main() {
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to enroll template\n";
             std::cout << errorCode << std::endl;
-            continue;
+            return -1;
         }
 
         std::cout << "Success: Enrolled template with UUID: " << UUID << std::endl;
