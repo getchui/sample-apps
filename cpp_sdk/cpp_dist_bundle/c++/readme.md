@@ -50,7 +50,7 @@ If building on Windows, be sure to first read our guide [here](https://reference
 
 ## Running the Sample Apps
 At this point, you are ready to run the sample apps. 
-Most sample apps require you to have additional model files downloaded (they will throw an exception if the model file is not detected).
+Most sample apps require you to have additional model files downloaded (they will throw an exception if the modeOl file is not detected).
 All the model files can be downloaded by running `../../download_models/download_all_models.sh`. You can also choose to download only the models files required for your application by running the individual scripts provided in that directory. If you download the model files to a directory other than the build directory, you must specify the path to the directory using the `Trueface::ConfigurationOptions.modelsPath` configuration option. 
 
 ## Note

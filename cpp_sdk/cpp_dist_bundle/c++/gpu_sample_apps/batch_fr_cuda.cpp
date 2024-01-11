@@ -132,7 +132,7 @@ int main() {
     }
 
     for (size_t idx = 0; idx < maskLabels.size(); ++idx) {
-        auto &maskLabel = maskLabel.at(idx);
+        auto &maskLabel = maskLabels.at(idx);
         auto &maskScore = maskScores.at(idx);
 
         if (maskLabel == MaskLabel::MASK) {
