@@ -19,6 +19,8 @@ options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5_2
 options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
+# The face detection model
+options.fd_model = tfsdk.FACEDETECTIONMODEL.FAST
 # Smallest face height in pixels for the face detector.
 options.smallest_face_height = 80 # Set this to 80 because we only want to enroll high quality images
 # The path specifying the directory containing the model files which were downloaded.
@@ -40,6 +42,8 @@ options.encrypt_database.key = "TODO: Your encryption key here"
 # Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
 options.initialize_module.face_detector = True
 options.initialize_module.face_recognizer = True
+options.initialize_module.face_blur_detector = True
+options.initialize_module.face_template_quality_estimator = True
 options.initialize_module.face_orientation_detector = True
 
 # Options for enabling GPU
@@ -55,11 +59,17 @@ gpuModuleOptions.max_workspace_size = 2000
 gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 
 # Note, you can set separate GPU options for each GPU supported module
+options.GPU_options.blink_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_blur_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_landmark_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_orientation_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
+options.GPU_options.face_template_quality_estimator_GPU_options = gpuModuleOptions 
 options.GPU_options.mask_detector_GPU_options = gpuModuleOptions
 options.GPU_options.object_detector_GPU_options = gpuModuleOptions
-options.GPU_options.face_orientation_detector_GPU_options = gpuModuleOptions
+options.GPU_options.spoof_detector_GPU_options = gpuModuleOptions
+
 
 sdk = tfsdk.SDK(options)
 
@@ -140,6 +150,15 @@ for path, identity in image_identities:
         print(f"{Fore.RED}Unable to extract aligned face: {res.name}, not entrolling{Style.RESET_ALL}")
         continue
 
+    # Ensure the face chip will generate a good face recognition template
+    res, is_good_quality, score = sdk.estimate_face_template_quality(face)
+    if (res != tfsdk.ERRORCODE.NO_ERROR):
+        print(f"{Fore.RED}There was an error estimating the face template quality, not enrolling{Style.RESET_ALL}")
+        continue
+
+    if (not is_good_quality):
+        print(f"{Fore.RED}The face chip is not suitable for face recognition template generation, not enrolling{Style.RESET_ALL}")
+        continue
 
     # Ensure the face image is not too blurry
     res, quality, score = sdk.detect_face_image_blur(face)

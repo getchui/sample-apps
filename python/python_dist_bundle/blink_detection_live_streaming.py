@@ -38,7 +38,6 @@ options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
 # The face detection model
 options.fd_model = tfsdk.FACEDETECTIONMODEL.FAST
 # Smallest face height in pixels for the face detector.
-# Can set this to -1 to dynamically change the smallest face height based on the input image size.
 options.smallest_face_height = 100 # Only want to run blink detection on larger faces to ensure we get accurate results
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
