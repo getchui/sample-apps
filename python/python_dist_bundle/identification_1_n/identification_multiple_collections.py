@@ -15,8 +15,10 @@ options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5_2
 options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
+# The face detection model
+options.fd_model = tfsdk.FACEDETECTIONMODEL.FAST
 # Smallest face height in pixels for the face detector.
-options.smallest_face_height = 80 # Set this to 80 because we only want to enroll high quality images 
+options.smallest_face_height = 40
 # The path specifying the directory containing the model files which were downloaded.
 options.models_path = os.getenv('MODELS_PATH') or './'
 # Enable vector compression to improve 1 to 1 comparison speed and 1 to N search speed.
@@ -36,7 +38,6 @@ options.encrypt_database.key = "TODO: Your encryption key here"
 # Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
 options.initialize_module.face_detector = True
 options.initialize_module.face_recognizer = True
-options.initialize_module.face_orientation_detector = True
 
 # Options for enabling GPU
 # We will disable GPU inference, but you can easily enable it by modifying the following options
@@ -51,11 +52,17 @@ gpuModuleOptions.max_workspace_size = 2000
 gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 
 # Note, you can set separate GPU options for each GPU supported module
+options.GPU_options.blink_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_blur_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_landmark_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_orientation_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
+options.GPU_options.face_template_quality_estimator_GPU_options = gpuModuleOptions 
 options.GPU_options.mask_detector_GPU_options = gpuModuleOptions
 options.GPU_options.object_detector_GPU_options = gpuModuleOptions
-options.GPU_options.face_orientation_detector_GPU_options = gpuModuleOptions
+options.GPU_options.spoof_detector_GPU_options = gpuModuleOptions
+
 
 sdk = tfsdk.SDK(options)
 
