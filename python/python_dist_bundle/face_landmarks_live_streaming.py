@@ -18,6 +18,8 @@ options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5_2
 options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
+# The face detection model
+options.fd_model = tfsdk.FACEDETECTIONMODEL.FAST
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
 options.smallest_face_height = 40
@@ -38,7 +40,6 @@ options.encrypt_database.key = "TODO: Your encryption key here"
 # This is done so that modules which are not used do not load their models into memory, and hence do not utilize memory.
 # The downside to this is that the first inference will be much slower as the model file is being decrypted and loaded into memory.
 # Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
-options.initialize_module.face_detector = True
 options.initialize_module.landmark_detector = True
 
 # Options for enabling GPU
@@ -54,13 +55,19 @@ gpuModuleOptions.max_workspace_size = 2000
 gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 
 # Note, you can set separate GPU options for each GPU supported module
+options.GPU_options.blink_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_blur_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_landmark_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_orientation_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
+options.GPU_options.face_template_quality_estimator_GPU_options = gpuModuleOptions 
 options.GPU_options.mask_detector_GPU_options = gpuModuleOptions
 options.GPU_options.object_detector_GPU_options = gpuModuleOptions
+options.GPU_options.spoof_detector_GPU_options = gpuModuleOptions
+
 
 sdk = tfsdk.SDK(options)
-
 # TODO: export your license token as TRUEFACE_TOKEN environment variable
 is_valid = sdk.set_license(os.environ['TRUEFACE_TOKEN'])
 if (is_valid == False):

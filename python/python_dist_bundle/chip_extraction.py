@@ -12,12 +12,12 @@ import cv2
 options = tfsdk.ConfigurationOptions()
 # The face recognition model to use. TFV5_2 balances speed and accuracy.
 options.fr_model = tfsdk.FACIALRECOGNITIONMODEL.TFV5_2
-# Use the fast face detection model
-options.fd_model = tfsdk.FACEDETECTIONMODEL.FAST
 # The object detection model to use.
 options.obj_model = tfsdk.OBJECTDETECTIONMODEL.ACCURATE
 # The face detection filter.
 options.fd_filter = tfsdk.FACEDETECTIONFILTER.BALANCED
+# The face detection model
+options.fd_model = tfsdk.FACEDETECTIONMODEL.FAST
 # Smallest face height in pixels for the face detector.
 # Can set this to -1 to dynamically change the smallest face height based on the input image size.
 options.smallest_face_height = 40
@@ -53,10 +53,17 @@ gpuModuleOptions.max_workspace_size = 2000
 gpuModuleOptions.precision = tfsdk.PRECISION.FP16
 
 # Note, you can set separate GPU options for each GPU supported module
+options.GPU_options.blink_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_blur_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_landmark_detector_GPU_options = gpuModuleOptions
+options.GPU_options.face_orientation_detector_GPU_options = gpuModuleOptions
 options.GPU_options.face_recognizer_GPU_options = gpuModuleOptions
+options.GPU_options.face_template_quality_estimator_GPU_options = gpuModuleOptions 
 options.GPU_options.mask_detector_GPU_options = gpuModuleOptions
 options.GPU_options.object_detector_GPU_options = gpuModuleOptions
+options.GPU_options.spoof_detector_GPU_options = gpuModuleOptions
+
 
 sdk = tfsdk.SDK(options)
 
