@@ -158,6 +158,8 @@ while(True):
             break
         continue
 
+    annotation_data = []
+
     # Run 1:N search for all extracted faces
     for facebox in faceboxes:
         # Extract the feature vector
@@ -170,17 +172,21 @@ while(True):
             continue
 
         res, match_found, candidate = sdk.identify_top_candidate(faceprint, threshold=0.4)
+        if (res == tfsdk.ERRORCODE.NO_ERROR):
+            annotation_data.append((facebox, match_found, candidate))
 
-        if (res != tfsdk.ERRORCODE.NO_ERROR or not match_found):
-            # Draw a red rectangle around the face
-            res = sdk.draw_face_box_and_landmarks(img, facebox, False, tfsdk.ColorRGB(255, 0, 0), 2)
-            if (res != tfsdk.ERRORCODE.NO_ERROR):
-                print(f"{Fore.RED}Unable to draw bounding box{Style.RESET_ALL}")
-        else:
+    for facebox, match_found, candidate in annotation_data:
+        if match_found:
             # Draw a rectangle with the ID and match score
             res = sdk.draw_candidate_bounding_box_and_label(img, facebox, candidate)
             if (res != tfsdk.ERRORCODE.NO_ERROR):
                 print(f"{Fore.RED}Unable to draw candidate label and bounding box{Style.RESET_ALL}")
+        else:
+            # Draw a red rectangle around the face
+            res = sdk.draw_face_box_and_landmarks(img, facebox, False, tfsdk.ColorRGB(255, 0, 0), 2)
+            if (res != tfsdk.ERRORCODE.NO_ERROR):
+                print(f"{Fore.RED}Unable to draw bounding box{Style.RESET_ALL}")
+
 
     # Convert the annotated frame back to a OpenCV frame
     frame = img.as_numpy_array()
