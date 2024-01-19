@@ -114,6 +114,8 @@ while(True):
         print(f'{Fore.RED}Unable to detect faces: {res.name}{Style.RESET_ALL}')
         continue
 
+    annotation_data = []
+
     for fb in face_box_and_landmarks:
         # Detect the 106 facial landmarks
         res, landmarks = sdk.get_face_landmarks(img, fb)
@@ -121,6 +123,9 @@ while(True):
             print(f"{Fore.RED}Unable to get face landmarks{Style.RESET_ALL}")
             continue
 
+        annotation_data.append((fb, landmarks))
+
+    for fb, landmarks in annotation_data:
         # Draw the bounding box
         res = sdk.draw_face_box_and_landmarks(img, fb, False, tfsdk.ColorRGB(255, 255, 255), 2)
         if (res != tfsdk.ERRORCODE.NO_ERROR):
