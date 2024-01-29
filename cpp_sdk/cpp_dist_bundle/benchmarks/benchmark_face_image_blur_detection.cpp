@@ -15,7 +15,7 @@ const std::string benchmarkName{"Face image blur detection"};
 
 void benchmarkFaceImageBlurDetection(const SDKFactory &sdkFactory, Parameters params,
                                      ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK
@@ -48,12 +48,17 @@ void benchmarkFaceImageBlurDetection(const SDKFactory &sdkFactory, Parameters pa
         return;
     }
 
-    FaceImageQuality quality;
-    float score{};
+    std::vector<TFFacechip> chips;
+    for (size_t i = 0; i < params.batchSize; ++i) {
+        chips.push_back(facechip);
+    }
+
+    std::vector<FaceImageQuality> qualities;
+    std::vector<float> scores;
 
     if (params.doWarmup) {
         for (int i = 0; i < params.numWarmup; ++i) {
-            errorCode = tfSdk.detectFaceImageBlur(facechip, quality, score);
+            errorCode = tfSdk.detectFaceImageBlurs(chips, qualities, scores);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to detect face image blur" << std::endl;
                 return;
@@ -61,12 +66,12 @@ void benchmarkFaceImageBlurDetection(const SDKFactory &sdkFactory, Parameters pa
         }
     }
 
-    // Time the mask detector
+    // Time the image blur detector
     std::vector<float> times;
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
-        tfSdk.detectFaceImageBlur(facechip, quality, score);
+        tfSdk.detectFaceImageBlurs(chips, qualities, scores);
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 

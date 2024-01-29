@@ -16,7 +16,7 @@ const std::string benchmarkName{"Preprocess image"};
 
 void benchmarkPreprocessImage(const SDKFactory &sdkFactory, Parameters params,
                               ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK
@@ -86,7 +86,7 @@ void benchmarkPreprocessImage(const SDKFactory &sdkFactory, Parameters params,
                               "encoded JPG in memory", params, times,
                               memoryTracker.getDifferenceFromBaseline());
 
-    // baseline memory reading
+    // Baseline memory reading
     memoryTracker.resetVmHighWaterMark();
 
     // Now repeat with already decoded imgages (ex. you grab an image from your video stream).

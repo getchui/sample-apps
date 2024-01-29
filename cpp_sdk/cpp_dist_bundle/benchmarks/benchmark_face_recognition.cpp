@@ -31,7 +31,7 @@ std::string getModelName(FacialRecognitionModel model) {
 
 void benchmarkFaceRecognition(const SDKFactory &sdkFactory, FacialRecognitionModel model,
                               Parameters params, ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK

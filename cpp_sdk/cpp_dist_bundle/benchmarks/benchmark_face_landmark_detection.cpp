@@ -15,7 +15,7 @@ const std::string benchmarkName{"Face and landmark detection"};
 
 void benchmarkFaceLandmarkDetection(const SDKFactory &sdkFactory, Parameters params,
                                     ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK
@@ -45,7 +45,7 @@ void benchmarkFaceLandmarkDetection(const SDKFactory &sdkFactory, Parameters par
         }
     }
 
-    // Time the face detection
+    // Time the face detector
     std::vector<float> times;
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {

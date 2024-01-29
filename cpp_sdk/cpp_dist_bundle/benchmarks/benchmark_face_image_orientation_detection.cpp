@@ -15,7 +15,7 @@ const std::string benchmarkName{"Face image orientation detection"};
 
 void benchmarkFaceImageOrientationDetection(const SDKFactory &sdkFactory, Parameters params,
                                             ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK
@@ -32,11 +32,16 @@ void benchmarkFaceImageOrientationDetection(const SDKFactory &sdkFactory, Parame
         return;
     }
 
-    RotateFlags flags;
+    std::vector<TFImage> tfImages;
+    for (size_t i = 0; i < params.batchSize; ++i) {
+        tfImages.push_back(img);
+    }
+
+    std::vector<RotateFlags> flags;
 
     if (params.doWarmup) {
         for (int i = 0; i < params.numWarmup; ++i) {
-            errorCode = tfSdk.getFaceImageRotation(img, flags);
+            errorCode = tfSdk.getFaceImageRotations(tfImages, flags);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to compute face image orientation" << std::endl;
                 return;
@@ -44,12 +49,12 @@ void benchmarkFaceImageOrientationDetection(const SDKFactory &sdkFactory, Parame
         }
     }
 
-    // Time the mask detector
+    // Time the image rotation detector
     std::vector<float> times;
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
-        tfSdk.getFaceImageRotation(img, flags);
+        tfSdk.getFaceImageRotations(tfImages, flags);
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 

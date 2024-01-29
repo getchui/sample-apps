@@ -41,11 +41,17 @@ void benchmarkDetailedLandmarkDetection(const SDKFactory &sdkFactory, Parameters
         return;
     }
 
-    Landmarks landmarks;
+    std::vector<FaceBoxAndLandmarks> fbs;
+    std::vector<TFImage> tfImages;
+    for (size_t i = 0; i < params.batchSize; ++i) {
+        fbs.push_back(faceBoxAndLandmarks);
+        tfImages.push_back(img);
+    }
 
+    std::vector<Landmarks> landmarksVec;
     if (params.doWarmup) {
         for (int i = 0; i < params.numWarmup; ++i) {
-            tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+            errorCode = tfSdk.getFaceLandmarks(tfImages, fbs, landmarksVec);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to get detailed landmarks" << std::endl;
                 return;
@@ -58,7 +64,7 @@ void benchmarkDetailedLandmarkDetection(const SDKFactory &sdkFactory, Parameters
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
-        tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+        tfSdk.getFaceLandmarks(tfImages, fbs, landmarksVec);
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 

@@ -45,25 +45,20 @@ int main() {
     Benchmarks::ObservationList observations;
 
     benchmarkPreprocessImage(sdkFactory, {warmup, numWarmup, 1, 200}, observations);
-    benchmarkFaceImageOrientationDetection(sdkFactory, {warmup, numWarmup, 1, 50 * multFactor},
-                                           observations);
-    benchmarkFaceLandmarkDetection(sdkFactory, {warmup, numWarmup, 1, 100 * multFactor},
-                                   observations);
-    benchmarkDetailedLandmarkDetection(sdkFactory, {warmup, numWarmup, 1, 100 * multFactor},
-                                       observations);
-    benchmarkHeadOrientation(sdkFactory, {warmup, numWarmup, 1, 500 * multFactor}, observations);
-    benchmarkFaceImageBlurDetection(sdkFactory, {warmup, numWarmup, 1, 200 * multFactor},
-                                    observations);
-    benchmarkBlinkDetection(sdkFactory, {warmup, numWarmup, 1, 100 * multFactor}, observations);
-    benchmarkGlassesDetection(sdkFactory, {warmup, numWarmup, 1, 200 * multFactor}, observations);
-    benchmarkSpoofDetection(sdkFactory, {warmup, numWarmup, 1, 100 * multFactor}, observations);
-    benchmarkObjectDetection(sdkFactory, ObjectDetectionModel::FAST,
-                             {warmup, numWarmup, 1, 100 * multFactor}, observations);
-    benchmarkObjectDetection(sdkFactory, ObjectDetectionModel::ACCURATE,
-                             {warmup, numWarmup, 1, 40 * multFactor}, observations);
 
-    // Methods which support batch inference
-    Benchmarks::Parameters batchBenchmarkParams{warmup, numWarmup, 1, 40 * multFactor};
+    benchmarkFaceLandmarkDetection(sdkFactory, {warmup, numWarmup, 1, 100 * multFactor}, observations);
+
+    benchmarkHeadOrientation(sdkFactory, {warmup, numWarmup, 1, 500 * multFactor}, observations);
+
+    benchmarkGlassesDetection(sdkFactory, {warmup, numWarmup, 1, 200 * multFactor}, observations);
+
+    benchmarkSpoofDetection(sdkFactory, {warmup, numWarmup, 1, 100 * multFactor}, observations);
+
+    benchmarkObjectDetection(sdkFactory, ObjectDetectionModel::FAST, {warmup, numWarmup, 1, 100 * multFactor}, observations);
+
+    benchmarkObjectDetection(sdkFactory, ObjectDetectionModel::ACCURATE, {warmup, numWarmup, 1, 40 * multFactor}, observations);
+
+    Benchmarks::Parameters frBenchmarkParams{warmup, numWarmup, 1, 40 * multFactor};
     std::vector<unsigned int> batchSizes;
     if (gpuOptions.enableGPU) {
         // Only test with batching when GPU is enabled.
@@ -72,20 +67,30 @@ int main() {
     } else {
         batchSizes = {1};
     }
+    // Methods which support batch inference
     for (auto currentBatchSize : batchSizes) {
-        batchBenchmarkParams.batchSize = currentBatchSize;
-        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE_V2, batchBenchmarkParams,
-                                 observations);
-        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE_V3, batchBenchmarkParams,
-                                 observations);
-        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV5_2, batchBenchmarkParams,
-                                 observations);
-        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV6, batchBenchmarkParams,
-                                 observations);
-        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV7, batchBenchmarkParams,
-                                 observations);
+        frBenchmarkParams.batchSize = currentBatchSize;
+        benchmarkFaceImageOrientationDetection(sdkFactory, {warmup, numWarmup, currentBatchSize, 50 * multFactor}, observations);
+
+        benchmarkDetailedLandmarkDetection(sdkFactory, {warmup, numWarmup, currentBatchSize, 100 * multFactor}, observations);
+
+        benchmarkFaceImageBlurDetection(sdkFactory, {warmup, numWarmup, currentBatchSize, 200 * multFactor}, observations);
+
+        benchmarkBlinkDetection(sdkFactory, {warmup, numWarmup, currentBatchSize, 100 * multFactor}, observations);
+
         benchmarkMaskDetection(sdkFactory, {warmup, numWarmup, currentBatchSize, 200 * multFactor}, observations);
+
         benchmarkFaceTemplateQualityEstimation(sdkFactory,  {warmup, numWarmup, currentBatchSize, 200 * multFactor}, observations);
+
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE_V2, frBenchmarkParams, observations);
+
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::LITE_V3, frBenchmarkParams, observations);
+
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV5_2, frBenchmarkParams, observations);
+
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV6, frBenchmarkParams, observations);
+
+        benchmarkFaceRecognition(sdkFactory, FacialRecognitionModel::TFV7, frBenchmarkParams, observations);
     }
 
     Benchmarks::ObservationCSVWriter csv{"benchmarks.csv"};

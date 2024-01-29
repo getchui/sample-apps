@@ -15,7 +15,7 @@ const std::string benchmarkName{"Blink detection"};
 
 void benchmarkBlinkDetection(const SDKFactory &sdkFactory, Parameters params,
                              ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK
@@ -42,11 +42,25 @@ void benchmarkBlinkDetection(const SDKFactory &sdkFactory, Parameters params,
         return;
     }
 
-    BlinkState blinkstate;
+    Landmarks landmarks;
+    errorCode = tfSdk.getFaceLandmarks(img, faceBoxAndLandmarks, landmarks);
+    if (errorCode != ErrorCode::NO_ERROR || !found) {
+        std::cout << "Unable to get face landmarks in image" << std::endl;
+        return;
+    }
+
+    std::vector<TFImage> tfImages;
+    std::vector<Landmarks> landmarksVec;
+    for (size_t i = 0; i < params.batchSize; ++i) {
+        tfImages.push_back(img);
+        landmarksVec.push_back(landmarks);
+    }
+
+    std::vector<BlinkState> blinkstates;
 
     if (params.doWarmup) {
         for (int i = 0; i < params.numWarmup; ++i) {
-            errorCode = tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
+            errorCode = tfSdk.detectBlinks(tfImages, landmarksVec, blinkstates);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Error: Unable to run blink detection" << std::endl;
                 return;
@@ -59,7 +73,7 @@ void benchmarkBlinkDetection(const SDKFactory &sdkFactory, Parameters params,
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
-        tfSdk.detectBlink(img, faceBoxAndLandmarks, blinkstate);
+        tfSdk.detectBlinks(tfImages, landmarksVec, blinkstates);
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 

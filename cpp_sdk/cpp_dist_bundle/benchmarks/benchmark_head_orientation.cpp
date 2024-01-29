@@ -15,7 +15,7 @@ const std::string benchmarkName{"Head orientation detection (yaw, pitch, roll)"}
 
 void benchmarkHeadOrientation(const SDKFactory &sdkFactory, Parameters params,
                               ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK

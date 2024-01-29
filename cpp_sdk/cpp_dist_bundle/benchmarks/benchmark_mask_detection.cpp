@@ -15,7 +15,7 @@ const std::string benchmarkName{"Mask detection"};
 
 void benchmarkMaskDetection(const SDKFactory &sdkFactory, Parameters params,
                             ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK

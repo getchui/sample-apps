@@ -15,7 +15,7 @@ const std::string benchmarkName{"Object detection"};
 
 void benchmarkObjectDetection(const SDKFactory &sdkFactory, ObjectDetectionModel objModel,
                               Parameters params, ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK with the fast object detection model
@@ -45,7 +45,7 @@ void benchmarkObjectDetection(const SDKFactory &sdkFactory, ObjectDetectionModel
         }
     }
 
-    // Time the creation of the feature vector
+    // Time the object detector
     std::vector<float> times;
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {

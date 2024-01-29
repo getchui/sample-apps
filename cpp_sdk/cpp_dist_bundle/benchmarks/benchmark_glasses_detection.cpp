@@ -15,7 +15,7 @@ const std::string benchmarkName{"Eyeglasses detection"};
 
 void benchmarkGlassesDetection(const SDKFactory &sdkFactory, Parameters params,
                                ObservationList &observations) {
-    // baseline memory reading
+    // Baseline memory reading
     auto memoryTracker = MemoryHighWaterMarkTracker();
 
     // Initialize the SDK
@@ -54,7 +54,7 @@ void benchmarkGlassesDetection(const SDKFactory &sdkFactory, Parameters params,
         }
     }
 
-    // Time the mask detector
+    // Time the glasses detector
     std::vector<float> times;
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
