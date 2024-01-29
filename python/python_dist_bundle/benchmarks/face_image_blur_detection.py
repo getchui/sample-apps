@@ -31,9 +31,11 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
         print('Error: Unable to extract aligned face for mask detection')
         return
 
+    chips = parameters.batch_size * [face_chip]
+
     if parameters.do_warmup:
         for _ in range(parameters.num_warmup):
-            error_code, quality, score = sdk.detect_face_image_blur(face_chip)
+            error_code, qualitites, scores = sdk.detect_face_image_blurs(chips)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
                 print('Error: Unable to detect face image blur')
                 return
@@ -42,7 +44,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
     times = []
     for _ in range(parameters.num_iterations):
         stop_watch = Stopwatch()
-        sdk.detect_face_image_blur(face_chip)
+        sdk.detect_face_image_blurs(chips)
         times.append(stop_watch.elapsedTime())
 
     observations.append(

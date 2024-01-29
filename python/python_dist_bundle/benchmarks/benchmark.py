@@ -82,7 +82,7 @@ def main() -> None:
     parameters.num_iterations = 500 * mult_factor
     head_orientation.benchmark(gpu_options, parameters, observations)
 
-    parameters.num_iterations = 100 * mult_factor
+    parameters.num_iterations = 50 * mult_factor
     for object_detection_model in (tfsdk.OBJECTDETECTIONMODEL.FAST,
                                    tfsdk.OBJECTDETECTIONMODEL.ACCURATE):
         object_detection.benchmark(gpu_options, object_detection_model, parameters, observations)
@@ -107,6 +107,11 @@ def main() -> None:
         parameters.num_iterations = 100 * mult_factor
         mask_detection.benchmark(gpu_options, parameters, observations)
         face_template_quality_estimation.benchmark(gpu_options, parameters, observations)
+        detailed_landmark_detection.benchmark(gpu_options, parameters, observations)
+        blink_detection.benchmark(gpu_options, parameters, observations)
+        face_image_orientation_detection.benchmark(gpu_options, parameters, observations)
+        face_image_blur_detection.benchmark(gpu_options, parameters, observations)
+
 
     ObservationCSVWriter('benchmarks.csv').write(observations)
 

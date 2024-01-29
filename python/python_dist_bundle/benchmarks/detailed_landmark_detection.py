@@ -25,9 +25,12 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
         print('Unable to detect face in image')
         return
 
+    tf_images = parameters.batch_size * [img]
+    fbs = parameters.batch_size * [face_box_and_landmarks]
+
     if parameters.do_warmup:
         for _ in range(parameters.num_warmup):
-            error_code, landmarks = sdk.get_face_landmarks(img, face_box_and_landmarks)
+            error_code, landmarks = sdk.get_face_landmarks(tf_images, fbs)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
                 print('Error: Unable to get detailed landmarks')
                 return
@@ -36,7 +39,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
     times = []
     for i in range(parameters.num_iterations):
         stop_watch = Stopwatch()
-        sdk.get_face_landmarks(img, face_box_and_landmarks)
+        sdk.get_face_landmarks(tf_images, fbs)
         times.append(stop_watch.elapsedTime())
 
     observations.append(

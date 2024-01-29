@@ -26,9 +26,17 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
         print('Unable to detect face in image')
         return
 
+    ret, landmarks = sdk.get_face_landmarks(img, face_box_and_landmarks)
+    if ret != tfsdk.ERRORCODE.NO_ERROR or found is False:
+        print('Unable to get face landmarks')
+        return
+
+    tf_images = parameters.batch_size * [img]
+    ladnmarks_vec = parameters.batch_size * [landmarks]
+
     if parameters.do_warmup:
         for _ in range(parameters.num_warmup):
-            error_code, blink_state = sdk.detect_blink(img, face_box_and_landmarks)
+            error_code, blink_states = sdk.detect_blinks(tf_images, ladnmarks_vec)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
                 print('Error: Unable to run blink detection')
                 return
@@ -37,7 +45,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
     times = []
     for _ in range(parameters.num_iterations):
         stop_watch = Stopwatch()
-        sdk.detect_blink(img, face_box_and_landmarks)
+        sdk.detect_blinks(tf_images, ladnmarks_vec)
         times.append(stop_watch.elapsedTime())
 
     observations.append(

@@ -20,9 +20,11 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
         print('Error: could not load the image')
         return
 
+    tf_images = parameters.batch_size * [img]
+
     if parameters.do_warmup:
         for _ in range(parameters.num_warmup):
-            error_code, flags = sdk.get_face_image_rotation(img)
+            error_code, flags = sdk.get_face_image_rotations(tf_images)
             if error_code != tfsdk.ERRORCODE.NO_ERROR:
                 print('Error: Unable to compute face image orientation')
                 return
@@ -30,7 +32,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
     times = []
     for _ in range(parameters.num_iterations):
         stop_watch = Stopwatch()
-        sdk.get_face_image_rotation(img)
+        sdk.get_face_image_rotations(tf_images)
         times.append(stop_watch.elapsedTime())
 
     observations.append(
