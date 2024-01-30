@@ -49,6 +49,12 @@ int main() {
     InitializeModule initializeModule;
     initializeModule.faceDetector = true;
     initializeModule.faceRecognizer = true;
+    initializeModule.faceOrientationDetector = true;
+    initializeModule.landmarkDetector = true;
+    initializeModule.faceTemplateQualityEstimator = true;
+    initializeModule.maskDetector = true;
+    initializeModule.blinkDetector = true;
+    initializeModule.faceBlurDetector = true;
     options.initializeModule = initializeModule;
 
     // Options for enabling GPU
@@ -209,7 +215,7 @@ int main() {
         return -1;
     }
 
-    // TODO: Do something with the results 
+    // TODO: Do something with the results
 
     return 0;
 }

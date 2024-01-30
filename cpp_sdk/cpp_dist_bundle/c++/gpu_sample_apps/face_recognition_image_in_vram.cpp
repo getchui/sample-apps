@@ -100,6 +100,8 @@ int main() {
 
     for (const auto &imagePath : imagePaths) {
         // using opencv to load the image in vram
+        // NOTE: You should not do the following, it's only for the purpose of demonstrating how to pass a GPU image to preprocessImage
+        // The idea is that you should only reference the below code if your image is already in GPU memory (for example, decoding video directly to GPU memory).
         cv::Mat img = cv::imread(imagePath);
         cv::cuda::GpuMat mat;
         mat.upload(img);

@@ -113,6 +113,7 @@ Passing multiple frames in succession to the blink detector can be used to build
 Batching is used to increase throughput on GPUs. 
 
 - `gpu_sample_apps/face_recognition_image_in_vram.cpp` demonstrates how the GPU SDK can be used to run face detection and face recognition with an image already loaded in the graphics card's memory.
+  NOTE: You should only reference this sample code if your image is already in GPU memory, for example, decoding video directly to GPU memory.
   In order to run this sample code, you must have OpenCV with CUDA installed on your system.
   You can build and install this by navigating to the `3rd_party_libs` directory and running `build_opencv.sh` which will build and install OpenCV CUDA with the required Contrib modules.
 
