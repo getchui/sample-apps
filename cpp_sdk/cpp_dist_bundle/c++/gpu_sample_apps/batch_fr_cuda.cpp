@@ -1,4 +1,4 @@
-// Sample code: Using the GPU/CUDA backend extract facial feature vectors for a batch of face chips.
+// Sample code: Using the GPU/CUDA backend demonstrate the use of batch inference.
 
 #include "tf_sdk.h"
 #include <iostream>
@@ -58,8 +58,8 @@ int main() {
     options.gpuOptions.deviceIndex = 0;
 
     GPUModuleOptions moduleOptions;
-    moduleOptions.maxBatchSize = 8;
-    moduleOptions.optBatchSize = 3;
+    moduleOptions.maxBatchSize = 4;
+    moduleOptions.optBatchSize = 4;
     moduleOptions.maxWorkspaceSizeMb = 2000;
     moduleOptions.precision = Precision::FP16;
 
@@ -84,93 +84,131 @@ int main() {
         return 1;
     }
 
-    // Create vector to store the face chips
-    std::vector<TFFacechip> facechips;
+    // Define the test data
+    std::vector<std::string> testData {
+        "brad_pitt_1.jpg",
+        "brad_pitt_2.jpg",
+        "brad_pitt_3.jpg",
+        "brad_pitt_4.jpg",
+    };
 
-    // Run face detection on the 3 images in serial, then add the face chips the vector which we
-    // allocated.
-    for (int i = 0; i < 3; i++) {
+    // Preprocess the images
+    std::vector<TFImage> tfImages;
+    for (const auto& imgPath: testData) {
         TFImage img;
-        ErrorCode errorCode =
-            tfSdk.preprocessImage("../../images/brad_pitt_" + std::to_string(i + 1) + ".jpg", img);
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << errorCode << std::endl;
-            return 1;
+        const std::string fullPath = "../../images/" + imgPath;
+        auto ret = tfSdk.preprocessImage(fullPath, img);
+        if (ret != ErrorCode::NO_ERROR) {
+            std::cout << "Unable to set image at path: " + fullPath << std::endl;
+            std::cout << ret << std::endl;
+            return -1;
         }
 
-        FaceBoxAndLandmarks faceBoxAndLandmarks;
-        bool found = false;
-        errorCode = tfSdk.detectLargestFace(img, faceBoxAndLandmarks, found);
+        tfImages.push_back(img);
+    }
 
-        if (errorCode != ErrorCode::NO_ERROR) {
-            std::cout << errorCode << std::endl;
-            return 1;
+    // Run face image orientation detection on the images in batch
+    std::vector<RotateFlags> rotateFlags;
+    auto ret = tfSdk.getFaceImageRotations(tfImages, rotateFlags);
+    if (ret != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to run get face image rotation" << std::endl;
+        std::cout << ret << std::endl;
+        return -1;
+    }
+
+    // Adjust the rotation of the images
+    for (size_t i = 0; i < tfImages.size(); ++i) {
+        tfImages[i]->rotate(rotateFlags[i]);
+    }
+
+    // Run face detection and extract the face chips
+    std::vector<FaceBoxAndLandmarks> fbs;
+    std::vector<TFFacechip> chips;
+
+    for (const auto& tfImg: tfImages) {
+        bool found;
+        FaceBoxAndLandmarks fb;
+        ret = tfSdk.detectLargestFace(tfImg, fb, found);
+        if (ret != ErrorCode::NO_ERROR) {
+            std::cout << "There was an error running face detection" << std::endl;
+            std::cout << ret << std::endl;
+            return -1;
         }
 
         if (!found) {
-            std::cout << "Unable to find face in image" << std::endl;
-            return 1;
+            std::cout << "Unable to find face in image!" << std::endl;
+            std::cout << "Skipping..." << std::endl;
+            continue;
         }
 
-        TFFacechip facechip;
-        errorCode = tfSdk.extractAlignedFace(img, faceBoxAndLandmarks, facechip);
-        if (errorCode != ErrorCode::NO_ERROR) {
+        // Extract the face chip
+        TFFacechip chip;
+        ret = tfSdk.extractAlignedFace(tfImg, fb, chip);
+        if (ret != ErrorCode::NO_ERROR) {
             std::cout << "Unable to extract aligned face chip" << std::endl;
-            std::cout << errorCode << std::endl;
-            return 1;
+            std::cout << ret << std::endl;
+            return -1;
         }
 
-        facechips.push_back(facechip);
+        fbs.push_back(fb);
+        chips.push_back(chip);
     }
 
+    // Run 106 face landmark detection in batch
+    std::vector<Landmarks> landmarksVec;
+    ret = tfSdk.getFaceLandmarks(tfImages, fbs, landmarksVec);
+    if (ret != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to get 106 face landmarks" << std::endl;
+        std::cout << ret << std::endl;
+        return -1;
+    }
+
+    // Run blink detection in batch
+    std::vector<BlinkState> blinkStates;
+    ret = tfSdk.detectBlinks(tfImages, landmarksVec, blinkStates);
+    if (ret != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to run blink detection" << std::endl;
+        std::cout << ret << std::endl;
+        return -1;
+    }
+
+    // Run mask detection in batch
     std::vector<MaskLabel> maskLabels;
-    std::vector<float> maskScores;
-    auto res = tfSdk.detectMasks(facechips, maskLabels, maskScores);
-    if (res != ErrorCode::NO_ERROR) {
+    std::vector<float> scores;
+    ret = tfSdk.detectMasks(chips, maskLabels, scores);
+    if (ret != ErrorCode::NO_ERROR) {
         std::cout << "Unable to run mask detection" << std::endl;
-        return 1;
+        std::cout << ret << std::endl;
+        return -1;
     }
 
-    for (size_t idx = 0; idx < maskLabels.size(); ++idx) {
-        auto &maskLabel = maskLabels.at(idx);
-        auto &maskScore = maskScores.at(idx);
-
-        if (maskLabel == MaskLabel::MASK) {
-            std::cout << "Masked face detected with probability of " << 1.0 - maskScore
-                      << std::endl;
-        } else {
-            std::cout << "Unmasked face detected with probability of " << maskScore << std::endl;
-        }
+    // Run blur detection in batch
+    std::vector<FaceImageQuality> qualities;
+    ret = tfSdk.detectFaceImageBlurs(chips, qualities, scores);
+    if (ret != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to run blur detection" << std::endl;
+        std::cout << ret << std::endl;
+        return -1;
     }
 
-    // Generate face recognition templates for those 3 face chips in batch.
-    // Batch template generation increases throughput.
+    // Run face template quality in batch
+    std::vector<bool> areTemplateQualitiesGood;
+    ret = tfSdk.estimateFaceTemplateQualities(chips, areTemplateQualitiesGood, scores);
+    if (ret != ErrorCode::NO_ERROR) {
+        std::cout << "Unable to run face template quality" << std::endl;
+        std::cout << ret << std::endl;
+        return -1;
+    }
+
+    // Run face recognition in batch
     std::vector<Faceprint> faceprints;
-    res = tfSdk.getFaceFeatureVectors(facechips, faceprints);
-    if (res != ErrorCode::NO_ERROR) {
+    ret = tfSdk.getFaceFeatureVectors(chips, faceprints);
+    if (ret != ErrorCode::NO_ERROR) {
         std::cout << "Unable to generate face feature vectors" << std::endl;
-        return 1;
+        std::cout << ret << std::endl;
+        return -1;
     }
 
-    float similarity;
-    float probability;
-
-    // Run a few similarity queries.
-    res = SDK::getSimilarity(faceprints[0], faceprints[1], probability, similarity);
-    if (res != ErrorCode::NO_ERROR) {
-        std::cout << "Unable to compute sim score" << std::endl;
-        return 1;
-    }
-    std::cout << "1st face - 2nd face, match probability: " << probability * 100
-              << "%,  cosine similarity: " << similarity << std::endl;
-
-    res = SDK::getSimilarity(faceprints[1], faceprints[2], probability, similarity);
-    if (res != ErrorCode::NO_ERROR) {
-        std::cout << "Unable to compute sim score" << std::endl;
-        return 1;
-    }
-    std::cout << "2nd face - 3rd face, match probability: " << probability * 100
-              << "%, cosine similarity: " << similarity << std::endl;
 
     return 0;
 }
