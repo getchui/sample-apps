@@ -86,6 +86,8 @@ img_2 = cv2.imread('../images/brad_pitt_2.jpg')
 import cupy as cp
 
 # load the image into the graphics card's memory
+# NOTE: You should only reference this sample code if your image is already in GPU memory, for example, decoding video directly to GPU memory.
+# You should not manually upload to GPU memory like is done below, as the SDK takes care of this internally. 
 img_gpu_1 = cp.asarray(img_1)
 
 # pass the gpu memory address to the sdk
