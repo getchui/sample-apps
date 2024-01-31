@@ -1,18 +1,18 @@
-# Sample code: Generate face recognition templates using GPU batching.
-
-# This sample app demonstrates how to use batching with the GPU SDK.
-# First, we extract the face chip for several images
-# Next, we generate face recognition templates in batch.
-# Batching increases the GPU throughput.
-# Finally, we generate the similarity scores.
+# Sample code: Demonstrate batch inference.
 
 import tfsdk
 import os
 from colorama import Fore
 from colorama import Style
 
-# In this sample app, will use a batch size of 3
-batch_size = 3
+test_data = [
+    "../images/brad_pitt_1.jpg",
+    "../images/brad_pitt_2.jpg",
+    "../images/brad_pitt_3.jpg",
+    "../images/brad_pitt_4.jpg"
+]
+
+batch_size = len(test_data)
 
 # Start by specifying the configuration options to be used.
 # Can choose to use the default configuration options if preferred by calling the default SDK constructor.
@@ -46,6 +46,12 @@ options.encrypt_database.key = "TODO: Your encryption key here"
 # Therefore, if you know you will use a module, choose to pre-initialize the module, which reads the model file into memory in the SDK constructor.
 options.initialize_module.face_detector = True
 options.initialize_module.face_recognizer = True
+options.initialize_module.face_orientation_detector = True
+options.initialize_module.landmark_detector = True
+options.initialize_module.blink_detector = True
+options.initialize_module.face_template_quality_estimator = True
+options.initialize_module.face_blur_detector = True
+options.initialize_module.mask_detector = True
 
 # Options for enabling GPU
 # Note, you may require a specific GPU enabled token in order to enable GPU inference.
@@ -82,65 +88,84 @@ if (is_valid == False):
     quit()
 
 
+tf_images = []
 
-# List of images to use for our batch template generation
-images = [
-    "../images/brad_pitt_1.jpg",
-    "../images/brad_pitt_2.jpg",
-    "../images/brad_pitt_3.jpg"
-]
-
-# Create array to store our face chips
-face_chips = []
-
-# First need to run face detection and generate face chips sequentially.
-for image in images:
-    res, img = sdk.preprocess_image(image)
-    if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}Unable to set image: {image}{Style.RESET_ALL}")
+# Preprocess the images
+for img_path in test_data:    
+    ret, img = sdk.preprocess_image(img_path)
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print(f"{Fore.RED}Unable to set image: {img_path}{Style.RESET_ALL}")
         quit()
 
+    tf_images.append(img)
 
-     # Detect the largest face in the image
-    res, found, face_bounding_box = sdk.detect_largest_face(img)
-    if res != tfsdk.ERRORCODE.NO_ERROR:
-        print(f'{Fore.RED}Unable to detect face: {res.name}{Style.RESET_ALL}')
+
+# Run face image orientation detection 
+ret, rotations = sdk.get_face_image_rotations(tf_images)
+if ret != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}Unable to run face image rotation{Style.RESET_ALL}")
+    quit()
+
+# Adjust the images for any rotation issues
+for i in range(len(rotations)):
+    tf_images[i].rotate(rotations[i])
+
+# Run face detection and extract the face chips
+fbs = []
+chips = []
+
+for img in tf_images:
+    ret, found, fb = sdk.detect_largest_face(img)
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print(f"{Fore.RED}Unable to run face detection{Style.RESET_ALL}")
         quit()
 
     if not found:
-        print(f"{Fore.RED}Could not find face in image!{Style.RESET_ALL}")
+        print(f"{Fore.RED}Unable to find face in image, skipping{Style.RESET_ALL}")
+        continue
+
+    ret, chip = sdk.extract_aligned_face(img, fb)
+    if ret != tfsdk.ERRORCODE.NO_ERROR:
+        print(f"{Fore.RED}Unable extract face chip{Style.RESET_ALL}")
         quit()
 
+    fbs.append(fb)
+    chips.append(chip)
 
-    res, face_chip = sdk.extract_aligned_face(img, face_bounding_box)
-    if (res != tfsdk.ERRORCODE.NO_ERROR):
-        print(f"{Fore.RED}Unable to extract aligned face: {res.name}{Style.RESET_ALL}")
-        quit()
+# Run 106 face landmark detection in batch
+ret, landmarks_vec = sdk.get_face_landmarks(tf_images, fbs)
+if ret != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}Unable to run face landmark detection{Style.RESET_ALL}")
+    quit()
 
-    face_chips.append(face_chip)
+# Run blink detection in batch
+ret, blink_states = sdk.detect_blinks(tf_images, landmarks_vec)
+if ret != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}Unable to run blink detection{Style.RESET_ALL}")
+    quit()
+
 
 # Run mask detection in batch
-res, mask_labels, mask_scores = sdk.detect_masks(face_chips)
-if (res != tfsdk.ERRORCODE.NO_ERROR):
+ret, mask_labels, scores = sdk.detect_masks(chips)
+if ret != tfsdk.ERRORCODE.NO_ERROR:
     print(f"{Fore.RED}Unable to run mask detection{Style.RESET_ALL}")
     quit()
 
-for mask_label, mask_score in zip(mask_labels, mask_scores):
-    if mask_label == tfsdk.MASKLABEL.MASK:
-        print(f"Masked image detected with probability of {1.0-mask_score:0.3f}")
-    else:
-        print(f"Unmasked image detected with probability of {mask_score:0.3f}")
-
-# Now that we have generated the face chips, we can go ahead and batch generate the FR templates.
-res, faceprints = sdk.get_face_feature_vectors(face_chips)
-if (res != tfsdk.ERRORCODE.NO_ERROR):
-    print(f"{Fore.RED}Unable to extract face feature vectors{Style.RESET_ALL}")
+# Run blur detection in batch
+ret, face_qualitites, scores = sdk.detect_face_image_blurs(chips)
+if ret != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}Unable to run face blur detection{Style.RESET_ALL}")
     quit()
 
-# Run similarity comparisons
-res, match_prob, sim_score = sdk.get_similarity(faceprints[0], faceprints[1])
-print(f"Image 1 vs Image 2 match probability: {match_prob}")
+# Run face template quality in batch
+ret, are_template_qualities_good, scores = sdk.estimate_face_template_qualities(chips)
+if ret != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}Unable to run face template quality detection{Style.RESET_ALL}")
+    quit()
 
-res, match_prob, sim_score = sdk.get_similarity(faceprints[1], faceprints[2])
-print(f"Image 2 vs Image 3 match probability: {match_prob}")
 
+# Run face recognition in batch 
+ret, faceprints = sdk.get_face_feature_vectors(chips)
+if ret != tfsdk.ERRORCODE.NO_ERROR:
+    print(f"{Fore.RED}Unable to extract face feature vectors{Style.RESET_ALL}")
+    quit()
