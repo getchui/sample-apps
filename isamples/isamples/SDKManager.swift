@@ -49,13 +49,13 @@ class SDKManager {
         options.initializeModule.faceRecognizer = true
         options.initializeModule.faceDetector = true
         options.initializeModule.objectDetector = true
-        options.objModel = OBJECT_FAST
+        options.objModel = OBJECT_ACCURATE
         options.fdModel = FACE_FAST
-        options.frModel = TFV5_2
+        options.frModel = LITE_V2
         options.modelsPath = Bundle.main.resourcePath
         options.dbms = SQLITE
     }
-    
+     
     // Method to configure the SDK options.
     private func setSDKLicense() {
         sdk.setLicense("...")
