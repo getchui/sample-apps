@@ -128,27 +128,27 @@ while(True):
             continue
 
         # Run orientation detection
-        ret, yaw, pitch, roll, rot_vec, trans_vec = sdk.estimate_head_orientation(img, face, landmarks)
+        ret, head_orientation = sdk.estimate_head_orientation(img, face, landmarks)
         if ret != tfsdk.ERRORCODE.NO_ERROR:
             print(f"{Fore.RED}Unable to compute orientation.{Style.RESET_ALL}")
             continue
 
-        annotation_data.append((face, landmarks, yaw, pitch, roll, rot_vec, trans_vec))
+        annotation_data.append((face, landmarks, head_orientation))
 
-    for face, landmarks, yaw, pitch, roll, rot_vec, trans_vec in annotation_data:
+    for face, landmarks, head_orientation in annotation_data:
 
         sdk.draw_face_landmarks(img, landmarks)
 
         if draw_axes:
             # Use the orientation to draw the orientation axes
-            ret = sdk.draw_head_orientation_axes(img, face, yaw, pitch, roll, 2)
+            ret = sdk.draw_head_orientation_axes(img, face, head_orientation, 2)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print(f"{Fore.RED}Unable to draw orientation arrows.{Style.RESET_ALL}")
                 continue
 
         if draw_box:
             # Use the orientation to draw the orientation axes
-            ret = sdk.draw_head_orientation_box(img, rot_vec, trans_vec, 2)
+            ret = sdk.draw_head_orientation_box(img, head_orientation, 2)
             if ret != tfsdk.ERRORCODE.NO_ERROR:
                 print(f"{Fore.RED}Unable to draw orientation box.{Style.RESET_ALL}")
                 continue

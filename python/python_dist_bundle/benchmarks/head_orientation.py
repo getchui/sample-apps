@@ -30,7 +30,7 @@ def benchmark(gpu_options: tfsdk.GPUOptions, parameters: Parameters, observation
 
     if parameters.do_warmup:
         for _ in range(parameters.num_warmup):
-            error_code, yaw, pitch, roll, rotation_vec, translation_vec = \
+            error_code, head_orientation = \
                 sdk.estimate_head_orientation(img, face_box_and_landmarks, landmarks)
 
     # Time the head orientation

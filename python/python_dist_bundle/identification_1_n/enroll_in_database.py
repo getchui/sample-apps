@@ -177,13 +177,13 @@ for path, identity in image_identities:
         print("Unable to get face landmarks, not enrolling")
         continue
 
-    res, yaw, pitch, roll, rot_vec, trans_vec = sdk.estimate_head_orientation(img, faceBoxAndLandmarks, landmarks)
+    res, head_orientation = sdk.estimate_head_orientation(img, faceBoxAndLandmarks, landmarks)
     if (res != tfsdk.ERRORCODE.NO_ERROR):
         print(f"{Fore.RED}Unable to compute head orientation, not enrolling{Style.RESET_ALL}")
         continue
 
-    yaw_deg = yaw * 180 / 3.14
-    pitch_deg = pitch * 180 / 3.14
+    yaw_deg = head_orientation.yaw * 180 / 3.14
+    pitch_deg = head_orientation.pitch * 180 / 3.14
 
     if abs(yaw_deg) > 30:
         print(f"{Fore.RED}Enrollment image has too extreme a yaw, not enrolling{Style.RESET_ALL}")
