@@ -236,18 +236,16 @@ int main() {
             return -1;
         }
 
-        float yaw, pitch, roll;
-        std::array<double, 3> rotationVec, translationVec;
-        errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch,
-                                                  roll, rotationVec, translationVec);
+        HeadOrientation headOrientation;
+        errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, headOrientation);
         if (errorCode != ErrorCode::NO_ERROR) {
             std::cout << "Unable to compute head orientation\n";
             std::cout << errorCode << std::endl;
             return -1;
         }
 
-        float yawDeg = yaw * 180 / 3.14;
-        float pitchDeg = pitch * 180 / 3.14;
+        float yawDeg = headOrientation.yaw * 180 / 3.14;
+        float pitchDeg = headOrientation.pitch * 180 / 3.14;
 
         // Ensure the head is approximately neutral
         if (std::abs(yawDeg) > 30) {

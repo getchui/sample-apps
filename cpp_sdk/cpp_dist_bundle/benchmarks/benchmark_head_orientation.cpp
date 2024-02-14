@@ -49,13 +49,10 @@ void benchmarkHeadOrientation(const SDKFactory &sdkFactory, Parameters params,
         return;
     }
 
-    float yaw, pitch, roll;
-    std::array<double, 3> rotationVec, translationVec;
-
+    HeadOrientation headOrientation;
     if (params.doWarmup) {
         for (int i = 0; i < params.numWarmup; ++i) {
-            errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw,
-                                                      pitch, roll, rotationVec, translationVec);
+            errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, headOrientation);
             if (errorCode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to run head orientation method" << std::endl;
                 return;
@@ -68,8 +65,7 @@ void benchmarkHeadOrientation(const SDKFactory &sdkFactory, Parameters params,
     times.reserve(params.numIterations);
     for (size_t i = 0; i < params.numIterations; ++i) {
         preciseStopwatch stopwatch;
-        tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll,
-                                      rotationVec, translationVec);
+        tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, headOrientation);
         times.emplace_back(stopwatch.elapsedTime<float, std::chrono::nanoseconds>());
     }
 
