@@ -176,17 +176,15 @@ int main() {
             }
 
             // Compute the yaw, pitch, roll
-            float yaw, pitch, roll;
-            std::array<double, 3> rotMat, transMat;
-            retCode = tfSdk.estimateHeadOrientation(img, face, landmarks, yaw, pitch, roll, rotMat,
-                                                    transMat);
+            HeadOrientation headOrientation;
+            retCode = tfSdk.estimateHeadOrientation(img, face, landmarks, headOrientation);
             if (retCode != ErrorCode::NO_ERROR) {
                 std::cout << "Unable to compute orientation\n";
                 continue;
             }
 
             // Draw the head box
-            tfSdk.drawHeadOrientationBox(img, rotMat, transMat);
+            tfSdk.drawHeadOrientationBox(img, headOrientation);
 
             // Modify the frame
             frame = cv::Mat(img->getHeight(), img->getWidth(), CV_8UC3, img->getData());

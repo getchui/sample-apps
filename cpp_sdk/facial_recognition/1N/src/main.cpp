@@ -242,17 +242,15 @@ int main() {
     // As a final check, we can check the orientation of the head and ensure that it is facing
     // forward To see the effect of yaw and pitch on the match score, refer to:
     // https://reference.trueface.ai/cpp/dev/latest/usage/face.html#_CPPv4N8Trueface3SDK23estimateHeadOrientationERK19FaceBoxAndLandmarksRfRfRf
-    float yaw, pitch, roll;
-    std::array<double, 3> rotMat, transMat;
-    errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, yaw, pitch, roll,
-                                              rotMat, transMat);
+    HeadOrientation headOrientation;
+    errorCode = tfSdk.estimateHeadOrientation(img, faceBoxAndLandmarks, landmarks, headOrientation);
     if (errorCode != ErrorCode::NO_ERROR) {
         std::cout << "Unable to compute head orientation\n";
         return -1;
     }
 
-    std::cout << "Yaw: " << yaw * 180 / M_PI << ", Pitch: " << pitch * 180 / M_PI
-              << ", Roll: " << roll * 180 / M_PI << " degrees" << std::endl;
+    std::cout << "Yaw: " << headOrientation.yaw * 180 / M_PI << ", Pitch: " << headOrientation.pitch * 180 / M_PI
+              << ", Roll: " << headOrientation.roll * 180 / M_PI << " degrees" << std::endl;
 
     // TODO: Can filter out images with extreme yaw and pitch here
 
