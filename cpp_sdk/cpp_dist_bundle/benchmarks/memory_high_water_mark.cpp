@@ -2,12 +2,15 @@
 
 #include <fstream>
 #if !defined(WIN32) && !defined(_WIN32)
+#include <unistd.h>
 #ifdef __APPLE__
 #include <sys/time.h>
 #endif
 #include <sys/resource.h>
+#else
+#include<windows.h>
 #endif
-#include <unistd.h>
+
 
 using namespace Trueface::Benchmarks;
 
