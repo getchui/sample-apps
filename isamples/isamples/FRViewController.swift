@@ -26,14 +26,14 @@ class FRViewController: FaceDetectionViewController {
         // Handle the event when a face is detected
         self.onFaceDetected = { (sdk, tfImage, face) in
             // Get the face feature vector for the detected face
-            if let faceprint = self.sdk.getFaceFeatureVector(tfImage, face) {
+            if let faceprint = self.sdk.getFaceFeatureVector(for: tfImage, faceBoxAndLandmarks: face) {
                 // Identify the top candidate for the face feature vector
-                if let candidate = self.sdk.identifyTopCandidate(faceprint) {
+                if let result = self.sdk.identifyTopCandidate(with: faceprint, collectionName: SDKManager.collectionName) {
                     // Get the confidence score for the identified candidate
-                    let confidence = candidate.similarityMeasure
+                    let confidence = String(format: "%.2f", 100 * result.candidate.similarityMeasure)
 
                     // Get the name of the identified candidate
-                    if let name = candidate.identity {
+                    if let name = result.candidate.identity {
                         DispatchQueue.main.async {
                             label.text = "\(name) \n Confidence: \(confidence)"
                         }

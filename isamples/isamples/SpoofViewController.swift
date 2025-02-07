@@ -35,7 +35,7 @@ class SpoofViewController: FaceDetectionViewController {
         // Handle the event when a face is detected
         self.onFaceDetected = { (sdk, tfImage, face) in
             // Get the spoof prediction for the detected face
-            let spoof: TFSpoofPrediction = self.sdk.detectSpoof(tfImage, face, 0.5)
+            let spoof: TFSpoofResult = self.sdk.detectSpoof(in: tfImage, with: face, threshold: 0.5)
             
             // If there's an error, display the error message
             if spoof.errorCode != NO_ERROR {
@@ -88,7 +88,7 @@ class SpoofViewController: FaceDetectionViewController {
         uninitializeModule.activeSpoof = true
         uninitializeModule.passiveSpoof = true
         uninitializeModule.maskDetector = true
-        uninitializeModule.liveness = true
+        uninitializeModule.blinkDetector = true
         uninitializeModule.landmarkDetector = true
         self.sdk.uninitializeModule(uninitializeModule)
     }

@@ -16,23 +16,24 @@
 		F551E9F629E4A0FF0004A16C /* isamplesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551E9F529E4A0FF0004A16C /* isamplesTests.swift */; };
 		F551EA0029E4A0FF0004A16C /* isamplesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551E9FF29E4A0FF0004A16C /* isamplesUITests.swift */; };
 		F551EA0229E4A0FF0004A16C /* isamplesUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551EA0129E4A0FF0004A16C /* isamplesUITestsLaunchTests.swift */; };
-		F551EA0F29E4A15C0004A16C /* trueface.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F551EA0E29E4A15C0004A16C /* trueface.xcframework */; };
 		F551EA1229E4A18E0004A16C /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F551EA1129E4A18E0004A16C /* CoreMedia.framework */; };
 		F551EA1429E4A1930004A16C /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F551EA1329E4A1930004A16C /* AVFoundation.framework */; };
 		F551EA1829E4A1A20004A16C /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F551EA1629E4A19D0004A16C /* libc++.1.tbd */; };
 		F551EA1929E4A1A20004A16C /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F551EA1729E4A19D0004A16C /* libc++.tbd */; };
 		F551EA1A29E4A1A20004A16C /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F551EA1529E4A19C0004A16C /* libc++abi.tbd */; };
-		F551EA2229E4AC280004A16C /* mask_detector_cpu_v3.trueface.enc in Resources */ = {isa = PBXBuildFile; fileRef = F551EA1E29E4AC270004A16C /* mask_detector_cpu_v3.trueface.enc */; };
-		F551EA2329E4AC280004A16C /* blink_detector_v1.trueface.enc in Resources */ = {isa = PBXBuildFile; fileRef = F551EA1F29E4AC270004A16C /* blink_detector_v1.trueface.enc */; };
-		F551EA2429E4AC280004A16C /* face_recognition_cpu_lite_v2.trueface.enc in Resources */ = {isa = PBXBuildFile; fileRef = F551EA2029E4AC270004A16C /* face_recognition_cpu_lite_v2.trueface.enc */; };
-		F551EA2529E4AC280004A16C /* face_landmark_detector_v2.trueface.enc in Resources */ = {isa = PBXBuildFile; fileRef = F551EA2129E4AC270004A16C /* face_landmark_detector_v2.trueface.enc */; };
 		F551EA2729E4E8900004A16C /* SDKManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551EA2629E4E8900004A16C /* SDKManager.swift */; };
 		F551EA2929E4ECBD0004A16C /* FaceDetectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551EA2829E4ECBD0004A16C /* FaceDetectionViewController.swift */; };
 		F551EA2B29E4F0CF0004A16C /* SpoofViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551EA2A29E4F0CF0004A16C /* SpoofViewController.swift */; };
 		F577736B29E60BB5005A1F4F /* EnrollViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F577736A29E60BB5005A1F4F /* EnrollViewController.swift */; };
 		F577736D29E613A7005A1F4F /* ManagePeopleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F577736C29E613A7005A1F4F /* ManagePeopleViewController.swift */; };
 		F5C5276D29E782370075DB28 /* FRViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C5276C29E782370075DB28 /* FRViewController.swift */; };
-		F5C5276F29E78A4F0075DB28 /* spoof_v4.trueface.enc in Resources */ = {isa = PBXBuildFile; fileRef = F5C5276E29E78A4F0075DB28 /* spoof_v4.trueface.enc */; };
+		F5E5D8AD2D56674A0044F244 /* trueface.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5E5D8AC2D56674A0044F244 /* trueface.xcframework */; };
+		F5E5D8AF2D56677A0044F244 /* spoof_detection_v6.trueface.v2.enc in Resources */ = {isa = PBXBuildFile; fileRef = F5E5D8AE2D56677A0044F244 /* spoof_detection_v6.trueface.v2.enc */; };
+		F5E5D8B12D5667980044F244 /* mask_detector_v3.trueface.v2.enc in Resources */ = {isa = PBXBuildFile; fileRef = F5E5D8B02D5667980044F244 /* mask_detector_v3.trueface.v2.enc */; };
+		F5E5D8B32D5667BA0044F244 /* blink_detector_v3.trueface.v2.enc in Resources */ = {isa = PBXBuildFile; fileRef = F5E5D8B22D5667BA0044F244 /* blink_detector_v3.trueface.v2.enc */; };
+		F5E5D8B52D5667D80044F244 /* face_landmark_detector_v2.trueface.v2.enc in Resources */ = {isa = PBXBuildFile; fileRef = F5E5D8B42D5667D80044F244 /* face_landmark_detector_v2.trueface.v2.enc */; };
+		F5E5D8B72D5667F10044F244 /* face_recognition_lite_v2.trueface.v2.enc in Resources */ = {isa = PBXBuildFile; fileRef = F5E5D8B62D5667F10044F244 /* face_recognition_lite_v2.trueface.v2.enc */; };
+		F5E5D8B92D566EDE0044F244 /* face_detector_v2_fast.trueface.v2.enc in Resources */ = {isa = PBXBuildFile; fileRef = F5E5D8B82D566EDE0044F244 /* face_detector_v2_fast.trueface.v2.enc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,24 +67,25 @@
 		F551E9FB29E4A0FF0004A16C /* isamplesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = isamplesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F551E9FF29E4A0FF0004A16C /* isamplesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = isamplesUITests.swift; sourceTree = "<group>"; };
 		F551EA0129E4A0FF0004A16C /* isamplesUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = isamplesUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		F551EA0E29E4A15C0004A16C /* trueface.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = trueface.xcframework; sourceTree = "<group>"; };
 		F551EA1129E4A18E0004A16C /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		F551EA1329E4A1930004A16C /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		F551EA1529E4A19C0004A16C /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "usr/lib/libc++abi.tbd"; sourceTree = SDKROOT; };
 		F551EA1629E4A19D0004A16C /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "usr/lib/libc++.1.tbd"; sourceTree = SDKROOT; };
 		F551EA1729E4A19D0004A16C /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		F551EA1B29E4A6910004A16C /* isamples-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "isamples-Bridging-Header.h"; sourceTree = "<group>"; };
-		F551EA1E29E4AC270004A16C /* mask_detector_cpu_v3.trueface.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = mask_detector_cpu_v3.trueface.enc; sourceTree = "<group>"; };
-		F551EA1F29E4AC270004A16C /* blink_detector_v1.trueface.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = blink_detector_v1.trueface.enc; sourceTree = "<group>"; };
-		F551EA2029E4AC270004A16C /* face_recognition_cpu_lite_v2.trueface.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = face_recognition_cpu_lite_v2.trueface.enc; sourceTree = "<group>"; };
-		F551EA2129E4AC270004A16C /* face_landmark_detector_v2.trueface.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = face_landmark_detector_v2.trueface.enc; sourceTree = "<group>"; };
 		F551EA2629E4E8900004A16C /* SDKManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKManager.swift; sourceTree = "<group>"; };
 		F551EA2829E4ECBD0004A16C /* FaceDetectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceDetectionViewController.swift; sourceTree = "<group>"; };
 		F551EA2A29E4F0CF0004A16C /* SpoofViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoofViewController.swift; sourceTree = "<group>"; };
 		F577736A29E60BB5005A1F4F /* EnrollViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrollViewController.swift; sourceTree = "<group>"; };
 		F577736C29E613A7005A1F4F /* ManagePeopleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagePeopleViewController.swift; sourceTree = "<group>"; };
 		F5C5276C29E782370075DB28 /* FRViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRViewController.swift; sourceTree = "<group>"; };
-		F5C5276E29E78A4F0075DB28 /* spoof_v4.trueface.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = spoof_v4.trueface.enc; sourceTree = "<group>"; };
+		F5E5D8AC2D56674A0044F244 /* trueface.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = trueface.xcframework; sourceTree = "<group>"; };
+		F5E5D8AE2D56677A0044F244 /* spoof_detection_v6.trueface.v2.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = spoof_detection_v6.trueface.v2.enc; sourceTree = "<group>"; };
+		F5E5D8B02D5667980044F244 /* mask_detector_v3.trueface.v2.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = mask_detector_v3.trueface.v2.enc; sourceTree = "<group>"; };
+		F5E5D8B22D5667BA0044F244 /* blink_detector_v3.trueface.v2.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = blink_detector_v3.trueface.v2.enc; sourceTree = "<group>"; };
+		F5E5D8B42D5667D80044F244 /* face_landmark_detector_v2.trueface.v2.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = face_landmark_detector_v2.trueface.v2.enc; sourceTree = "<group>"; };
+		F5E5D8B62D5667F10044F244 /* face_recognition_lite_v2.trueface.v2.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = face_recognition_lite_v2.trueface.v2.enc; sourceTree = "<group>"; };
+		F5E5D8B82D566EDE0044F244 /* face_detector_v2_fast.trueface.v2.enc */ = {isa = PBXFileReference; lastKnownFileType = file; path = face_detector_v2_fast.trueface.v2.enc; sourceTree = "<group>"; };
 		F5ECE4D129EF7975008B814A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F5ECE4D229EF7FD4008B814A /* gitignore.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = gitignore.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -95,7 +97,7 @@
 			files = (
 				F551EA1229E4A18E0004A16C /* CoreMedia.framework in Frameworks */,
 				F551EA1929E4A1A20004A16C /* libc++.tbd in Frameworks */,
-				F551EA0F29E4A15C0004A16C /* trueface.xcframework in Frameworks */,
+				F5E5D8AD2D56674A0044F244 /* trueface.xcframework in Frameworks */,
 				F551EA1A29E4A1A20004A16C /* libc++abi.tbd in Frameworks */,
 				F551EA1429E4A1930004A16C /* AVFoundation.framework in Frameworks */,
 				F551EA1829E4A1A20004A16C /* libc++.1.tbd in Frameworks */,
@@ -145,12 +147,13 @@
 		F551E9DD29E4A0FE0004A16C /* isamples */ = {
 			isa = PBXGroup;
 			children = (
-				F551EA0E29E4A15C0004A16C /* trueface.xcframework */,
-				F551EA1F29E4AC270004A16C /* blink_detector_v1.trueface.enc */,
-				F551EA2129E4AC270004A16C /* face_landmark_detector_v2.trueface.enc */,
-				F551EA2029E4AC270004A16C /* face_recognition_cpu_lite_v2.trueface.enc */,
-				F551EA1E29E4AC270004A16C /* mask_detector_cpu_v3.trueface.enc */,
-				F5C5276E29E78A4F0075DB28 /* spoof_v4.trueface.enc */,
+				F5E5D8AC2D56674A0044F244 /* trueface.xcframework */,
+				F5E5D8B82D566EDE0044F244 /* face_detector_v2_fast.trueface.v2.enc */,
+				F5E5D8B62D5667F10044F244 /* face_recognition_lite_v2.trueface.v2.enc */,
+				F5E5D8B22D5667BA0044F244 /* blink_detector_v3.trueface.v2.enc */,
+				F5E5D8B42D5667D80044F244 /* face_landmark_detector_v2.trueface.v2.enc */,
+				F5E5D8B02D5667980044F244 /* mask_detector_v3.trueface.v2.enc */,
+				F5E5D8AE2D56677A0044F244 /* spoof_detection_v6.trueface.v2.enc */,
 				F551E9DE29E4A0FE0004A16C /* AppDelegate.swift */,
 				F551EA2629E4E8900004A16C /* SDKManager.swift */,
 				F551E9E029E4A0FE0004A16C /* SceneDelegate.swift */,
@@ -303,13 +306,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5E5D8B52D5667D80044F244 /* face_landmark_detector_v2.trueface.v2.enc in Resources */,
+				F5E5D8B92D566EDE0044F244 /* face_detector_v2_fast.trueface.v2.enc in Resources */,
+				F5E5D8B12D5667980044F244 /* mask_detector_v3.trueface.v2.enc in Resources */,
+				F5E5D8B72D5667F10044F244 /* face_recognition_lite_v2.trueface.v2.enc in Resources */,
 				F551E9EB29E4A0FF0004A16C /* LaunchScreen.storyboard in Resources */,
 				F551E9E829E4A0FF0004A16C /* Assets.xcassets in Resources */,
-				F551EA2329E4AC280004A16C /* blink_detector_v1.trueface.enc in Resources */,
-				F551EA2229E4AC280004A16C /* mask_detector_cpu_v3.trueface.enc in Resources */,
-				F551EA2429E4AC280004A16C /* face_recognition_cpu_lite_v2.trueface.enc in Resources */,
-				F551EA2529E4AC280004A16C /* face_landmark_detector_v2.trueface.enc in Resources */,
-				F5C5276F29E78A4F0075DB28 /* spoof_v4.trueface.enc in Resources */,
+				F5E5D8B32D5667BA0044F244 /* blink_detector_v3.trueface.v2.enc in Resources */,
+				F5E5D8AF2D56677A0044F244 /* spoof_detection_v6.trueface.v2.enc in Resources */,
 				F551E9E629E4A0FE0004A16C /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

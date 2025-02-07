@@ -67,8 +67,8 @@ class EnrollViewController: FaceDetectionViewController {
                   let tfImage = self.tfImage,
                   let face = self.face else { return }
             
-            let faceprint = sdk.getFaceFeatureVector(tfImage, face)
-            sdk.enrollFaceprint(faceprint, nameOfPerson)
+            let faceprint = sdk.getFaceFeatureVector(for: tfImage, faceBoxAndLandmarks: face)
+            sdk.enrollFaceprint(faceprint, withIdentity: nameOfPerson, collectionName: SDKManager.collectionName)
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)

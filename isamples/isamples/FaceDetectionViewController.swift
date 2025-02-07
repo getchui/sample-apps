@@ -28,6 +28,9 @@ class FaceDetectionViewController: UIViewController {
     // @IBOutlet weak var previewView: UIView!
     var previewView: UIView!
     
+    // used for convert(cmage: CIImage)
+    private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+    
     // Deinitializer to stop the camera.
     // import for navigation and to avoid crashes
     deinit {
@@ -235,7 +238,7 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             
             if face != nil {
                 DispatchQueue.main.async {
-                    self.processFace(tfimage: tfimage, face: face!, width: width, height: height)
+                    self.processFace(tfimage: tfimage, face: face!.faceBoxAndLandmarks, width: width, height: height)
                 }
             }
             
@@ -243,10 +246,13 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
                 // tfimage.destroy()
             }
             
-            if face != nil {
-                onFaceDetected?(sdk, tfimage, face!)
+            if face != nil && face!.faceBoxAndLandmarks.score > 0.9 &&
+              face!.faceBoxAndLandmarks.topLeft.x > 0 && face!.faceBoxAndLandmarks.topLeft.y > 0 &&
+              face!.faceBoxAndLandmarks.bottomRight.x > face!.faceBoxAndLandmarks.topLeft.x &&
+              face!.faceBoxAndLandmarks.bottomRight.y > face!.faceBoxAndLandmarks.topLeft.y {
+               onFaceDetected?(sdk, tfimage, face!.faceBoxAndLandmarks)
             } else {
-                onFaceNotDetected?(sdk, tfimage)
+               onFaceNotDetected?(sdk, tfimage)
             }
         }
     }
@@ -272,10 +278,10 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
 
     // Convert CIImage to UIImage.
     func convert(cmage: CIImage) -> UIImage {
-        let context = CIContext(options: nil)
-        let cgImage = context.createCGImage(cmage, from: cmage.extent)!
-        let image = UIImage(cgImage: cgImage)
-        return image
+        guard let cgImage = ciContext.createCGImage(cmage, from: cmage.extent) else {
+            return UIImage()
+        }
+        return UIImage(cgImage: cgImage)
     }
     
     // Draw a rectangle on the detected face.

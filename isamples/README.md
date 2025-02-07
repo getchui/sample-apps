@@ -33,11 +33,12 @@ open isamples.xcodeproj
 4. Download the Trueface SDK for iOS from the official website, and follow the instructions to install it in your project.
 5. Obtain a license for the Trueface SDK, and set it up in your project according to the SDK's documentation.
 6. Download the following models and add them to your project: 
-    - blink_detector_v1.trueface.enc
-    - face_landmark_detector_v2.trueface.enc
-    - face_recognition_cpu_lite_v2.trueface.enc
-    - mask_detector_cpu_v3.trueface.enc
-    - spoof_v4.trueface.enc
+    - blink_detector_v3
+    - face_landmark_detector_v2
+    - face_recognition_lite_v2
+    - face_detector_v2_fast
+    - mask_detector_v3
+    - spoof_v6
 
 
 ## Usage

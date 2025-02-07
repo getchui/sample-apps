@@ -12,6 +12,8 @@ class SDKManager {
     // Shared instance of SDKManager for global access.
     static let shared = SDKManager()
     
+    static let collectionName: String = "DEMO"
+    
     var sdk: TFSDK!
     var options: TFConfigurationOptions!
     
@@ -46,7 +48,6 @@ class SDKManager {
     private func configureSDKOptions() {
         options = TFConfigurationOptions()
         options.smallestFaceHeight = 120
-        options.mobileThreads = 8
         options.initializeModule.faceRecognizer = true
         options.frModel = LITE_V2
         options.modelsPath = Bundle.main.resourcePath

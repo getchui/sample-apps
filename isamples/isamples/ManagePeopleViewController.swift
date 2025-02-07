@@ -26,8 +26,9 @@ class ManagePeopleViewController: UIViewController, UITableViewDataSource, UITab
         view.addSubview(tableView)
         
         // Retrieve the identities from the collection
-        if let identities = sdk.getCollectionIdentities("DEMO") as? [TFCollectionIdentities] {
-            self.identities = identities
+        if let result = sdk.getCollectionIdentities(SDKManager.collectionName),
+          let identityList = result.collectionIdentities as? [TFCollectionIdentities] {
+           self.identities = identityList
         }
 
         // Set navigation bar title
@@ -74,7 +75,7 @@ class ManagePeopleViewController: UIViewController, UITableViewDataSource, UITab
         let identity = identities[indexPath.row]
         let removeAction = UIAlertAction(title: "Remove", style: .destructive) { [weak self] _ in
             guard let self = self else { return }
-            let _ = self.sdk.remove(byIdentity: identity.identity)
+            let _ = self.sdk.remove(byIdentity: identity.identity, collectionName: SDKManager.collectionName)
             self.identities.removeAll(where: { $0.identity == identity.identity })
             tableView.reloadData()
         }
