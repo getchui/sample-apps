@@ -31,6 +31,11 @@ class FaceDetectionViewController: UIViewController {
     // used for convert(cmage: CIImage)
     private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
     
+    // used properties for debugging
+    private var formatDebugEnabled = true
+    private var lastFrameTime = Date()
+    private let frameLogInterval = 2.0
+    
     // Deinitializer to stop the camera.
     // import for navigation and to avoid crashes
     deinit {
@@ -44,7 +49,10 @@ class FaceDetectionViewController: UIViewController {
         view.sendSubviewToBack(previewView)
         super.viewDidLoad()
         initSDK()
-        setupAVCapture()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.setupAVCapture()
+        }
     }
     
     // MARK: - SDK Initialization
@@ -57,20 +65,92 @@ class FaceDetectionViewController: UIViewController {
     // Configure and set up the AVCaptureSession.
     func setupAVCapture() {
         session.beginConfiguration()
-        session.sessionPreset = AVCaptureSession.Preset.hd1920x1080
-        configureCaptureDevice()
+        // session.sessionPreset = AVCaptureSession.Preset.hd1920x1080
+        // configureCaptureDevice()
+        
+        guard configureCaptureDevice() else {
+            session.commitConfiguration()
+            showCameraErrorAlert()
+            return
+        }
+        
+        // Log all supported formats
+        logSupportedFormats()
+        
+        if let format = findSupportedFormat() {
+            do {
+                try captureDevice.lockForConfiguration()
+                captureDevice.activeFormat = format
+                captureDevice.unlockForConfiguration()
+                
+                // Log selected format
+                let selectedDimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+                print("📸 Selected camera format: \(selectedDimensions.width)x\(selectedDimensions.height)")
+            } catch {
+                print("🔴 Format config error: \(error)")
+            }
+        } else {
+            print("🔴 No supported format found!")
+        }
+        
         beginSession()
     }
     
+    private func logSupportedFormats() {
+        print("📷 Available camera formats:")
+        for format in captureDevice.formats {
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            let ranges = format.videoSupportedFrameRateRanges
+            let fps = ranges.first?.maxFrameRate ?? 0
+            let colorSpaces = format.supportedColorSpaces.map { "\($0)" }.joined(separator: ", ")
+            
+            print(String(format: "▫️ %4dx%-4d | %2.0f FPS | %@",
+                         dimensions.width,
+                         dimensions.height,
+                         fps,
+                         colorSpaces))
+        }
+    }
+    
+    private func findSupportedFormat() -> AVCaptureDevice.Format? {
+        // Prioritize formats that work across devices
+        let preferredResolutions = [
+            (width: 1280, height: 720),  // 720p
+            (width: 1920, height: 1080), // 1080p
+            (width: 640, height: 480)    // 480p
+        ]
+        
+        return captureDevice.formats.first { format in
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            return preferredResolutions.contains {
+                $0.width == Int(dimensions.width) && $0.height == Int(dimensions.height)
+            }
+        }
+    }
+
+    private func showCameraErrorAlert() {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(
+                title: "Camera Error",
+                message: "Front camera not available",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(alert, animated: true)
+        }
+    }
+    
     // Configure the AVCaptureDevice for the capture session.
-    func configureCaptureDevice() {
-        guard let device = AVCaptureDevice
-            .default(.builtInWideAngleCamera,
-                     for: .video,
-                     position: .front) else {
-            return
+    func configureCaptureDevice() -> Bool {
+        guard let device = AVCaptureDevice.default(
+            .builtInWideAngleCamera,
+            for: .video,
+            position: .front
+        ) else {
+            return false
         }
         captureDevice = device
+        return true
     }
     
     // MARK: - AVCapture Session Handling
@@ -102,6 +182,10 @@ class FaceDetectionViewController: UIViewController {
             videoDataOutput.connection(with: AVMediaType.video)?.videoOrientation = .portrait
             
             previewLayer = AVCaptureVideoPreviewLayer(session: self.session)
+            previewLayer.addObserver(self,
+                                     forKeyPath: "bounds",
+                                     options: [.new, .initial],
+                                     context: nil)
             previewLayer.connection?.videoOrientation = .portrait
             previewLayer.videoGravity = AVLayerVideoGravity.resize
             let rootLayer :CALayer = self.previewView.layer
@@ -116,6 +200,15 @@ class FaceDetectionViewController: UIViewController {
         } catch let error as NSError {
             deviceInput = nil
             print("error: \(error.localizedDescription)")
+        }
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?,
+                               of object: Any?,
+                               change: [NSKeyValueChangeKey : Any]?,
+                               context: UnsafeMutableRawPointer?) {
+        if keyPath == "bounds", let layer = object as? CALayer {
+            print("🖼️ Preview layer size updated: \(layer.bounds.size)")
         }
     }
     

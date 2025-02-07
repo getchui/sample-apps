@@ -30,6 +30,7 @@ class FRViewController: FaceDetectionViewController {
                 // Identify the top candidate for the face feature vector
                 if let result = self.sdk.identifyTopCandidate(with: faceprint, collectionName: SDKManager.collectionName) {
                     // Get the confidence score for the identified candidate
+                    if (result.candidate == nil)  { return }
                     let confidence = String(format: "%.2f", 100 * result.candidate.similarityMeasure)
 
                     // Get the name of the identified candidate
