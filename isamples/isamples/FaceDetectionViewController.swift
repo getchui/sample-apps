@@ -49,7 +49,7 @@ class FaceDetectionViewController: UIViewController {
         view.sendSubviewToBack(previewView)
         super.viewDidLoad()
         initSDK()
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             self.setupAVCapture()
         }
@@ -64,6 +64,15 @@ class FaceDetectionViewController: UIViewController {
     // MARK: - AVCapture Setup
     // Configure and set up the AVCaptureSession.
     func setupAVCapture() {
+        print("📸 Device types: \(AVCaptureDevice.DeviceType.builtInWideAngleCamera.rawValue)")
+        
+        let discoverySession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera],
+            mediaType: .video,
+            position: .front
+        )
+        print("📸 Available devices: \(discoverySession.devices.map { $0.localizedName })")
+        
         session.beginConfiguration()
         // session.sessionPreset = AVCaptureSession.Preset.hd1920x1080
         // configureCaptureDevice()
@@ -127,7 +136,7 @@ class FaceDetectionViewController: UIViewController {
             }
         }
     }
-
+    
     private func showCameraErrorAlert() {
         DispatchQueue.main.async {
             let alert = UIAlertController(
@@ -142,15 +151,34 @@ class FaceDetectionViewController: UIViewController {
     
     // Configure the AVCaptureDevice for the capture session.
     func configureCaptureDevice() -> Bool {
-        guard let device = AVCaptureDevice.default(
-            .builtInWideAngleCamera,
-            for: .video,
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            print("📸 Camera access granted: \(granted)")
+        }
+        
+        let discoverySession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
+            mediaType: .video,
             position: .front
-        ) else {
+        )
+        
+        guard let device = discoverySession.devices.first else {
+            print("🔴 No front camera discovered")
             return false
         }
+        
         captureDevice = device
         return true
+        /*
+         guard let device = AVCaptureDevice.default(
+         .builtInWideAngleCamera,
+         for: .video,
+         position: .front
+         ) else {
+         return false
+         }
+         captureDevice = device
+         return true
+         */
     }
     
     // MARK: - AVCapture Session Handling
@@ -269,7 +297,7 @@ class FaceDetectionViewController: UIViewController {
     func pauseCamera() {
         session.stopRunning()
     }
-
+    
     // Resume the AVCaptureSession.
     func resumeCamera() {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -340,12 +368,12 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             }
             
             if face != nil && face!.faceBoxAndLandmarks.score > 0.9 &&
-              face!.faceBoxAndLandmarks.topLeft.x > 0 && face!.faceBoxAndLandmarks.topLeft.y > 0 &&
-              face!.faceBoxAndLandmarks.bottomRight.x > face!.faceBoxAndLandmarks.topLeft.x &&
-              face!.faceBoxAndLandmarks.bottomRight.y > face!.faceBoxAndLandmarks.topLeft.y {
-               onFaceDetected?(sdk, tfimage, face!.faceBoxAndLandmarks)
+                face!.faceBoxAndLandmarks.topLeft.x > 0 && face!.faceBoxAndLandmarks.topLeft.y > 0 &&
+                face!.faceBoxAndLandmarks.bottomRight.x > face!.faceBoxAndLandmarks.topLeft.x &&
+                face!.faceBoxAndLandmarks.bottomRight.y > face!.faceBoxAndLandmarks.topLeft.y {
+                onFaceDetected?(sdk, tfimage, face!.faceBoxAndLandmarks)
             } else {
-               onFaceNotDetected?(sdk, tfimage)
+                onFaceNotDetected?(sdk, tfimage)
             }
         }
     }
@@ -355,7 +383,7 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         let adjustedFaceRect = transformRectToLayerCoordinates(face: face, width: width, height: height)
         drawRectOnFace(rect: adjustedFaceRect)
     }
-
+    
     // Transform the detected face rectangle coordinates to layer coordinates.
     func transformRectToLayerCoordinates(face: TFFaceBoxAndLandmarks, width: Int, height: Int) -> CGRect {
         let previewLayerBounds = previewLayer.bounds
@@ -368,7 +396,7 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         let adjustedFaceRect = CGRect(x: x - rectWidth, y: y, width: rectWidth, height: rectHeight)
         return adjustedFaceRect
     }
-
+    
     // Convert CIImage to UIImage.
     func convert(cmage: CIImage) -> UIImage {
         guard let cgImage = ciContext.createCGImage(cmage, from: cmage.extent) else {
@@ -390,5 +418,4 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
         faceRectLayer?.path = UIBezierPath(rect: rect).cgPath
         faceRectLayer?.frame = self.previewView.bounds
     }
-    
 }
