@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F5236A5A2D5A8D8A00C46710 /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5236A592D5A8D8700C46710 /* AboutViewController.swift */; };
 		F551E9DF29E4A0FE0004A16C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551E9DE29E4A0FE0004A16C /* AppDelegate.swift */; };
 		F551E9E129E4A0FE0004A16C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551E9E029E4A0FE0004A16C /* SceneDelegate.swift */; };
 		F551E9E329E4A0FE0004A16C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F551E9E229E4A0FE0004A16C /* ViewController.swift */; };
@@ -54,6 +55,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F5236A592D5A8D8700C46710 /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		F551E9DB29E4A0FE0004A16C /* isamples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = isamples.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F551E9DE29E4A0FE0004A16C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F551E9E029E4A0FE0004A16C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 				F5E5D8B42D5667D80044F244 /* face_landmark_detector_v2.trueface.v2.enc */,
 				F5E5D8B02D5667980044F244 /* mask_detector_v3.trueface.v2.enc */,
 				F5E5D8AE2D56677A0044F244 /* spoof_detection_v6.trueface.v2.enc */,
+				F5236A592D5A8D8700C46710 /* AboutViewController.swift */,
 				F551E9DE29E4A0FE0004A16C /* AppDelegate.swift */,
 				F551EA2629E4E8900004A16C /* SDKManager.swift */,
 				F551E9E029E4A0FE0004A16C /* SceneDelegate.swift */,
@@ -347,6 +350,7 @@
 				F551E9E129E4A0FE0004A16C /* SceneDelegate.swift in Sources */,
 				F5C5276D29E782370075DB28 /* FRViewController.swift in Sources */,
 				F577736B29E60BB5005A1F4F /* EnrollViewController.swift in Sources */,
+				F5236A5A2D5A8D8A00C46710 /* AboutViewController.swift in Sources */,
 				F551EA2929E4ECBD0004A16C /* FaceDetectionViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

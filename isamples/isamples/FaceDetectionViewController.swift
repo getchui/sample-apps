@@ -12,86 +12,98 @@ import AVFoundation
 // FaceDetectionViewController is a UIViewController that initializes and manages the AVCaptureSession
 // for real-time face detection using the SDK.
 class FaceDetectionViewController: UIViewController {
-    
+
     var sdk: TFSDK!
     var videoDataOutput: AVCaptureVideoDataOutput!
     var videoDataOutputQueue: DispatchQueue!
     var previewLayer: AVCaptureVideoPreviewLayer!
     var captureDevice: AVCaptureDevice!
     let session = AVCaptureSession()
-    
+
     var onFaceNotDetected: ((_ sdk: TFSDK, _ tfImage: TFImage) -> Void)?
     var onFaceDetected: ((_ sdk: TFSDK, _ tfImage: TFImage, _ face: TFFaceBoxAndLandmarks) -> Void)?
     var faceRectLayer: CAShapeLayer?
     var frame = UIImage()
-    
-    // @IBOutlet weak var previewView: UIView!
+
     var previewView: UIView!
-    
+
     // used for convert(cmage: CIImage)
     private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
-    
+
     // used properties for debugging
     private var formatDebugEnabled = true
     private var lastFrameTime = Date()
     private let frameLogInterval = 2.0
-    
+
+    // --- Frequency controlled logging ---
+    var logFrequencyInterval: TimeInterval = 10.0 // Parameter to control log frequency, default 10 seconds
+    private var lastPreviewLayerLogTime: Date?
+    // --- End frequency controlled logging ---
+
+
     // Deinitializer to stop the camera.
     // import for navigation and to avoid crashes
     deinit {
+        print("🗑️ FaceDetectionViewController deinit - Stopping camera and removing observer")
         stopCamera()
+        print("Camera stopped in deinit")
+        previewLayer?.removeObserver(self, forKeyPath: "bounds")
+        print("👁️ Observer for previewLayer bounds removed")
     }
-    
+
     override func viewDidLoad() {
         previewView = UIView(frame: view.bounds)
         previewView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(previewView)
         view.sendSubviewToBack(previewView)
         super.viewDidLoad()
+        print("🎬 FaceDetectionViewController viewDidLoad - Starting SDK and AVCapture setup")
         initSDK()
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            print("⏳ Delayed AVCapture setup started")
             self.setupAVCapture()
         }
     }
-    
+
     // MARK: - SDK Initialization
     // Initialize the SDK with the SDKManager instance.
     func initSDK() {
+        print("🎛️ Initializing SDK in FaceDetectionViewController")
         sdk = SDKManager.shared.sdk
+        print("✅ SDK initialized from SDKManager")
     }
-    
+
     // MARK: - AVCapture Setup
     // Configure and set up the AVCaptureSession.
     func setupAVCapture() {
+        print("⚙️ Setting up AVCaptureSession")
         print("📸 Device types: \(AVCaptureDevice.DeviceType.builtInWideAngleCamera.rawValue)")
-        
+
         let discoverySession = AVCaptureDevice.DiscoverySession(
             deviceTypes: [.builtInWideAngleCamera],
             mediaType: .video,
             position: .front
         )
         print("📸 Available devices: \(discoverySession.devices.map { $0.localizedName })")
-        
+
         session.beginConfiguration()
-        // session.sessionPreset = AVCaptureSession.Preset.hd1920x1080
-        // configureCaptureDevice()
-        
+
         guard configureCaptureDevice() else {
             session.commitConfiguration()
             showCameraErrorAlert()
             return
         }
-        
+
         // Log all supported formats
         logSupportedFormats()
-        
+
         if let format = findSupportedFormat() {
             do {
                 try captureDevice.lockForConfiguration()
                 captureDevice.activeFormat = format
                 captureDevice.unlockForConfiguration()
-                
+
                 // Log selected format
                 let selectedDimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
                 print("📸 Selected camera format: \(selectedDimensions.width)x\(selectedDimensions.height)")
@@ -101,10 +113,10 @@ class FaceDetectionViewController: UIViewController {
         } else {
             print("🔴 No supported format found!")
         }
-        
+
         beginSession()
     }
-    
+
     private func logSupportedFormats() {
         print("📷 Available camera formats:")
         for format in captureDevice.formats {
@@ -112,7 +124,7 @@ class FaceDetectionViewController: UIViewController {
             let ranges = format.videoSupportedFrameRateRanges
             let fps = ranges.first?.maxFrameRate ?? 0
             let colorSpaces = format.supportedColorSpaces.map { "\($0)" }.joined(separator: ", ")
-            
+
             print(String(format: "▫️ %4dx%-4d | %2.0f FPS | %@",
                          dimensions.width,
                          dimensions.height,
@@ -120,23 +132,32 @@ class FaceDetectionViewController: UIViewController {
                          colorSpaces))
         }
     }
-    
+
     private func findSupportedFormat() -> AVCaptureDevice.Format? {
+        print("🔍 Finding best supported camera format")
         // Prioritize formats that work across devices
         let preferredResolutions = [
             (width: 1280, height: 720),  // 720p
             (width: 1920, height: 1080), // 1080p
             (width: 640, height: 480)    // 480p
         ]
-        
-        return captureDevice.formats.first { format in
+
+        if let format = captureDevice.formats.first(where: { format in
             let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
             return preferredResolutions.contains {
                 $0.width == Int(dimensions.width) && $0.height == Int(dimensions.height)
             }
+        }) {
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            print("✅ Found supported format: \(dimensions.width)x\(dimensions.height)")
+            return format
+        } else {
+            print("⚠️ No preferred format found, using default if available")
+            return captureDevice.formats.first // Fallback to any format if preferred not found
         }
     }
-    
+
+
     private func showCameraErrorAlert() {
         DispatchQueue.main.async {
             let alert = UIAlertController(
@@ -146,69 +167,76 @@ class FaceDetectionViewController: UIViewController {
             )
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             self.present(alert, animated: true)
+            print("🚨 Showing camera error alert: Front camera not available")
         }
     }
-    
+
     // Configure the AVCaptureDevice for the capture session.
     func configureCaptureDevice() -> Bool {
+        print("📲 Configuring capture device")
+        var cameraAccessGranted = false
+        let semaphore = DispatchSemaphore(value: 0) // Use semaphore to wait for camera access response
+
         AVCaptureDevice.requestAccess(for: .video) { granted in
             print("📸 Camera access granted: \(granted)")
+            cameraAccessGranted = granted
+            semaphore.signal() // Signal that camera access response is received
         }
-        
+        semaphore.wait() // Wait until camera access response is received
+
+        if !cameraAccessGranted {
+            print("🔴 Camera access NOT granted, failing configuration")
+            return false
+        }
+
+
         let discoverySession = AVCaptureDevice.DiscoverySession(
             deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
             mediaType: .video,
             position: .front
         )
-        
+
         guard let device = discoverySession.devices.first else {
             print("🔴 No front camera discovered")
             return false
         }
-        
+
         captureDevice = device
+        print("✅ Capture device configured: \(captureDevice.localizedName)")
         return true
-        /*
-         guard let device = AVCaptureDevice.default(
-         .builtInWideAngleCamera,
-         for: .video,
-         position: .front
-         ) else {
-         return false
-         }
-         captureDevice = device
-         return true
-         */
     }
-    
+
     // MARK: - AVCapture Session Handling
     // Begin the AVCaptureSession with the configured device input and output.
     func beginSession(){
+        print("🎬 Beginning capture session")
         var deviceInput: AVCaptureDeviceInput!
-        
+
         do {
             deviceInput = try AVCaptureDeviceInput(device: captureDevice)
             guard deviceInput != nil else {
-                print("error: cant get deviceInput")
+                print("🔴 Error: cant get deviceInput")
                 return
             }
-            
+
             if self.session.canAddInput(deviceInput){
                 self.session.addInput(deviceInput)
+                print("✅ Device input added to session")
             }
-            
+
             videoDataOutput = AVCaptureVideoDataOutput()
             videoDataOutput.alwaysDiscardsLateVideoFrames=true
             videoDataOutputQueue = DispatchQueue(label: "VideoDataOutputQueue")
             videoDataOutput.setSampleBufferDelegate(self, queue:self.videoDataOutputQueue)
-            
+
             if session.canAddOutput(self.videoDataOutput){
                 session.addOutput(self.videoDataOutput)
+                print("✅ Video data output added to session")
             }
-            
+
             videoDataOutput.connection(with: .video)?.isEnabled = true
             videoDataOutput.connection(with: AVMediaType.video)?.videoOrientation = .portrait
-            
+
             previewLayer = AVCaptureVideoPreviewLayer(session: self.session)
             previewLayer.addObserver(self,
                                      forKeyPath: "bounds",
@@ -221,52 +249,82 @@ class FaceDetectionViewController: UIViewController {
             previewLayer.frame = rootLayer.bounds
             rootLayer.addSublayer(self.previewLayer)
             session.commitConfiguration()
-            
+            print("✅ Session configuration committed")
+
             DispatchQueue.global(qos: .userInitiated).async {
+                print("🚀 Starting session run asynchronously")
                 self.session.startRunning()
+                print("✅ Session started and running")
             }
         } catch let error as NSError {
             deviceInput = nil
-            print("error: \(error.localizedDescription)")
+            print("🔴 Error creating device input: \(error.localizedDescription)")
         }
     }
-    
+
     override func observeValue(forKeyPath keyPath: String?,
                                of object: Any?,
                                change: [NSKeyValueChangeKey : Any]?,
                                context: UnsafeMutableRawPointer?) {
         if keyPath == "bounds", let layer = object as? CALayer {
-            print("🖼️ Preview layer size updated: \(layer.bounds.size)")
+            // Frequency controlled log for preview layer bounds update
+            if shouldLogBasedOnFrequency(lastLogTime: &lastPreviewLayerLogTime) {
+                print("🖼️ Preview layer size updated: \(layer.bounds.size)")
+            }
         }
     }
-    
+
+    // --- Frequency controlled logging helper function ---
+    private func shouldLogBasedOnFrequency(lastLogTime: inout Date?) -> Bool {
+        let currentTime = Date()
+        if let lastTime = lastLogTime {
+            if currentTime.timeIntervalSince(lastTime) >= logFrequencyInterval {
+                lastLogTime = currentTime
+                return true
+            } else {
+                return false
+            }
+        } else {
+            lastLogTime = currentTime // First log, so log it and set last log time
+            return true
+        }
+    }
+    // --- End frequency controlled logging helper function ---
+
+
     // Configure the AVCaptureDeviceInput for the capture session.
     func configureDeviceInput() {
+        print("⚙️ Configuring device input (configureDeviceInput - manual)")
         do {
             let deviceInput = try AVCaptureDeviceInput(device: captureDevice)
             if self.session.canAddInput(deviceInput) {
                 self.session.addInput(deviceInput)
+                print("✅ Device input added")
             }
         } catch let error as NSError {
-            print("error: \(error.localizedDescription)")
+            print("🔴 Error configuring device input: \(error.localizedDescription)")
         }
     }
-    
+
     // Configure the AVCaptureVideoDataOutput for the capture session.
     func configureVideoDataOutput() {
+        print("⚙️ Configuring video data output (configureVideoDataOutput - manual)")
         videoDataOutput = AVCaptureVideoDataOutput()
         videoDataOutput.alwaysDiscardsLateVideoFrames = true
         videoDataOutputQueue = DispatchQueue(label: "VideoDataOutputQueue")
         videoDataOutput.setSampleBufferDelegate(self, queue: videoDataOutputQueue)
         if session.canAddOutput(self.videoDataOutput) {
             session.addOutput(self.videoDataOutput)
+            print("✅ Video data output added")
         }
         videoDataOutput.connection(with: .video)?.isEnabled = true
         videoDataOutput.connection(with: .video)?.videoOrientation = .portrait
+        print("✅ Video data output configured")
     }
-    
+
     // Configure the AVCaptureVideoPreviewLayer for the AVCaptureSession.
     func configurePreviewLayer() {
+        print("⚙️ Configuring preview layer (configurePreviewLayer - manual)")
         previewLayer = AVCaptureVideoPreviewLayer(session: self.session)
         previewLayer.connection?.videoOrientation = .portrait
         previewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
@@ -274,34 +332,62 @@ class FaceDetectionViewController: UIViewController {
         rootLayer.masksToBounds = true
         previewLayer.frame = rootLayer.bounds
         rootLayer.addSublayer(self.previewLayer)
+        print("✅ Preview layer configured")
     }
-    
+
     // Stop the AVCaptureSession and remove device inputs.
     func stopCamera() {
-        session.stopRunning()
+        if session.isRunning {
+            print("⏹️ Stopping camera session")
+            session.stopRunning()
+            print("✅ Camera session stopped")
+        } else {
+            print("⚠️ Camera session is already stopped")
+        }
         for input in (self.session.inputs as! [AVCaptureDeviceInput]) {
-            self.session.removeInput(input)
+            session.removeInput(input)
+            print("➖ Input removed from session")
         }
     }
-    
+
     // Start the AVCaptureSession.
     func startCamera() {
         if !session.isRunning {
+            print("▶️ Starting camera session")
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 self?.session.startRunning()
+                print("✅ Camera session started")
             }
+        } else {
+            print("⚠️ Camera session is already running")
         }
     }
-    
+
     // Pause the AVCaptureSession.
     func pauseCamera() {
-        session.stopRunning()
+        if session.isRunning {
+            print("⏸️ Pausing camera session")
+            session.stopRunning()
+            print("✅ Camera session paused")
+        } else {
+            print("⚠️ Camera session is already paused/stopped")
+        }
     }
-    
+
     // Resume the AVCaptureSession.
     func resumeCamera() {
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.session.startRunning()
+        if !session.isRunning {
+            print("⏯️ Resuming camera session")
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let self = self else {
+                    print("⚠️ Warning: self is nil in resumeCamera, cannot resume session.")
+                    return // Exit if self is nil
+                }
+                self.session.startRunning()
+                print("✅ Camera session resumed")
+            }
+        } else {
+            print("⚠️ Camera session is already running, resume has no effect")
         }
     }
 }
@@ -312,12 +398,12 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
     // Implement the captureOutput delegate method.
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         updateVideoOrientation(for: connection)
-        
+
         if let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             processImageBuffer(imageBuffer)
         }
     }
-    
+
     // Update video orientation based on device orientation.
     func updateVideoOrientation(for connection: AVCaptureConnection) {
         if connection.isVideoOrientationSupported {
@@ -326,20 +412,17 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             case .portrait:
                 connection.videoOrientation = .portrait
             case .portraitUpsideDown:
-                // connection.videoOrientation = .portraitUpsideDown
                 connection.videoOrientation = .portrait
             case .landscapeLeft:
-                // connection.videoOrientation = .landscapeRight
                 connection.videoOrientation = .portrait
             case .landscapeRight:
-                // connection.videoOrientation = .landscapeLeft
                 connection.videoOrientation = .portrait
             default:
                 break
             }
         }
     }
-    
+
     // Process the image buffer and detect faces using the SDK.
     func processImageBuffer(_ imageBuffer: CVImageBuffer) {
         autoreleasepool {
@@ -347,26 +430,33 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             self.frame = convert(cmage: ciimage)
             let height = CVPixelBufferGetHeight(imageBuffer)
             let width = CVPixelBufferGetWidth(imageBuffer)
-            
-            guard let tfimage = sdk.preprocessImage(self.frame) else { return }
-            let face = sdk.detectLargestFace(tfimage)
-            
-            DispatchQueue.main.async {
-                self.previewView.subviews.forEach({ $0.removeFromSuperview() })
-                self.faceRectLayer?.removeFromSuperlayer()
-                self.faceRectLayer = nil
+
+            guard let tfimage = sdk.preprocessImage(self.frame) else {
+                print("⚠️ Preprocess image failed, skipping frame")
+                return
             }
-            
+            let face = sdk.detectLargestFace(tfimage)
+
+            DispatchQueue.main.async {
+                // Clear previous frame drawings, but keep the layer itself
+                self.previewView.subviews.forEach({ $0.removeFromSuperview() })
+                // Revert: DO NOT remove faceRectLayer from superlayer here - this was breaking the display!
+                // self.faceRectLayer?.removeFromSuperlayer()
+            }
+
             if face != nil {
                 DispatchQueue.main.async {
                     self.processFace(tfimage: tfimage, face: face!.faceBoxAndLandmarks, width: width, height: height)
                 }
             }
-            
+
             defer {
+                // Note: While ARC usually handles memory management, during high-load operations
+                // you may need to explicitly call tfimage.destroy() to prevent memory growth and crashes.
+                // Monitor memory usage and uncomment if needed.
                 // tfimage.destroy()
             }
-            
+
             if face != nil && face!.faceBoxAndLandmarks.score > 0.9 &&
                 face!.faceBoxAndLandmarks.topLeft.x > 0 && face!.faceBoxAndLandmarks.topLeft.y > 0 &&
                 face!.faceBoxAndLandmarks.bottomRight.x > face!.faceBoxAndLandmarks.topLeft.x &&
@@ -377,34 +467,35 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             }
         }
     }
-    
+
     // Process the detected face and draw a rectangle around it.
     func processFace(tfimage: TFImage, face: TFFaceBoxAndLandmarks, width: Int, height: Int) {
         let adjustedFaceRect = transformRectToLayerCoordinates(face: face, width: width, height: height)
         drawRectOnFace(rect: adjustedFaceRect)
     }
-    
+
     // Transform the detected face rectangle coordinates to layer coordinates.
     func transformRectToLayerCoordinates(face: TFFaceBoxAndLandmarks, width: Int, height: Int) -> CGRect {
         let previewLayerBounds = previewLayer.bounds
-        
+
         let x = (1 - CGFloat(face.topLeft.x) / CGFloat(width)) * previewLayerBounds.width
         let y = CGFloat(face.topLeft.y) * previewLayerBounds.height / CGFloat(height)
         let rectWidth = (CGFloat(face.bottomRight.x) - CGFloat(face.topLeft.x)) * previewLayerBounds.width / CGFloat(width)
         let rectHeight = (CGFloat(face.bottomRight.y) - CGFloat(face.topLeft.y)) * previewLayerBounds.height / CGFloat(height)
-        
+
         let adjustedFaceRect = CGRect(x: x - rectWidth, y: y, width: rectWidth, height: rectHeight)
         return adjustedFaceRect
     }
-    
+
     // Convert CIImage to UIImage.
     func convert(cmage: CIImage) -> UIImage {
         guard let cgImage = ciContext.createCGImage(cmage, from: cmage.extent) else {
+            print("🔴 CIImage to CGImage conversion failed")
             return UIImage()
         }
         return UIImage(cgImage: cgImage)
     }
-    
+
     // Draw a rectangle on the detected face.
     func drawRectOnFace(rect: CGRect) {
         if faceRectLayer == nil {
@@ -412,9 +503,14 @@ extension FaceDetectionViewController: AVCaptureVideoDataOutputSampleBufferDeleg
             faceRectLayer?.strokeColor = UIColor.green.cgColor
             faceRectLayer?.lineWidth = 3.0
             faceRectLayer?.fillColor = UIColor.clear.cgColor
+            self.previewView.layer.addSublayer(faceRectLayer!) // Ensure layer is added as sublayer
+            print("🎨 Face rect layer created and added") // Log only once when layer is created
+        } else if faceRectLayer?.superlayer == nil {
+            // Re-add the layer if it somehow gets removed from superlayer (unlikely in this code, but for robustness)
             self.previewView.layer.addSublayer(faceRectLayer!)
         }
-        
+
+
         faceRectLayer?.path = UIBezierPath(rect: rect).cgPath
         faceRectLayer?.frame = self.previewView.bounds
     }
